@@ -1,8 +1,5 @@
 import os
 
-from config.utils import configresult
-from config.dbparse import *
-
 from config.ical_config_reader import IcalConfigReader
 from config.sensor import Sensor, SensorBadColumnCountExcept, SensorMalformedRecordExcept
 

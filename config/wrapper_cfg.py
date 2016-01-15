@@ -49,6 +49,9 @@ class WrapperCfg(object):
 
         if (sensor in ['A', 'B']) and caltype in Calib.CALIB_VALUES_CALTYPE:
             # return 'please run ' + caltype + ' on sensor ' + sensor
+            calports = '123' if sensor == 'A' else '456'
+            monport = self.data[WrapperCfg.WRAPPER_KEY_MONPORT_A] if sensor == 'A' else self.data[WrapperCfg.WRAPPER_KEY_MONPORT_B]
+            
             cmd = ''.join([
                         'qcal ',
                         self.data[WrapperCfg.WRAPPER_KEY_IP],
@@ -64,8 +67,8 @@ class WrapperCfg(object):
                         ':',
                         self.data[WrapperCfg.WRAPPER_KEY_NET],
                         ' '+caltype,
-                        ' cal='+'123' if sensor == 'A' else '456',
-                        ' mon='+self.data[WrapperCfg.WRAPPER_KEY_MONPORT_A] if sensor == 'A' else self.data[WrapperCfg.WRAPPER_KEY_MONPORT_B],
+                        ' cal='+calports,
+                        ' mon='+monport, 
                         ' root=./'])
             return cmd
 

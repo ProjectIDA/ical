@@ -9,7 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 etc/
-features/
+features/**
 env/
 build/
 develop-eggs/
@@ -60,3 +60,5 @@ docs/_build/
 # PyBuilder
 target/
 
+# OS X
+.DS_Store

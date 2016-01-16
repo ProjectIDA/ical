@@ -38,11 +38,15 @@ class WrapperCfg(object):
 
 
     def __init__(self, init_dict={}):
-        self.data = init_dict
+        self.data = {}
+        self.update(init_dict)
 
 
     def update(self, update_dict):
         self.data.update(update_dict)
+        self.sortkey = self.data.get(WrapperCfg.WRAPPER_KEY_NET, 'net').ljust(10, ' ') + \
+                        self.data.get(WrapperCfg.WRAPPER_KEY_STA, 'sta').ljust(10, ' ') + \
+                        self.data.get(WrapperCfg.WRAPPER_KEY_TAGNO, 'tagno').ljust(10, ' ')
 
 
     def gen_qcal_cmdline(self, sensor, caltype):
@@ -51,7 +55,7 @@ class WrapperCfg(object):
             # return 'please run ' + caltype + ' on sensor ' + sensor
             calports = '123' if sensor == 'A' else '456'
             monport = self.data[WrapperCfg.WRAPPER_KEY_MONPORT_A] if sensor == 'A' else self.data[WrapperCfg.WRAPPER_KEY_MONPORT_B]
-            
+
             cmd = ''.join([
                         'qcal ',
                         self.data[WrapperCfg.WRAPPER_KEY_IP],
@@ -68,8 +72,8 @@ class WrapperCfg(object):
                         self.data[WrapperCfg.WRAPPER_KEY_NET],
                         ' '+caltype,
                         ' cal='+calports,
-                        ' mon='+monport, 
-                        ' root=./'])
+                        ' mon='+monport 
+                        ]) # caller responsible for appending confgi root_dir cmd param: root='...'
             return cmd
 
         else:
@@ -81,13 +85,8 @@ class WrapperCfg(object):
 
 
     def __eq__(self, other):
-            return (type(other) == type(self)) and \
-                ((self.data[WrapperCfg.WRAPPER_KEY_STA].lower() == other.data[WrapperCfg.WRAPPER_KEY_STA].lower()) and 
-                (self.data[WrapperCfg.WRAPPER_KEY_TAGNO].lower() == other.data[WrapperCfg.WRAPPER_KEY_TAGNO].lower()))
+            return (type(other) == type(self)) and (self.sortkey == other.sortkey)
 
 
     def __lt__(self, other):
-        return (type(other) == type(self)) and \
-            ((self.data[WrapperCfg.WRAPPER_KEY_STA].lower() < other.data[WrapperCfg.WRAPPER_KEY_STA].lower()) or 
-            ((self.data[WrapperCfg.WRAPPER_KEY_STA].lower() == other.data[WrapperCfg.WRAPPER_KEY_STA].lower()) and 
-                (self.data[WrapperCfg.WRAPPER_KEY_TAGNO].lower() < other.data[WrapperCfg.WRAPPER_KEY_TAGNO].lower())))
+        return (type(other) == type(self)) and (self.sortkey < other.sortkey)

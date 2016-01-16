@@ -1,3 +1,5 @@
+import subprocess
+
 from PyQt5 import QtCore, QtWidgets
 
 import gui.iCalGui.mw
@@ -11,7 +13,8 @@ from gui.iCalGui.cfg_data_model import CfgDataModel
 
 class MainWindowHelper(object):
 
-    def __init__(self, app_win, main_win):
+    def __init__(self, cfg, app_win, main_win):
+        self.cfg = cfg
         self.app_win = app_win
         self.main_win = main_win
         self.cur_row = -1
@@ -50,9 +53,6 @@ class MainWindowHelper(object):
 
     def setup_tableview(self): #MainWindow, mw_ui):
 
-        self.cfg = IcalConfig('./')
-        print(self.cfg.load_config())
-
         self.cdm = CfgDataModel(self.cfg)
        
         self.main_win.cfgListTV.setModel(self.cdm)
@@ -71,6 +71,7 @@ class MainWindowHelper(object):
             wcfg = self.cfg[self.cur_row]
             if wcfg:
                 cmdline = wcfg.gen_qcal_cmdline(sensor, caltype)
+                cmdline += ' root=' + self.cfg.root_dir
                 dlg = QtWidgets.QDialog()
                 rundlg = Ui_RunDlg()
                 rundlg.setupUi(dlg)
@@ -104,6 +105,7 @@ class MainWindowHelper(object):
         self.update_details(self.cur_row)
         self.set_run_btns_enabled(self.cur_row)
 
+        # self.ping_hosts()
 
     def MWEditRow(self, index):
 
@@ -119,6 +121,22 @@ class MainWindowHelper(object):
             self.clear_details()
         else:
             self.set_details(row)
+
+
+    def ping_hosts(self):
+
+        for wcfg in self.cfg:
+            print('IP:', wcfg.data[WrapperCfg.WRAPPER_KEY_IP])
+            ipaddress = wcfg.data[WrapperCfg.WRAPPER_KEY_IP]
+            # ipaddress = '132.239.153.83'  # guess who
+            proc = subprocess.Popen(
+                ['ping', '-c', '1', '-t', '1', ipaddress],
+                stdout=subprocess.PIPE)
+            stdout, stderr = proc.communicate()
+            if proc.returncode == 0:
+                print('{} is UP'.format(ipaddress))
+            else:
+                print('{} is DOWN'.format(ipaddress))
 
 
     def set_run_btns_enabled(self, row):

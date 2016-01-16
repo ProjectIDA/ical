@@ -66,7 +66,7 @@ class IcalConfig(object):
 
     def __init__(self, cfg_dir='.'):
 
-        self._root_dir = cfg_dir
+        self.root_dir = cfg_dir
         self.clear()
 
 
@@ -87,7 +87,7 @@ class IcalConfig(object):
         self.errmsgs = []
 
 
-    def load_config(self):
+    def load(self):
 
         self.clear()
         success = True
@@ -148,7 +148,7 @@ class IcalConfig(object):
         if file_key in IcalConfig.ICALDB_FILE_STRUCT.keys():
 
             fpath = os.path.abspath(
-                        os.sep.join([self._root_dir, 
+                        os.sep.join([self.root_dir, 
                             IcalConfig.ICALDB_FILE_STRUCT[file_key]['path'], 
                             IcalConfig.ICALDB_FILE_STRUCT[file_key]['file']]))
 
@@ -209,7 +209,7 @@ class IcalConfig(object):
                       ]:
 
             fpath = os.path.abspath(
-                        os.sep.join([self._root_dir, 
+                        os.sep.join([self.root_dir, 
                             IcalConfig.ICALDB_FILE_STRUCT[file_key]['path'], 
                             IcalConfig.ICALDB_FILE_STRUCT[file_key]['file']]))
 
@@ -282,7 +282,7 @@ class IcalConfig(object):
 
     def __next__(self):
         self.iter_ndx += 1
-        if self.iter_ndx == len(self.merged_cfg):
+        if self.iter_ndx > len(self.merged_cfg):
             raise StopIteration
         return self.merged_cfg[self.iter_ndx - 1]
 

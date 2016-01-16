@@ -12,7 +12,7 @@ class IcalConfigReader(metaclass=abc.ABCMeta):
 
     def __next__(self):
         self.iter_ndx += 1
-        if self.iter_ndx == len(self.items):
+        if self.iter_ndx > len(self.items):
             raise StopIteration
         return self.items[self.iter_ndx - 1]
 
@@ -60,28 +60,6 @@ class IcalConfigReader(metaclass=abc.ABCMeta):
             msgs.append('ERROR: File does not exist: [' + os.path.abspath(fpath) + ']')
 
         return (success, msgs)
-
-
-    # @property
-    # # @abc.abstractmethod
-    # def items(self):
-    #     return 'Should never see this'
-
-    # @items.setter
-    # # @abc.abstractmethod
-    # def items(self, newvalue):
-    #     return
-
-
-    # @property
-    # # @abc.abstractmethod
-    # def iter_ndx(self):
-    #     return 'Should never see this'
-
-    # @iter_ndx.setter
-    # # @abc.abstractmethod
-    # def iter_ndx(self, newvalue):
-    #     return
 
 
     @abc.abstractmethod

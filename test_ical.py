@@ -61,7 +61,7 @@ def load_cfg(argpath=None):
 
     if not foundcfg:
 
-        print('ERROR: Could not load configuration data.\n')
+        print('ERROR: Could not load configuration data from etc directory.\n')
         print('ERROR: Paths checked:')
         for p in cfg_searched_paths:
             print('   '+p)

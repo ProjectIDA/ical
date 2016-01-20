@@ -1,10 +1,17 @@
 import subprocess
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 
-import gui.iCalGui.mw
-from gui.iCalGui.run_confirm_dlg import Ui_RunDlg
+import gui.iCalGui.mainwindow
+
+from gui.iCalGui.run_dlg import Ui_RunDlg
+from gui.iCalGui.run_dlg_helper import RunDlgHelper
+
+from gui.iCalGui.progress_dlg import Ui_ProgressDlg
+from gui.iCalGui.progress_dlg_helper import ProgressDlgHelper
+
 from gui.iCalGui.edit_dlg import Ui_EditDlg
+from gui.iCalGui.edit_dlg_helper import EditDlgHelper
 
 from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
@@ -15,17 +22,19 @@ class MainWindowHelper(object):
 
     def __init__(self, cfg, app_win, main_win):
         self.cfg = cfg
+        self.cdm = CfgDataModel(self.cfg)
         self.app_win = app_win
         self.main_win = main_win
         self.cur_row = -1
         self.set_run_btns_enabled(self.cur_row)
 
 
-
     def setup_main_window(self):
         self.setup_actionQuit()
         self.setup_tableview()
         self.setup_actionRun()
+        self.setup_actionEdit()
+
 
     def setup_actionQuit(self):
         self.main_win.actionQuit.triggered.connect(self.app_win.close)
@@ -42,55 +51,130 @@ class MainWindowHelper(object):
         self.main_win.sensBRunHFBtn.clicked.connect(self.run_cal_B_HF)
 
 
-    # def setup_actionRunLF(MainWindow, mw_ui):
-    #     return
+    def setup_actionEdit(self):
+        self.main_win.addBtn.clicked.connect(self.AddCfg)
+        self.main_win.editBtn.clicked.connect(self.EditCfg)
 
-    # def setup_actionEditConfig(MainWindow, mw_ui):
-    #     return
-
-    # def setup_actionAddConfig(MainWindow, mw_ui):
-    #     return
 
     def setup_tableview(self): #MainWindow, mw_ui):
 
-        self.cdm = CfgDataModel(self.cfg)
-       
         self.main_win.cfgListTV.setModel(self.cdm)
 
         hdrvw = self.main_win.cfgListTV.horizontalHeader()
         hdrvw.setStretchLastSection(True)
         self.main_win.cfgListTV.resizeColumnsToContents()
 
-        self.main_win.cfgListTV.doubleClicked.connect(self.MWEditRow)
+        self.main_win.cfgListTV.setSortingEnabled(False)
+
+        self.main_win.cfgListTV.doubleClicked.connect(self.TVDoubleClick)
         self.main_win.cfgListTV.selectionModel().selectionChanged.connect(self.MWSelectionChanged)
 
 
-    def run_cal(self, sensor, caltype):
+    def TVDoubleClick(self, index):
+        self.EditCfg()
+
+
+    def EditCfg(self):
 
         if self.cur_row >= 0:
             wcfg = self.cfg[self.cur_row]
             if wcfg:
-                cmdline = wcfg.gen_qcal_cmdline(sensor, caltype)
-                cmdline += ' root=' + self.cfg.root_dir
+                dlg = QtWidgets.QDialog()
+                editDlg = Ui_EditDlg()
+                editDlg.setupUi(dlg)
+                dlg.setWindowTitle('ICAL - Edit Configuration')
+
+                editdlgHlpr = EditDlgHelper()
+                editdlgHlpr.sensorlist = self.cfg._config['sensor'].SensorModelList()
+
+                editdlgHlpr.setupUi(wcfg.data, EditDlgHelper.EDIT_MODE, editDlg)
+
+                if dlg.exec() == QtWidgets.QDialog.Accepted:
+                    self.cdm.UpdateCfg(self.cur_row, editdlgHlpr.new_cfg)
+                    self.main_win.cfgListTV.resizeColumnsToContents()
+
+
+    def AddCfg(self):
+
+        dlg = QtWidgets.QDialog()
+        editDlg = Ui_EditDlg()
+        editDlg.setupUi(dlg)
+        dlg.setWindowTitle('ICAL - Add New Configuration')
+
+        editdlgHlpr = EditDlgHelper()
+        editdlgHlpr.sensorlist = self.cfg._config['sensor'].SensorModelList()
+        editdlgHlpr.setupUi({}, EditDlgHelper.ADD_MODE, editDlg)
+
+        if dlg.exec() == QtWidgets.QDialog.Accepted:
+            # self.cdm.UpdateCfg(self.cur_row, editdlgHlpr.new_cfg)
+            self.main_win.cfgListTV.resizeColumnsToContents()
+
+
+    def run_cal_confirm(self, sensor, caltype):
+
+        if self.cur_row >= 0:
+            wcfg = self.cfg[self.cur_row]
+            if wcfg:
+                # need to get calib obj to estimate cal time
+                sens_name = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] if sensor.upper() == 'A' \
+                    else wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]
+                calib = self.cfg._config['calib'].find(sens_name + '|' + caltype)
+                if not calib:
+                    QtWidgets.QMessageBox().error(self.app_win, 'ICAL ERROR', 'ERROR Calib Record not Found for ['+ sens_name + '|' + caltype + ']', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
                 dlg = QtWidgets.QDialog()
                 rundlg = Ui_RunDlg()
                 rundlg.setupUi(dlg)
-                # print(dir(rundlg))
-                rundlg.cmdlineLE.setText(cmdline)
-                dlg.exec()
+                dlg.setWindowTitle('ICAL - Run Calibration Confirmation')
+
+                rundlgHlpr = RunDlgHelper(wcfg, calib, self.cfg.root_dir, rundlg, sensor, caltype)
+                rundlgHlpr.setupUi(dlg)
+
+                if dlg.exec() == QtWidgets.QDialog.Accepted:
+
+                    dlg = QtWidgets.QDialog()
+
+                    progdlg = Ui_ProgressDlg()
+                    progdlg.setupUi(dlg)
+                    dlg.setWindowTitle('ICAL - Calibration Running')
+
+                    progdlgHlpr = ProgressDlgHelper(rundlgHlpr.cmdline, rundlgHlpr.caldescr, rundlgHlpr.cal_time_mins, progdlg)
+                    progdlgHlpr.setupUi(dlg)
+
+                    if dlg.exec() == QtWidgets.QDialog.Accepted:
+                        res = QtWidgets.QMessageBox().information(self.app_win, 'ICAL', 'Calibration Completed!', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+                    else:
+                        res = QtWidgets.QMessageBox().warning(self.app_win, 'ICAL', 'Calibration canceled!', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+
+                    # self.run_cal(rundlgHlpr.cal_descr, rundlgHlpr.cal_time_mins)
+
+
+
+
+
+                else:
+                    res = QtWidgets.QMessageBox().warning(self.app_win, 'ICAL', 'Calibration canceled!', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+
+
+
+    # def run_cal(self, cal_descr, cal_time):
+    #     proglbl = QtWidgets.QLabel(cal_descr)
+    #     proglbl.setAlignment(QtCore.Qt.AlignLeft)
+    #     proglbl.setFont(QtGui.QFont('Consolas', 13))
+    #     prog = QtWidgets.QProgressDialog(proglbl, "Cancel", 0, cal_time)
+    #     prog.exec()
 
 
     def run_cal_A_LF(self):
-        self.run_cal('A', 'rblf')
+        self.run_cal_confirm('A', 'rblf')
 
     def run_cal_A_HF(self):
-        self.run_cal('A', 'rbhf')
+        self.run_cal_confirm('A', 'rbhf')
 
     def run_cal_B_LF(self):
-        self.run_cal('B', 'rblf')
+        self.run_cal_confirm('B', 'rblf')
 
     def run_cal_B_HF(self):
-        self.run_cal('B', 'rbhf')
+        self.run_cal_confirm('B', 'rbhf')
 
 
     def MWSelectionChanged(self, seldelta, deseldelta):
@@ -102,18 +186,11 @@ class MainWindowHelper(object):
         else:
             self.cur_row = -1
 
+        self.main_win.editBtn.setEnabled(self.cur_row != -1)
         self.update_details(self.cur_row)
         self.set_run_btns_enabled(self.cur_row)
 
         # self.ping_hosts()
-
-    def MWEditRow(self, index):
-
-        col = index.column()
-        row = index.row()
-
-        print('row edit:',row)    
-
 
     def update_details(self, row):
 

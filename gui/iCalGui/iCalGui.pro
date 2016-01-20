@@ -18,5 +18,6 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui \
-    run_confirm_dlg.ui \
-    edit_cfg.ui
+    run_dlg.ui \
+    edit_dlg.ui \
+    progress_dlg.ui

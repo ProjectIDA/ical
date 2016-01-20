@@ -22,6 +22,12 @@ class Sensors(IcalConfigReader):
     def clear(self):
         self.items = []
 
+    def SensorModelList(self):
+        resl = []
+        for sensor in self.items:
+            resl.append((sensor.data[Sensor.SENSOR_KEY_SHORTNAME], sensor.data[Sensor.SENSOR_KEY_DESCR]))
+        return resl
+
 
     def parse_cfg_records(self, recs):
 

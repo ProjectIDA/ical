@@ -32,6 +32,16 @@ class Calib(IcalConfigItemReader):
     CALIB_CALTYPE_1 = 'rblf'
     CALIB_CALTYPE_2 = 'rbhf'
     CALIB_VALUES_CALTYPE = [CALIB_CALTYPE_1, CALIB_CALTYPE_2]
+    CALIB_DESCRIPTIONS = {
+        CALIB_CALTYPE_1: "Low Freq; Random Binary",
+        CALIB_CALTYPE_2: "High Freq; Random Binary",
+    }
+
+
+    @classmethod 
+    def caltype_descr(cls, caltype):
+        return cls.CALIB_DESCRIPTIONS.get(caltype, 'INVALID CAL TYPE: ' + caltype)
+
 
 
     def __init__(self, record):
@@ -65,7 +75,6 @@ class Calib(IcalConfigItemReader):
         else:
             raise CalibBadColumnCountExcept
 
- 
     def __str__(self):
         return ' '.join( [
                     self.data[Calib.CALIB_KEY_SENSNAME],
@@ -78,6 +87,26 @@ class Calib(IcalConfigItemReader):
                     self.data[Calib.CALIB_KEY_DIV]
                 ])
 
+    def cal_time_sec(self):
+        print(self)
+        try:
+            secs = int(self.data[Calib.CALIB_KEY_DUR]) + \
+                    int(self.data[Calib.CALIB_KEY_SET]) + \
+                    int(self.data[Calib.CALIB_KEY_TRL])
+            print(secs)
+        except:
+            secs = None
+
+        return secs
+
+    def cal_time_min(self):
+        secs = self.cal_time_sec()
+        if secs:
+            mins = int(secs / 60) + 1
+        else:
+            mins = None
+
+        return mins
 
     def __eq__(self, other):
             return (type(other) == type(self)) and \

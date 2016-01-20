@@ -16,8 +16,20 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>1090</width>
+    <height>650</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1090</width>
+    <height>650</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>iCal - Project IDA Calibration Tool</string>
+   <string>ICAL - IDA Calibration Tool</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QGroupBox" name="calListGB">
@@ -63,7 +75,7 @@
     </widget>
     <widget class="QPushButton" name="addBtn">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -1030,7 +1042,7 @@
        <string>Q330</string>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>5</x>

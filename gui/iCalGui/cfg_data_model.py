@@ -33,6 +33,11 @@ class CfgDataModel(QtCore.QAbstractTableModel):
             return 0
 
 
+    def UpdateCfg(self, ndx, new_cfg):
+        self.cfg.merged_cfg[ndx].data.update(new_cfg)
+        # self.
+
+
     def data(self, index, role):
 
         mrgcfg = self.cfg.merged_cfg[index.row()]
@@ -114,21 +119,21 @@ class CfgDataModel(QtCore.QAbstractTableModel):
                     return QtCore.QVariant()
             elif section == CfgDataModel.TAGNO_COL:
                 if (role == QtCore.Qt.DisplayRole):
-                    return QtCore.QVariant(WrapperCfg.WRAPPER_KEY_TAGNO)
+                    return QtCore.QVariant('Q330 Tag #')
                 elif role == QtCore.Qt.TextAlignmentRole:
                     return QtCore.Qt.AlignRight + QtCore.Qt.AlignVCenter
                 else:
                     return QtCore.QVariant()
             elif section == CfgDataModel.SN_COL:
                 if (role == QtCore.Qt.DisplayRole):
-                    return QtCore.QVariant(WrapperCfg.WRAPPER_KEY_SN.upper())
+                    return QtCore.QVariant('Q330 SN #')
                 elif role == QtCore.Qt.TextAlignmentRole:
                     return QtCore.Qt.AlignHCenter + QtCore.Qt.AlignVCenter
                 else:
                     return QtCore.QVariant()
             elif section == CfgDataModel.IP_COL:
                 if (role == QtCore.Qt.DisplayRole):
-                    return QtCore.QVariant(WrapperCfg.WRAPPER_KEY_IP)
+                    return QtCore.QVariant('Q330 IP4')
                 else:
                     return QtCore.QVariant()
             elif section == CfgDataModel.DESCR_A_COL:
@@ -148,7 +153,7 @@ class CfgDataModel(QtCore.QAbstractTableModel):
                     return QtCore.QVariant()
             elif section == CfgDataModel.DPAUTH_COL:
                 if role == QtCore.Qt.DisplayRole:
-                    return QtCore.QVariant('Data Port Auth Code')
+                    return QtCore.QVariant('DP Auth Code')
                 else:
                     return QtCore.QVariant()
             else:

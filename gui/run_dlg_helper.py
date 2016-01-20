@@ -2,14 +2,14 @@
 
 from PyQt5 import QtCore, QtWidgets
 
-import gui.iCalGui.mainwindow
-from gui.iCalGui.run_dlg import Ui_RunDlg
+import gui.mainwindow
+from gui.run_dlg import Ui_RunDlg
 
 # from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
 from config.calib import Calib
 
-from gui.iCalGui.cfg_data_model import CfgDataModel
+from gui.cfg_data_model import CfgDataModel
 
 class RunDlgHelper(object):
 

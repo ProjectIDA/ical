@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 
 from config.wrapper_cfg import WrapperCfg
 
-from gui.iCalGui.edit_dlg import Ui_EditDlg
+from gui.edit_dlg import Ui_EditDlg
 
 
 class EditDlgHelper(object):
@@ -39,7 +39,6 @@ class EditDlgHelper(object):
     def setupUi(self, orig_cfg, mode, edit_dlg):
         
         self.new_cfg = copy.deepcopy(orig_cfg)
-        print(self.new_cfg)
         self.edit_dlg = edit_dlg
 
         title = 'Edit Configuration' if mode == EditDlgHelper.EDIT_MODE else 'Add New Configuration'
@@ -96,7 +95,6 @@ class EditDlgHelper(object):
     # def set_sensor_list(self, )
 
     def SensorAChange(self, new_ndx):
-        print('CHANGE')
         senskey = self.edit_dlg.sensACB.itemData(new_ndx)
         self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] = senskey
         self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] = senskey
@@ -113,3 +111,16 @@ class EditDlgHelper(object):
     def LEEdited(self, newtext):
         # this is crude, but since slot doesn't get source of signal, what option is there...
         self.new_cfg[WrapperCfg.WRAPPER_KEY_NET] = self.edit_dlg.netLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_STA] = self.edit_dlg.staLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_IP] = self.edit_dlg.ipLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO] = self.edit_dlg.tagnoLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_SN] = self.edit_dlg.snLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_DATAPORT] = self.edit_dlg.dpLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_SFN_AUTH] = self.edit_dlg.dpauthLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_CFG_AUTH] = self.edit_dlg.dpauthLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP1_AUTH] = self.edit_dlg.dpauthLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP2_AUTH] = self.edit_dlg.dpauthLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP3_AUTH] = self.edit_dlg.dpauthLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH] = self.edit_dlg.dpauthLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] = self.edit_dlg.sensAMonPortLE.text()
+        self.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] = self.edit_dlg.sensBMonPortLE.text()

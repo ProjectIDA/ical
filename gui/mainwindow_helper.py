@@ -2,21 +2,21 @@ import subprocess
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-import gui.iCalGui.mainwindow
+import gui.mainwindow
 
-from gui.iCalGui.run_dlg import Ui_RunDlg
-from gui.iCalGui.run_dlg_helper import RunDlgHelper
+from gui.run_dlg import Ui_RunDlg
+from gui.run_dlg_helper import RunDlgHelper
 
-from gui.iCalGui.progress_dlg import Ui_ProgressDlg
-from gui.iCalGui.progress_dlg_helper import ProgressDlgHelper
+from gui.progress_dlg import Ui_ProgressDlg
+from gui.progress_dlg_helper import ProgressDlgHelper
 
-from gui.iCalGui.edit_dlg import Ui_EditDlg
-from gui.iCalGui.edit_dlg_helper import EditDlgHelper
+from gui.edit_dlg import Ui_EditDlg
+from gui.edit_dlg_helper import EditDlgHelper
 
 from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
 
-from gui.iCalGui.cfg_data_model import CfgDataModel
+from gui.cfg_data_model import CfgDataModel
 
 class MainWindowHelper(object):
 
@@ -91,6 +91,7 @@ class MainWindowHelper(object):
 
                 if dlg.exec() == QtWidgets.QDialog.Accepted:
                     self.cdm.UpdateCfg(self.cur_row, editdlgHlpr.new_cfg)
+                    self.update_details(self.cur_row)
                     self.main_win.cfgListTV.resizeColumnsToContents()
 
 
@@ -106,7 +107,7 @@ class MainWindowHelper(object):
         editdlgHlpr.setupUi({}, EditDlgHelper.ADD_MODE, editDlg)
 
         if dlg.exec() == QtWidgets.QDialog.Accepted:
-            # self.cdm.UpdateCfg(self.cur_row, editdlgHlpr.new_cfg)
+            self.cdm.AddCfg(editdlgHlpr.new_cfg)
             self.main_win.cfgListTV.resizeColumnsToContents()
 
 
@@ -186,13 +187,14 @@ class MainWindowHelper(object):
         else:
             self.cur_row = -1
 
-        self.main_win.editBtn.setEnabled(self.cur_row != -1)
-        self.update_details(self.cur_row)
-        self.set_run_btns_enabled(self.cur_row)
 
         # self.ping_hosts()
 
     def update_details(self, row):
+
+        self.main_win.editBtn.setEnabled(row != -1)
+        # self.update_details(row)
+        self.set_run_btns_enabled(row)
 
         if row == -1:
             self.clear_details()

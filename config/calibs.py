@@ -59,7 +59,6 @@ class Calibs(IcalConfigReader):
         """Returns the first Calib where SENSOR_NAME + '|'+ CALTPYE == key.
         If no Calib is found, returns None.
         """
-        print('compund key:', compound_key)
         keyparts = compound_key.split('|')
         if len(keyparts) != 2:
             return None

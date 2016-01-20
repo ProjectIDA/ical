@@ -6,8 +6,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-from gui.iCalGui.mainwindow import *
-from gui.iCalGui.mainwindow_helper import MainWindowHelper #setup_main_window, setup_tableview
+from gui.mainwindow import *
+from gui.mainwindow_helper import MainWindowHelper #setup_main_window, setup_tableview
 
 from config.ical_config import IcalConfig
 

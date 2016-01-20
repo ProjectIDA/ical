@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 
-# import gui.iCalGui.mainwindow
-from gui.iCalGui.progress_dlg import Ui_ProgressDlg
+from gui.progress_dlg import Ui_ProgressDlg
 
 # from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg

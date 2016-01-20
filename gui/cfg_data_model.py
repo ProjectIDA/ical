@@ -16,6 +16,8 @@ class CfgDataModel(QtCore.QAbstractTableModel):
     DP_COL = 7
     DPAUTH_COL = 8
 
+    # signal = QtCore.pyqtSignal(object)
+
     def __init__(self, cfg):
         super(CfgDataModel, self).__init__()
         self.cfg = cfg
@@ -28,14 +30,19 @@ class CfgDataModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, parent):
         if self.cfg:
-            return 9 # just for testing
+            return CfgDataModel.COL_COUNT # just for testing
         else:
             return 0
 
 
     def UpdateCfg(self, ndx, new_cfg):
         self.cfg.merged_cfg[ndx].data.update(new_cfg)
-        # self.
+
+
+    def AddCfg(self, new_cfg):
+        newwcfg = WrapperCfg(new_cfg)
+        self.cfg.merged_cfg.append(newwcfg)
+        self.endResetModel()
 
 
     def data(self, index, role):

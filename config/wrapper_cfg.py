@@ -36,9 +36,16 @@ class WrapperCfg(object):
     WRAPPER_KEY_DP3_AUTH          = 'dp3_auth'
     WRAPPER_KEY_DP4_AUTH          = 'dp4_auth'
 
+    WRAPPER_KEY_TIMESTAMP_UNK     = 'unk'
+
 
     def __init__(self, init_dict={}):
-        self.data = {}
+        self.data = {
+            self.WRAPPER_KEY_LAST_LF_A : self.WRAPPER_KEY_TIMESTAMP_UNK,
+            self.WRAPPER_KEY_LAST_HF_A : self.WRAPPER_KEY_TIMESTAMP_UNK,
+            self.WRAPPER_KEY_LAST_LF_B : self.WRAPPER_KEY_TIMESTAMP_UNK,
+            self.WRAPPER_KEY_LAST_HF_B : self.WRAPPER_KEY_TIMESTAMP_UNK
+        }
         self.update(init_dict)
 
 
@@ -65,7 +72,7 @@ class WrapperCfg(object):
                         caltype,
                         '00',
                         sensor,
-                        self.data[WrapperCfg.WRAPPER_KEY_MONPORT_A] if sensor == 'A' else self.data[WrapperCfg.WRAPPER_KEY_MONPORT_B],
+                        monport,
                         ':',
                         self.data[WrapperCfg.WRAPPER_KEY_STA],
                         ':',
@@ -78,6 +85,42 @@ class WrapperCfg(object):
 
         else:
             return 'ERROR: Check sensors [' + sensor + '] and caltype [' + caltype + ']'
+
+
+    def ical_rec(self):
+        return  ' '.join([self.data[self.WRAPPER_KEY_NET],
+                self.data[self.WRAPPER_KEY_STA],
+                self.data[self.WRAPPER_KEY_TAGNO],
+                self.data[self.WRAPPER_KEY_DATAPORT],
+                self.data[self.WRAPPER_KEY_MONPORT_A],
+                self.data[self.WRAPPER_KEY_MONPORT_B],
+                self.data[self.WRAPPER_KEY_LAST_LF_A],
+                self.data[self.WRAPPER_KEY_LAST_LF_B],
+                self.data[self.WRAPPER_KEY_LAST_HF_A],
+                self.data[self.WRAPPER_KEY_LAST_HF_B]])
+
+
+    def q330_rec(self):
+        return ' '.join([self.data[self.WRAPPER_KEY_IP],
+                self.data[self.WRAPPER_KEY_TAGNO],
+                self.data[self.WRAPPER_KEY_SENS_COMPNAME_A],
+                self.data[self.WRAPPER_KEY_SENS_COMPNAME_B]])
+
+
+    def auth_rec(self):
+        return  ' '.join([self.data[self.WRAPPER_KEY_TAGNO],
+                self.data[self.WRAPPER_KEY_SN],
+                self.data[self.WRAPPER_KEY_CFG_AUTH],
+                self.data[self.WRAPPER_KEY_SFN_AUTH],
+                self.data[self.WRAPPER_KEY_DP1_AUTH],
+                self.data[self.WRAPPER_KEY_DP2_AUTH],
+                self.data[self.WRAPPER_KEY_DP3_AUTH],
+                self.data[self.WRAPPER_KEY_DP4_AUTH]])
+
+
+
+    def tagno(self):
+        return self.data.get(WrapperCfg.WRAPPER_KEY_TAGNO)
 
 
     def __str__(self):

@@ -76,6 +76,7 @@ class IcalConfig(object):
             'ical'    : None,
             'q330'    : None,
             'auth'    : None,
+
             'sensor' : None,
             'calib'   : None
         }
@@ -93,48 +94,53 @@ class IcalConfig(object):
         success = True
 
         # read sensor
-        success_sensor_cfg, wmsgs, emsgs  = self.load_config_file(IcalConfig.ICAL_SENSOR_FILEKEY)
+        success_sensor_cfg, wmsgs, emsgs  = self.load_config_file(self.ICAL_SENSOR_FILEKEY)
         self.warnmsgs.extend(wmsgs); self.errmsgs.extend(emsgs)
 
 
         # read calib, will sensors complex names against calib records for matches
-        success_calib_cfg, wmsgs, emsgs  = self.load_config_file(IcalConfig.ICAL_CALIB_FILEKEY)
+        success_calib_cfg, wmsgs, emsgs  = self.load_config_file(self.ICAL_CALIB_FILEKEY)
         self.warnmsgs.extend(wmsgs); self.errmsgs.extend(emsgs)
 
         # read ok so far, read q330
         if success_sensor_cfg and success_calib_cfg:
             # read ical.cfg
-            success_ical_cfg, wmsgs, emsgs = self.load_config_file(IcalConfig.ICAL_ICALCFG_FILEKEY)
+            success_ical_cfg, wmsgs, emsgs = self.load_config_file(self.ICAL_ICALCFG_FILEKEY)
             self.warnmsgs.extend(wmsgs); self.errmsgs.extend(emsgs)
 
             # read q330.cfg
-            success_q330_cfg, wmsgs, emsgs = self.load_config_file(IcalConfig.ICAL_Q330CFG_FILEKEY)
+            success_q330_cfg, wmsgs, emsgs = self.load_config_file(self.ICAL_Q330CFG_FILEKEY)
             self.warnmsgs.extend(wmsgs); self.errmsgs.extend(emsgs)
 
             # read auth
-            success_auth_cfg, wmsgs, emsgs = self.load_config_file(IcalConfig.ICAL_AUTH_FILEKEY)
+            success_auth_cfg, wmsgs, emsgs = self.load_config_file(self.ICAL_AUTH_FILEKEY)
             self.warnmsgs.extend(wmsgs); self.errmsgs.extend(emsgs)
 
             # build merged_config...
 
-            for icalentry in self._config[IcalConfig.ICAL_ICALCFG_FILEKEY].items:
+            for icalentry in self._config[self.ICAL_ICALCFG_FILEKEY].items:
 
                 # lets see if there is matching q330 data by TAGNO
-                q330entry = self._config[IcalConfig.ICAL_Q330CFG_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
+                q330entry = self._config[self.ICAL_Q330CFG_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
 
                 # get info from sensor cfgs if q330 exists. Need q330 for sensor names
-                sens_a = self._config[IcalConfig.ICAL_SENSOR_FILEKEY]. \
+                sens_a = self._config[self.ICAL_SENSOR_FILEKEY]. \
                             find(q330entry.data[Q330.Q330_KEY_SENS_ROOTNAME_A]) if q330entry else None
-                sens_b = self._config[IcalConfig.ICAL_SENSOR_FILEKEY]. \
+                sens_b = self._config[self.ICAL_SENSOR_FILEKEY]. \
                             find(q330entry.data[Q330.Q330_KEY_SENS_ROOTNAME_B]) if q330entry else None
 
                 # lets check for auth recs
-                authentry = self._config[IcalConfig.ICAL_AUTH_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
+                authentry = self._config[self.ICAL_AUTH_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
 
                 wrapcfg = self.create_wrapper(icalentry, q330entry, authentry, sens_a, sens_b)
                 self.merged_cfg.append(wrapcfg)
 
             self.merged_cfg.sort()
+
+            # clear out ical, q300 and auth data so NO chance of confusion with merged_cfg data
+            self._config[self.ICAL_ICALCFG_FILEKEY] = None
+            self._config[self.ICAL_Q330CFG_FILEKEY] = None
+            self._config[self.ICAL_AUTH_FILEKEY] = None
         
         return configresult(success, self.warnmsgs, self.errmsgs, [])
 
@@ -145,39 +151,39 @@ class IcalConfig(object):
         errmsgs = []
         msgs = []
 
-        if file_key in IcalConfig.ICALDB_FILE_STRUCT.keys():
+        if file_key in self.ICALDB_FILE_STRUCT.keys():
 
             fpath = os.path.abspath(
                         os.sep.join([self.root_dir, 
-                            IcalConfig.ICALDB_FILE_STRUCT[file_key]['path'], 
-                            IcalConfig.ICALDB_FILE_STRUCT[file_key]['file']]))
+                            self.ICALDB_FILE_STRUCT[file_key]['path'], 
+                            self.ICALDB_FILE_STRUCT[file_key]['file']]))
 
             try:
 
-                if file_key == IcalConfig.ICAL_SENSOR_FILEKEY:
-                    self._config[IcalConfig.ICAL_SENSOR_FILEKEY] = Sensors(fpath)
-                    success = self._config[IcalConfig.ICAL_SENSOR_FILEKEY].parsed_ok
-                    msgs += self._config[IcalConfig.ICAL_SENSOR_FILEKEY].msgs
+                if file_key == self.ICAL_SENSOR_FILEKEY:
+                    self._config[self.ICAL_SENSOR_FILEKEY] = Sensors(fpath)
+                    success = self._config[self.ICAL_SENSOR_FILEKEY].parsed_ok
+                    msgs += self._config[self.ICAL_SENSOR_FILEKEY].msgs
 
-                elif file_key == IcalConfig.ICAL_CALIB_FILEKEY:
-                    self._config[IcalConfig.ICAL_CALIB_FILEKEY] = Calibs(fpath)
-                    success = self._config[IcalConfig.ICAL_CALIB_FILEKEY].parsed_ok
-                    msgs += self._config[IcalConfig.ICAL_CALIB_FILEKEY].msgs
+                elif file_key == self.ICAL_CALIB_FILEKEY:
+                    self._config[self.ICAL_CALIB_FILEKEY] = Calibs(fpath)
+                    success = self._config[self.ICAL_CALIB_FILEKEY].parsed_ok
+                    msgs += self._config[self.ICAL_CALIB_FILEKEY].msgs
 
-                elif file_key == IcalConfig.ICAL_AUTH_FILEKEY:
-                    self._config[IcalConfig.ICAL_AUTH_FILEKEY] = Auths(fpath)
-                    success = self._config[IcalConfig.ICAL_AUTH_FILEKEY].parsed_ok
-                    msgs += self._config[IcalConfig.ICAL_AUTH_FILEKEY].msgs
+                elif file_key == self.ICAL_AUTH_FILEKEY:
+                    self._config[self.ICAL_AUTH_FILEKEY] = Auths(fpath)
+                    success = self._config[self.ICAL_AUTH_FILEKEY].parsed_ok
+                    msgs += self._config[self.ICAL_AUTH_FILEKEY].msgs
 
-                elif file_key == IcalConfig.ICAL_Q330CFG_FILEKEY:
-                    self._config[IcalConfig.ICAL_Q330CFG_FILEKEY] = Q330s(fpath)
-                    success = self._config[IcalConfig.ICAL_Q330CFG_FILEKEY].parsed_ok
-                    msgs += self._config[IcalConfig.ICAL_Q330CFG_FILEKEY].msgs
+                elif file_key == self.ICAL_Q330CFG_FILEKEY:
+                    self._config[self.ICAL_Q330CFG_FILEKEY] = Q330s(fpath)
+                    success = self._config[self.ICAL_Q330CFG_FILEKEY].parsed_ok
+                    msgs += self._config[self.ICAL_Q330CFG_FILEKEY].msgs
 
-                elif file_key == IcalConfig.ICAL_ICALCFG_FILEKEY:
-                    self._config[IcalConfig.ICAL_ICALCFG_FILEKEY] = Icalcfgs(fpath)
-                    success = self._config[IcalConfig.ICAL_ICALCFG_FILEKEY].parsed_ok
-                    msgs += self._config[IcalConfig.ICAL_ICALCFG_FILEKEY].msgs
+                elif file_key == self.ICAL_ICALCFG_FILEKEY:
+                    self._config[self.ICAL_ICALCFG_FILEKEY] = Icalcfgs(fpath)
+                    success = self._config[self.ICAL_ICALCFG_FILEKEY].parsed_ok
+                    msgs += self._config[self.ICAL_ICALCFG_FILEKEY].msgs
 
             except Exception as e:
                 errmsgs.append('ERROR: Failure reading or parsing file [' + fpath + ']\n' + e.__str__())
@@ -191,37 +197,35 @@ class IcalConfig(object):
         return (success, msgs, errmsgs)
 
 
-    def save_config(self):
+    def save(self):
 
-        self.save_config_file(IcalConfig.ICAL_Q330CFG_FILEKEY)
-        self.save_config_file(IcalConfig.ICAL_ICALCFG_FILEKEY)
-        self.save_config_file(IcalConfig.ICAL_AUTH_FILEKEY)
+        if self.merged_cfg:
 
-
-    def save_config_file(self, file_key=None):
-
-        success = False
-        msgs = []
-
-        if file_key in [IcalConfig.ICAL_Q330CFG_FILEKEY, 
-                        IcalConfig.ICAL_AUTH_FILEKEY, 
-                        IcalConfig.ICAL_ICALCFG_FILEKEY
-                      ]:
-
-            fpath = os.path.abspath(
+            icalfpath = os.path.abspath(
                         os.sep.join([self.root_dir, 
-                            IcalConfig.ICALDB_FILE_STRUCT[file_key]['path'], 
-                            IcalConfig.ICALDB_FILE_STRUCT[file_key]['file']]))
+                            self.ICALDB_FILE_STRUCT[self.ICAL_ICALCFG_FILEKEY]['path'], 
+                            self.ICALDB_FILE_STRUCT[self.ICAL_ICALCFG_FILEKEY]['file']]))
+            q330fpath = os.path.abspath(
+                        os.sep.join([self.root_dir, 
+                            self.ICALDB_FILE_STRUCT[self.ICAL_Q330CFG_FILEKEY]['path'], 
+                            self.ICALDB_FILE_STRUCT[self.ICAL_Q330CFG_FILEKEY]['file']]))
+            authfpath = os.path.abspath(
+                        os.sep.join([self.root_dir, 
+                            self.ICALDB_FILE_STRUCT[self.ICAL_AUTH_FILEKEY]['path'], 
+                            self.ICALDB_FILE_STRUCT[self.ICAL_AUTH_FILEKEY]['file']]))
 
-            try:
-                if self._config[file_key]:
-                    success, msgs = self._config[file_key].write()
-                else:
-                    msgs.append('ERROR: Config data for ' + file_key + ' not in memory.')
-            except Exception as e:
-                msgs.append('ERROR: Error writing to ical.cfg to [' + fpath + ']\n' + str(e))
+            with open(icalfpath, 'w') as ical_f, \
+                    open(q330fpath, 'w') as q330_f, \
+                    open(authfpath, 'w') as auth_f:
 
-        return success, msgs
+                ical_f.write(Icalcfgs.file_header())
+                q330_f.write(Q330s.file_header())
+                auth_f.write(Auths.file_header())
+
+                for cfg in self.merged_cfg:
+                    ical_f.write(cfg.ical_rec() + '\n')
+                    q330_f.write(cfg.q330_rec() + '\n')
+                    auth_f.write(cfg.auth_rec() + '\n')
 
 
     def create_wrapper(self, icalentry, q330entry, authentry, sens_a_entry, sens_b_entry):
@@ -264,6 +268,42 @@ class IcalConfig(object):
         wrapcfg = WrapperCfg(tmpdict)
 
         return wrapcfg
+
+
+    def append(self, new_cfg):
+        try:
+            wcfg = WrapperCfg(new_cfg)
+            self.merged_cfg.append(wcfg)
+            self.merged_cfg.sort()
+
+            self.save()
+
+        except Exception as e:
+            print('APPEND CFG:', str(e))
+            return False
+
+        return True
+
+
+    def update(self, orig_tagno, new_cfg):
+        origwcfg = self.find(orig_tagno)
+        if origwcfg != None:
+            origwcfg.update(new_cfg)
+            self.merged_cfg.sort()
+
+            self.save()
+
+            return True
+        else:
+            return False
+
+
+    def sensor_list(self):
+        return self._config[self.ICAL_SENSOR_FILEKEY].SensorModelList()
+
+
+    def find_calib(self, calib_key):
+        return self._config[self.ICAL_CALIB_FILEKEY].find(calib_key)
 
 
     def __getitem__(self, key):

@@ -59,34 +59,64 @@ class Auths(IcalConfigReader, IcalConfigWriter):
         self.items = []
 
 
-    def parse_cfg_records(self, recs):
+    def append(self, rec):
+    # def add_cfg_rec(self, rec):
 
         msgs = []
-        self.clear()
+        rec = rec.strip()
 
-        for lineno, rec in enumerate(recs):
+        if not (rec.startswith('#') or (len(rec) == 0)):
 
-            rec = rec.strip()
-
-            if not (rec.startswith('#') or (len(rec) == 0)):
-
-                try:
-                    auth = Auth(rec)
-                except AuthBadColumnCountExcept:
-                    msgs.append('ERROR: Auth record should have at least ' + str(Auth.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
-                except AuthMalformedRecordExcept:
-                    msgs.append('ERROR: Auth record appears to be invalid: [' + rec + ']. Record ignored.')
-                except Exception as e:
-                    msgs.append('ERROR: Unknown error parsing Auth record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+            try:
+                auth = Auth(rec)
+            except AuthBadColumnCountExcept:
+                msgs.append('ERROR: Auth record should have at least ' + str(Auth.AUTH_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
+            except AuthMalformedRecordExcept:
+                msgs.append('ERROR: Auth record appears to be invalid: [' + rec + ']. Record ignored.')
+            except Exception as e:
+                msgs.append('ERROR: Unknown error parsing Auth record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+            else:
+                if next(filter(lambda a: a == auth, self.items), None) == None:
+                    self.items.append(auth)
                 else:
-                    if next(filter(lambda a: a == auth, self.items), None) == None:
-                        self.items.append(auth)
-                    else:
-                        msgs.append('WARN: Duplicate Auth record: [' + rec + ']. Record ignored.')
+                    msgs.append('WARN: Duplicate Auth record: [' + rec + ']. Record ignored.')
 
-        self.items.sort()
 
         return msgs
+
+
+    # def parse_cfg_records(self, recs):
+
+    #     msgs = []
+    #     self.clear()
+
+    #     for lineno, rec in enumerate(recs):
+
+    #         rec = rec.strip()
+
+    #         if not (rec.startswith('#') or (len(rec) == 0)):
+
+    #             try:
+    #                 auth = Auth(rec)
+    #             except AuthBadColumnCountExcept:
+    #                 msgs.append('ERROR: Auth record should have at least ' + str(Auth.AUTH_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
+    #             except AuthMalformedRecordExcept:
+    #                 msgs.append('ERROR: Auth record appears to be invalid: [' + rec + ']. Record ignored.')
+    #             except Exception as e:
+    #                 msgs.append('ERROR: Unknown error parsing Auth record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+    #             else:
+    #                 if next(filter(lambda a: a == auth, self.items), None) == None:
+    #                     self.items.append(auth)
+    #                 else:
+    #                     msgs.append('WARN: Duplicate Auth record: [' + rec + ']. Record ignored.')
+
+    #     self.items.sort()
+
+    #     return msgs
+
+
+    def sort(self):
+        self.items.sort()
 
 
     def find(self, key):

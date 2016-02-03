@@ -1,6 +1,6 @@
 import copy
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 from config.wrapper_cfg import WrapperCfg
 
@@ -12,18 +12,18 @@ class EditDlgHelper(object):
     EDIT_MODE = 1
     ADD_MODE = 2
 
-    def __init__(self): #, orig_cfg, mode, edit_dlg):
+    def __init__(self): 
         pass
 
-    @property
-    def new_cfg(self):
-        if not hasattr(self, '_new_cfg'):
-            self._new_cfg = {}
-        return self._new_cfg
+    # @property
+    # def new_cfg(self):
+    #     if not hasattr(self.dlgUI, '_new_cfg'):
+    #         self.dlgUI._new_cfg = {}
+    #     return self.dlgUI._new_cfg
     
-    @new_cfg.setter
-    def new_cfg(self, value):
-        self._new_cfg = value
+    # @new_cfg.setter
+    # def new_cfg(self, value):
+    #     self.dlgUI._new_cfg = value
 
     @property
     def sensorlist(self):
@@ -36,91 +36,149 @@ class EditDlgHelper(object):
         self._sensorlist = value
 
 
-    def setupUi(self, orig_cfg, mode, edit_dlg):
-        
-        self.new_cfg = copy.deepcopy(orig_cfg)
-        self.edit_dlg = edit_dlg
+    def setupUi(self, orig_cfg, mode, dlg, dlgUI):
 
-        title = 'Edit Configuration' if mode == EditDlgHelper.EDIT_MODE else 'Add New Configuration'
-        self.edit_dlg.mainGB.setTitle(title)
+        self.orig_cfg = orig_cfg
+        self.mode = mode
+        self.dlgUI = dlgUI
+        self.dlgUI.new_cfg = copy.deepcopy(self.orig_cfg)
 
-        self.edit_dlg.netLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_NET, ''))
-        self.edit_dlg.staLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_STA, ''))
-        self.edit_dlg.ipLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_IP, ''))
-        self.edit_dlg.tagnoLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_TAGNO, ''))
-        self.edit_dlg.snLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_SN, ''))
-        self.edit_dlg.dpLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_DATAPORT , ''))
-        self.edit_dlg.dpauthLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_DP1_AUTH, ''))
-        self.edit_dlg.sensAMonPortLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_A, ''))
-        self.edit_dlg.sensBMonPortLE.setText(self.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_B, ''))
+        # only do this once
+        for senkey, sendesc in self._sensorlist:
+            self.dlgUI.sensACB.addItem(sendesc, QtCore.QVariant(senkey))
+            self.dlgUI.sensBCB.addItem(sendesc, QtCore.QVariant(senkey))
+
+        self.dlgUI.sensACB.currentIndexChanged.connect(self.SensorAChange)
+        self.dlgUI.sensBCB.currentIndexChanged.connect(self.SensorBChange)
 
         # ip regex (([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}
-        self.edit_dlg.netLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.staLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.ipLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.tagnoLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.snLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.dpLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.dpauthLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.sensAMonPortLE.textEdited.connect(self.LEEdited)
-        self.edit_dlg.sensBMonPortLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.netLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.staLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.ipLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.tagnoLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.snLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.dpLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.dpauthLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.sensAMonPortLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.sensBMonPortLE.textEdited.connect(self.LEEdited)
+
+        self.refresh_dialog()
+
+
+        # title = 'Edit Configuration' if self.mode == EditDlgHelper.EDIT_MODE else 'Add New Configuration'
+        # self.dlgUI.mainGB.setTitle(title)
+
+        # self.dlgUI.netLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_NET, ''))
+        # self.dlgUI.staLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_STA, ''))
+        # self.dlgUI.ipLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_IP, ''))
+        # self.dlgUI.tagnoLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_TAGNO, ''))
+        # self.dlgUI.snLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_SN, ''))
+        # self.dlgUI.dpLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_DATAPORT , ''))
+        # self.dlgUI.dpauthLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_DP1_AUTH, ''))
+        # self.dlgUI.sensAMonPortLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_A, ''))
+        # self.dlgUI.sensBMonPortLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_B, ''))
+
+        # # now lets set Sensor model drop downs...
+        # self.dlgUI.sensACB.setCurrentIndex(-1)
+        # self.dlgUI.sensBCB.setCurrentIndex(-1)
+        # for senkey, sendesc in self._sensorlist:
+        #     self.dlgUI.sensACB.addItem(sendesc, QtCore.QVariant(senkey))
+        #     self.dlgUI.sensBCB.addItem(sendesc, QtCore.QVariant(senkey))
+        #     if mode == EditDlgHelper.EDIT_MODE:
+        #         if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A]:
+        #             self.dlgUI.sensACB.setCurrentIndex(self.dlgUI.sensACB.count() - 1)
+        #         if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B]:
+        #             self.dlgUI.sensBCB.setCurrentIndex(self.dlgUI.sensBCB.count() - 1)
+        #     else:
+        #         if senkey == 'none':
+        #             self.dlgUI.sensACB.setCurrentIndex(self.dlgUI.sensACB.count() - 1)
+        #         if senkey == 'none':
+        #             self.dlgUI.sensBCB.setCurrentIndex(self.dlgUI.sensBCB.count() - 1)
+
+
+        self.resetBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Reset)
+        self.resetBtn.setDefault(True)
+        self.resetBtn.clicked.connect(self.reset)
+        # pal = resetBtn.palette()
+        # pal.setColor(QtGui.QPalette.Background, QtGui.QColor(255,0,255))
+        # resetBtn.setPalette(pal)
+        # resetBtn.setAutoFillBackground(True)
+        self.cancelBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Cancel)
+        self.cancelBtn.setDefault(False)
+        self.saveBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Save)
+        self.saveBtn.setDefault(False)
+        # self.dlgUI.buttonBox.setFocus()
+        # saveBtn.setFocus()
+        # self.dlgUI.buttonBox.setFocusProxy(saveBtn)
+        # self.dlgUI.tagnoLE.setFocus()
+        self.dlgUI.mainGB.setFocus()
+
+
+    def refresh_dialog(self):
+
+        title = 'Edit Configuration' if self.mode == EditDlgHelper.EDIT_MODE else 'Add New Configuration'
+        self.dlgUI.mainGB.setTitle(title)
+
+        self.dlgUI.netLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_NET, ''))
+        self.dlgUI.staLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_STA, ''))
+        self.dlgUI.ipLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_IP, ''))
+        self.dlgUI.tagnoLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_TAGNO, ''))
+        self.dlgUI.snLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_SN, ''))
+        self.dlgUI.dpLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_DATAPORT , ''))
+        self.dlgUI.dpauthLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_DP1_AUTH, ''))
+        self.dlgUI.sensAMonPortLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_A, ''))
+        self.dlgUI.sensBMonPortLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_B, ''))
 
         # now lets set Sensor model drop downs...
-
-        a_sens_ndx = -1
-        b_sens_ndx = -1
+        # self.dlgUI.sensACB.clear()#setCurrentIndex(0)
+        # self.dlgUI.sensBCB.clear()#setCurrentIndex(0)
         for senkey, sendesc in self._sensorlist:
-            self.edit_dlg.sensACB.addItem(sendesc, QtCore.QVariant(senkey))
-            if mode == EditDlgHelper.EDIT_MODE:
-                if senkey == self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A]:
-                    a_sens_ndx = self.edit_dlg.sensACB.count() - 1
+            # self.dlgUI.sensACB.addItem(sendesc, QtCore.QVariant(senkey))
+            # self.dlgUI.sensBCB.addItem(sendesc, QtCore.QVariant(senkey))
+            if self.mode == EditDlgHelper.EDIT_MODE:
+                if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A]:
+                    # self.dlgUI.sensACB.setCurrentIndex(self.dlgUI.sensACB.count() - 1)
+                    self.dlgUI.sensACB.setCurrentText(sendesc)
+                if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B]:
+                    # self.dlgUI.sensBCB.setCurrentIndex(self.dlgUI.sensBCB.count() - 1)
+                    self.dlgUI.sensBCB.setCurrentText(sendesc)
             else:
                 if senkey == 'none':
-                    a_sens_ndx = self.edit_dlg.sensACB.count() - 1
-        for senkey, sendesc in self._sensorlist:
-            self.edit_dlg.sensBCB.addItem(sendesc, QtCore.QVariant(senkey))
-            if mode == EditDlgHelper.EDIT_MODE:
-                if senkey == self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B]:
-                    b_sens_ndx = self.edit_dlg.sensBCB.count() - 1
-            else:
-                if senkey == 'none':
-                    b_sens_ndx = self.edit_dlg.sensBCB.count() - 1
+                    self.dlgUI.sensACB.setCurrentText(sendesc)
+                    self.dlgUI.sensBCB.setCurrentText(sendesc)
 
-        self.edit_dlg.sensACB.setCurrentIndex(a_sens_ndx if a_sens_ndx >= 0 else 0)
-        self.edit_dlg.sensBCB.setCurrentIndex(b_sens_ndx if b_sens_ndx >= 0 else 0)
+    def reset(self):
+        self.dlgUI.new_cfg = copy.deepcopy(self.orig_cfg)
+        self.refresh_dialog()
 
-        self.edit_dlg.sensACB.currentIndexChanged.connect(self.SensorAChange)
-        self.edit_dlg.sensBCB.currentIndexChanged.connect(self.SensorBChange)
-
-    # def set_sensor_list(self, )
 
     def SensorAChange(self, new_ndx):
-        senskey = self.edit_dlg.sensACB.itemData(new_ndx)
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] = senskey
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] = senskey
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A] = list(filter(lambda s: s[0] == senskey, self.sensorlist))[0][1]
+        senskey = self.dlgUI.sensACB.itemData(new_ndx)
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] = senskey
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] = senskey
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A] = list(filter(lambda s: s[0] == senskey, self.sensorlist))[0][1]
 
 
     def SensorBChange(self, new_ndx):
-        senskey = self.edit_dlg.sensBCB.itemData(new_ndx)
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] = senskey
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] = senskey
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B] = list(filter(lambda s: s[0] == senskey, self.sensorlist))[0][1]
+        senskey = self.dlgUI.sensBCB.itemData(new_ndx)
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] = senskey
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] = senskey
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B] = list(filter(lambda s: s[0] == senskey, self.sensorlist))[0][1]
 
 
     def LEEdited(self, newtext):
-        # this is crude, but since slot doesn't get source of signal, what option is there...
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_NET] = self.edit_dlg.netLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_STA] = self.edit_dlg.staLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_IP] = self.edit_dlg.ipLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO] = self.edit_dlg.tagnoLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SN] = self.edit_dlg.snLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_DATAPORT] = self.edit_dlg.dpLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_SFN_AUTH] = self.edit_dlg.dpauthLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_CFG_AUTH] = self.edit_dlg.dpauthLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP1_AUTH] = self.edit_dlg.dpauthLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP2_AUTH] = self.edit_dlg.dpauthLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP3_AUTH] = self.edit_dlg.dpauthLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH] = self.edit_dlg.dpauthLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] = self.edit_dlg.sensAMonPortLE.text()
-        self.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] = self.edit_dlg.sensBMonPortLE.text()
+        # this is crude, but since slot doesn't get source object of signal, what option is there...
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_NET] = self.dlgUI.netLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_STA] = self.dlgUI.staLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_IP] = self.dlgUI.ipLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO] = self.dlgUI.tagnoLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SN] = self.dlgUI.snLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DATAPORT] = self.dlgUI.dpLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SFN_AUTH] = self.dlgUI.dpauthLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CFG_AUTH] = self.dlgUI.dpauthLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP1_AUTH] = self.dlgUI.dpauthLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP2_AUTH] = self.dlgUI.dpauthLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP3_AUTH] = self.dlgUI.dpauthLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH] = self.dlgUI.dpauthLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] = self.dlgUI.sensAMonPortLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] = self.dlgUI.sensBMonPortLE.text()

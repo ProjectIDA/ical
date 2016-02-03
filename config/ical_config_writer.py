@@ -6,10 +6,8 @@ class IcalConfigWriter(metaclass=abc.ABCMeta):
     def write(self):
 
         success = False
-
         self.msgs.clear()
-        if (self.isdirty):
-            success, self.msgs = super().write_data_file(self.fpath, self.items)
+        success, self.msgs = self.write_data_file(self.fpath, self.items)
 
         return (success, self.msgs)
         
@@ -26,15 +24,16 @@ class IcalConfigWriter(metaclass=abc.ABCMeta):
             try:
 
                 with open(absfpath, mode='w') as fl:
+                    fl.write(cls.file_header())
                     for i in items:
-                        fl.write(i.write())
+                        fl.write(str(i) + '\n')
 
                 success = True
 
             except OSError as e:
                 msgs.append('ERRORS: Error writing to file: ' + absfpath)
 
-        return (success, errs)
+        return (success, msgs)
 
 
     @classmethod
@@ -47,12 +46,7 @@ class IcalConfigWriter(metaclass=abc.ABCMeta):
                 absdir = os.path.split(absfpath)[0]
                 os.makedirs(absdir, exist_ok=True)
 
-                with open(absfpath, 'w') as outf:
-                    outf.write(cls.file_header())
-
-                return True
-            else:
-                return False
+            return True
 
         else:
             return False

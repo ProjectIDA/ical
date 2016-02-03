@@ -73,6 +73,19 @@ class IcalConfigReader(metaclass=abc.ABCMeta):
 
 
     @abc.abstractmethod
-    def parse_cfg_records(self, recs):
+    def append(self, rec):
         pass
+
+
+    def parse_cfg_records(self, recs):
+
+        msgs = []
+        self.clear()
+
+        for lineno, rec in enumerate(recs):
+            msgs += self.append(rec)
+
+        self.sort()
+
+        return msgs
 

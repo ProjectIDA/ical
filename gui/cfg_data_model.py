@@ -35,14 +35,26 @@ class CfgDataModel(QtCore.QAbstractTableModel):
             return 0
 
 
-    def UpdateCfg(self, ndx, new_cfg):
-        self.cfg.merged_cfg[ndx].data.update(new_cfg)
+    def UpdateCfg(self, orig_tagno, new_cfg):
+
+        if self.cfg.update(orig_tagno, new_cfg):
+            self.endResetModel()
+            # print('in ical merged:', self.cfg.find(new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]))
+            # self.cfg.merged_cfg[ndx].data.update(new_cfg)
+        else:
+            raise Exception('Error saving configuration for Q330 with TAG NUM: ' + orig_tagno)
 
 
     def AddCfg(self, new_cfg):
-        newwcfg = WrapperCfg(new_cfg)
-        self.cfg.merged_cfg.append(newwcfg)
-        self.endResetModel()
+
+        tagno = new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]
+        if not self.cfg.find(tagno):
+            if self.cfg.append(new_cfg):
+                self.endResetModel()
+            else:
+                raise Exception('Error saving configuartion for Q330 with TAG NUM: ' + tagno)
+        else:
+            raise Exception('Error saving configuration. Config with TAG NUM: ' + tagno + ' already exists')
 
 
     def data(self, index, role):

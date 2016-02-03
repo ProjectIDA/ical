@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>EditDlg</class>
  <widget class="QDialog" name="EditDlg">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -28,8 +31,17 @@
     <height>340</height>
    </size>
   </property>
+  <property name="mouseTracking">
+   <bool>false</bool>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::WheelFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Dialog</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -39,6 +51,9 @@
      <width>701</width>
      <height>32</height>
     </rect>
+   </property>
+   <property name="mouseTracking">
+    <bool>false</bool>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
@@ -899,6 +914,19 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>netLE</tabstop>
+  <tabstop>staLE</tabstop>
+  <tabstop>ipLE</tabstop>
+  <tabstop>tagnoLE</tabstop>
+  <tabstop>snLE</tabstop>
+  <tabstop>dpLE</tabstop>
+  <tabstop>dpauthLE</tabstop>
+  <tabstop>sensACB</tabstop>
+  <tabstop>sensAMonPortLE</tabstop>
+  <tabstop>sensBCB</tabstop>
+  <tabstop>sensBMonPortLE</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

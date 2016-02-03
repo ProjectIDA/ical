@@ -317,6 +317,9 @@
       <property name="alignment">
        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
       </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
       <property name="placeholderText">
        <string/>
       </property>
@@ -358,6 +361,9 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
       <property name="placeholderText">
        <string/>
@@ -457,6 +463,9 @@
       <property name="sizeAdjustPolicy">
        <enum>QAbstractScrollArea::AdjustIgnored</enum>
       </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
       <property name="backgroundVisible">
        <bool>false</bool>
       </property>
@@ -522,6 +531,9 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
       <property name="placeholderText">
        <string/>
@@ -643,6 +655,9 @@
       <property name="alignment">
        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
       </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
       <property name="placeholderText">
        <string/>
       </property>
@@ -684,6 +699,9 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
       <property name="placeholderText">
        <string/>
@@ -849,6 +867,9 @@
       <property name="sizeAdjustPolicy">
        <enum>QAbstractScrollArea::AdjustIgnored</enum>
       </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
       <property name="backgroundVisible">
        <bool>false</bool>
       </property>
@@ -889,6 +910,9 @@
       </property>
      </widget>
      <widget class="QLineEdit" name="sensBMonPortLE">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>118</x>
@@ -931,6 +955,9 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
       <property name="placeholderText">
        <string/>
@@ -1097,6 +1124,9 @@
          <property name="frame">
           <bool>false</bool>
          </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
          <property name="placeholderText">
           <string>NET</string>
          </property>
@@ -1155,6 +1185,9 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
          <property name="placeholderText">
           <string>STA</string>
@@ -1218,6 +1251,9 @@
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
          </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
          <property name="placeholderText">
           <string>000.000.000.000</string>
          </property>
@@ -1280,6 +1316,9 @@
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
          </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
          <property name="placeholderText">
           <string>0000</string>
          </property>
@@ -1341,6 +1380,9 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
          <property name="placeholderText">
           <string>0123456789ABCDEF</string>
@@ -1407,6 +1449,9 @@
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
          </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
          <property name="placeholderText">
           <string>[1-4]</string>
          </property>
@@ -1468,6 +1513,9 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
          <property name="placeholderText">
           <string>0</string>

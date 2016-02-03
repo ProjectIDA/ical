@@ -11,6 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_EditDlg(object):
     def setupUi(self, EditDlg):
         EditDlg.setObjectName("EditDlg")
+        EditDlg.setWindowModality(QtCore.Qt.ApplicationModal)
         EditDlg.resize(720, 340)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -18,9 +19,13 @@ class Ui_EditDlg(object):
         sizePolicy.setHeightForWidth(EditDlg.sizePolicy().hasHeightForWidth())
         EditDlg.setSizePolicy(sizePolicy)
         EditDlg.setMinimumSize(QtCore.QSize(720, 340))
-        EditDlg.setMaximumSize(QtCore.QSize(720, 16777215))
+        EditDlg.setMaximumSize(QtCore.QSize(720, 340))
+        EditDlg.setMouseTracking(False)
+        EditDlg.setFocusPolicy(QtCore.Qt.WheelFocus)
+        EditDlg.setModal(True)
         self.buttonBox = QtWidgets.QDialogButtonBox(EditDlg)
         self.buttonBox.setGeometry(QtCore.QRect(10, 297, 701, 32))
+        self.buttonBox.setMouseTracking(False)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Reset|QtWidgets.QDialogButtonBox.Save)
         self.buttonBox.setObjectName("buttonBox")
@@ -387,6 +392,16 @@ class Ui_EditDlg(object):
         self.buttonBox.accepted.connect(EditDlg.accept)
         self.buttonBox.rejected.connect(EditDlg.reject)
         QtCore.QMetaObject.connectSlotsByName(EditDlg)
+        EditDlg.setTabOrder(self.netLE, self.staLE)
+        EditDlg.setTabOrder(self.staLE, self.ipLE)
+        EditDlg.setTabOrder(self.ipLE, self.tagnoLE)
+        EditDlg.setTabOrder(self.tagnoLE, self.snLE)
+        EditDlg.setTabOrder(self.snLE, self.dpLE)
+        EditDlg.setTabOrder(self.dpLE, self.dpauthLE)
+        EditDlg.setTabOrder(self.dpauthLE, self.sensACB)
+        EditDlg.setTabOrder(self.sensACB, self.sensAMonPortLE)
+        EditDlg.setTabOrder(self.sensAMonPortLE, self.sensBCB)
+        EditDlg.setTabOrder(self.sensBCB, self.sensBMonPortLE)
 
     def retranslateUi(self, EditDlg):
         _translate = QtCore.QCoreApplication.translate

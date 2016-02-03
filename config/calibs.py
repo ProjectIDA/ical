@@ -23,36 +23,68 @@ class Calibs(IcalConfigReader):
         self.items = []
 
 
-    def parse_cfg_records(self, recs):
+    def append(self, rec):
+    # def add_cfg_rec(self, rec):
 
         msgs = []
-        self.clear()
+        rec = rec.strip()
 
-        for lineno, rec in enumerate(recs):
+        if not (rec.startswith('#') or (len(rec) == 0)):
 
-            rec = rec.strip()
+            try:
 
-            if not (rec.startswith('#') or (len(rec) == 0)):
+                calib = Calib(rec)
 
-                try:
-
-                    calib = Calib(rec)
-
-                except CalibBadColumnCountExcept:
-                    msgs.append('ERROR: Calib record should have at least ' + str(Calib.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
-                except CalibMalformedRecordExcept:
-                    msgs.append('ERROR: Calib record appears to be invalid: [' + rec + ']. Record ignored.')
-                except Exception as e:
-                    msgs.append('ERROR: Unknown error parsing Calib record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+            except CalibBadColumnCountExcept:
+                msgs.append('ERROR: Calib record should have at least ' + str(Calib.CALIB_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
+            except CalibMalformedRecordExcept:
+                msgs.append('ERROR: Calib record appears to be invalid: [' + rec + ']. Record ignored.')
+            except Exception as e:
+                msgs.append('ERROR: Unknown error parsing Calib record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+            else:
+                if next(filter(lambda c: c == calib, self.items), None) == None:
+                    self.items.append(calib)
                 else:
-                    if next(filter(lambda c: c == calib, self.items), None) == None:
-                        self.items.append(calib)
-                    else:
-                        msgs.append('WARN: Duplicate Calib record: [' + rec + ']. Record ignored.')
+                    msgs.append('WARN: Duplicate Calib record: [' + rec + ']. Record ignored.')
 
-        self.items.sort()
 
         return msgs
+
+
+    # def parse_cfg_records(self, recs):
+
+    #     msgs = []
+    #     self.clear()
+
+    #     for lineno, rec in enumerate(recs):
+
+    #         rec = rec.strip()
+
+    #         if not (rec.startswith('#') or (len(rec) == 0)):
+
+    #             try:
+
+    #                 calib = Calib(rec)
+
+    #             except CalibBadColumnCountExcept:
+    #                 msgs.append('ERROR: Calib record should have at least ' + str(Calib.CALIB_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
+    #             except CalibMalformedRecordExcept:
+    #                 msgs.append('ERROR: Calib record appears to be invalid: [' + rec + ']. Record ignored.')
+    #             except Exception as e:
+    #                 msgs.append('ERROR: Unknown error parsing Calib record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+    #             else:
+    #                 if next(filter(lambda c: c == calib, self.items), None) == None:
+    #                     self.items.append(calib)
+    #                 else:
+    #                     msgs.append('WARN: Duplicate Calib record: [' + rec + ']. Record ignored.')
+
+    #     self.items.sort()
+
+    #     return msgs
+
+
+    def sort(self):
+        self.items.sort()
 
 
     def find(self, compound_key):

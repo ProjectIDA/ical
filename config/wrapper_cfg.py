@@ -42,13 +42,60 @@ class WrapperCfg(object):
     WRAPPER_SENSOR_UNK            = 'UNK SENSOR'
 
 
-    def __init__(self, init_dict={}):
-        self.data = {
-            self.WRAPPER_KEY_LAST_LF_A : self.WRAPPER_KEY_TIMESTAMP_UNK,
-            self.WRAPPER_KEY_LAST_HF_A : self.WRAPPER_KEY_TIMESTAMP_UNK,
-            self.WRAPPER_KEY_LAST_LF_B : self.WRAPPER_KEY_TIMESTAMP_UNK,
-            self.WRAPPER_KEY_LAST_HF_B : self.WRAPPER_KEY_TIMESTAMP_UNK
+    @classmethod
+    def is_valid_wcfg_key(cls, key, val):
+
+        if key == cls.WRAPPER_KEY_NET:
+            return re.fullmatch('[A-Za-z][A-Za-z0-9]{1,6}', val) != None
+        elif key == cls.WRAPPER_KEY_STA:
+            return re.fullmatch('[A-Za-z][A-Za-z0-9]{2,5}', val) != None
+        elif key == cls.WRAPPER_KEY_IP:
+            return re.fullmatch('(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])', 
+                val) != None
+        elif key == cls.WRAPPER_KEY_TAGNO:
+            return re.fullmatch('\d+', val) != None
+        elif key == cls.WRAPPER_KEY_SN:
+            return re.fullmatch('[0-9A-Fa-f]{16}', val) != None
+        elif key == cls.WRAPPER_KEY_DATAPORT:
+            return re.fullmatch('[1-4]', val) != None
+        elif key == cls.WRAPPER_KEY_DP1_AUTH:
+            return re.fullmatch('\d+', val) != None
+        elif key == cls.WRAPPER_KEY_MONPORT_A:
+            return re.fullmatch('[0,4-6]', val) != None
+        elif key == cls.WRAPPER_KEY_MONPORT_B:
+            return re.fullmatch('[0,1-3]', val) != None
+
+    @classmethod
+    def new_dict(cls):
+        return {
+            cls.WRAPPER_KEY_NET : '',
+            cls.WRAPPER_KEY_STA : '',
+            cls.WRAPPER_KEY_TAGNO : '',
+            cls.WRAPPER_KEY_SN : '',
+            cls.WRAPPER_KEY_IP : '',
+            cls.WRAPPER_KEY_DATAPORT : '',
+            cls.WRAPPER_KEY_MONPORT_A : '',
+            cls.WRAPPER_KEY_MONPORT_B : '',
+            cls.WRAPPER_KEY_LAST_LF_A : '',
+            cls.WRAPPER_KEY_LAST_LF_B : '',
+            cls.WRAPPER_KEY_LAST_HF_A : '',
+            cls.WRAPPER_KEY_LAST_HF_B : '',
+            cls.WRAPPER_KEY_SENS_COMPNAME_A : '',
+            cls.WRAPPER_KEY_SENS_COMPNAME_B : '',
+            cls.WRAPPER_KEY_SENS_ROOTNAME_A : '',
+            cls.WRAPPER_KEY_SENS_ROOTNAME_B : '',
+            cls.WRAPPER_KEY_SENS_DESCR_A : '',
+            cls.WRAPPER_KEY_SENS_DESCR_B : '',
+            cls.WRAPPER_KEY_CFG_AUTH : '',
+            cls.WRAPPER_KEY_SFN_AUTH : '',
+            cls.WRAPPER_KEY_DP1_AUTH : '',
+            cls.WRAPPER_KEY_DP2_AUTH : '',
+            cls.WRAPPER_KEY_DP3_AUTH : '',
+            cls.WRAPPER_KEY_DP4_AUTH : ''
         }
+
+    def __init__(self, init_dict={}):
+        self.data = self.new_dict()
         self.update(init_dict)
 
 
@@ -119,33 +166,6 @@ class WrapperCfg(object):
                 self.data[self.WRAPPER_KEY_DP2_AUTH],
                 self.data[self.WRAPPER_KEY_DP3_AUTH],
                 self.data[self.WRAPPER_KEY_DP4_AUTH]])
-
-
-    @classmethod
-    def is_valid_wcfg_key(cls, key, val):
-
-        if key == cls.WRAPPER_KEY_NET:
-            return re.fullmatch('[A-Za-z][A-Za-z0-9]{1,6}', val) != None
-        elif key == cls.WRAPPER_KEY_STA:
-            return re.fullmatch('[A-Za-z][A-Za-z0-9]{2,5}', val) != None
-        elif key == cls.WRAPPER_KEY_IP:
-            return re.fullmatch('(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])', 
-                val) != None
-        elif key == cls.WRAPPER_KEY_TAGNO:
-            return re.fullmatch('\d+', val) != None
-        elif key == cls.WRAPPER_KEY_SN:
-            return re.fullmatch('[0-9A-Fa-f]{16}', val) != None
-        elif key == cls.WRAPPER_KEY_DATAPORT:
-            return re.fullmatch('[1-4]', val) != None
-        elif key == cls.WRAPPER_KEY_DP1_AUTH:
-            return re.fullmatch('\d+', val) != None
-        elif key == cls.WRAPPER_KEY_MONPORT_A:
-            return re.fullmatch('[0,4-6]', val) != None
-        elif key == cls.WRAPPER_KEY_MONPORT_B:
-            return re.fullmatch('[0,1-3]', val) != None
-
-
-
 
 
     def tagno(self):

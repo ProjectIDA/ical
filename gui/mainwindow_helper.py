@@ -1,21 +1,16 @@
-from comms.ical_threads import PingThread, Q330Thread
-
+from datetime import datetime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+from comms.ical_threads import PingThread, Q330Thread
 import gui.mainwindow
-
 from gui.run_dlg import Ui_RunDlg
 from gui.run_dlg_helper import RunDlgHelper
-
 from gui.progress_dlg import Ui_ProgressDlg
 from gui.progress_dlg_helper import ProgressDlgHelper
-
 from gui.edit_dlg import Ui_EditDlg
 from gui.edit_dlg_helper import EditDlgHelper
-
 from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
-
 from gui.cfg_data_model import CfgDataModel
 
 class MainWindowHelper(object):
@@ -29,6 +24,7 @@ class MainWindowHelper(object):
         self.main_win = main_win
         self.cur_row = -1
         self.set_run_btns_enabled(self.cur_row)
+        self.last_click = datetime.min
 
 
     def check_cfg_load(self):
@@ -64,16 +60,12 @@ class MainWindowHelper(object):
 
 
     def setup_tableview(self): #MainWindow, mw_ui):
-
         self.main_win.cfgListTV.setModel(self.cdm)
-
         hdrvw = self.main_win.cfgListTV.horizontalHeader()
         hdrvw.setStretchLastSection(True)
         self.main_win.cfgListTV.resizeColumnsToContents()
-
         self.main_win.cfgListTV.setSortingEnabled(False)
-
-        self.main_win.cfgListTV.doubleClicked.connect(self.TVDoubleClick)
+        self.main_win.cfgListTV.clicked.connect(self.record_click)
         self.main_win.cfgListTV.selectionModel().selectionChanged.connect(self.MWSelectionChanged)
 
 
@@ -81,12 +73,25 @@ class MainWindowHelper(object):
         self.app_win.close()
 
 
-    def TVDoubleClick(self, index):
-        self.EditCfg()
+    def MWSelectionChanged(self, seldelta, deseldelta):
+        sel_ndxs = self.main_win.cfgListTV.selectedIndexes()
+
+        if len(sel_ndxs) >= 1:
+            self.cur_row = sel_ndxs[0].row()
+            self.update_details(self.cur_row)
+        else:
+            self.cur_row = -1
+
+
+    def record_click(self):
+        gap = datetime.now() - self.last_click
+        print(type(gap), gap.seconds + gap.microseconds/10.0**6);
+        self.last_click = datetime.now()
+        if (gap.seconds + gap.microseconds/10.0**6) < 0.25:
+            self.EditCfg()
 
 
     def setup_edit_dialog(self, edit_mode, cur_data={}):
-
         dlg = QtWidgets.QDialog(self.app_win)
         dlgUI = Ui_EditDlg()
         dlgUI.setupUi(dlg)
@@ -105,7 +110,6 @@ class MainWindowHelper(object):
 
 
     def EditCfg(self):
-
         if self.cur_row >= 0:
             # get tagno and then wcfg...
             mdlNdx = QtCore.QAbstractItemModel.createIndex(self.cdm, self.cur_row, CfgDataModel.TAGNO_COL)
@@ -130,7 +134,7 @@ class MainWindowHelper(object):
 
     def AddCfg(self):
 
-        dlg, dlgUI, dlgUIHlpr = self.setup_edit_dialog(EditDlgHelper.ADD_MODE, {})
+        dlg, dlgUI, dlgUIHlpr = self.setup_edit_dialog(EditDlgHelper.ADD_MODE, WrapperCfg.new_dict())
         # need to keep dlgUIHlpr in scope for GUI callbacks
         if dlg.exec() == QtWidgets.QDialog.Accepted:
             try:
@@ -188,17 +192,6 @@ class MainWindowHelper(object):
 
     def run_cal_B_HF(self):
         self.run_cal_confirm('B', 'rbhf')
-
-
-    def MWSelectionChanged(self, seldelta, deseldelta):
-
-        sel_ndxs = self.main_win.cfgListTV.selectedIndexes()
-
-        if len(sel_ndxs) >= 1:
-            self.cur_row = sel_ndxs[0].row()
-            self.update_details(self.cur_row)
-        else:
-            self.cur_row = -1
 
 
     def update_details(self, row):

@@ -14,7 +14,7 @@ class EditDlgHelper(object):
     ADD_MODE = 2
 
     def __init__(self): 
-        self.is_dirty = False
+        pass
 
     @property
     def sensorlist(self):
@@ -31,6 +31,7 @@ class EditDlgHelper(object):
 
         self.orig_cfg = orig_cfg
         self.mode = mode
+        self.qtDlg = dlg
         self.dlgUI = dlgUI
         self.dlgUI.new_cfg = copy.deepcopy(self.orig_cfg)
 
@@ -52,21 +53,21 @@ class EditDlgHelper(object):
         self.dlgUI.sensAMonPortLE.textEdited.connect(self.LEEdited)
         self.dlgUI.sensBMonPortLE.textEdited.connect(self.LEEdited)
 
-        self.resetBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Reset)
-        self.resetBtn.setDefault(True)
-        self.resetBtn.clicked.connect(self.reset)
-        # pal = resetBtn.palette()
-        # pal.setColor(QtGui.QPalette.Background, QtGui.QColor(255,0,255))
-        # resetBtn.setPalette(pal)
-        # resetBtn.setAutoFillBackground(True)
-        self.cancelBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Cancel)
-        self.cancelBtn.setDefault(False)
-        self.saveBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Save)
-        self.saveBtn.setDefault(False)
-        # self.dlgUI.buttonBox.setFocus()
-        # saveBtn.setFocus()
-        # self.dlgUI.buttonBox.setFocusProxy(saveBtn)
-        # self.dlgUI.tagnoLE.setFocus()
+        self.dlgUI.resetBtn.setEnabled(False)
+        self.dlgUI.resetBtn.clicked.connect(self.reset)
+        self.dlgUI.cancelBtn.setDefault(False)
+        self.dlgUI.cancelBtn.clicked.connect(self.cancel)
+        self.dlgUI.saveBtn.setDefault(False)
+        self.dlgUI.saveBtn.clicked.connect(self.save)
+
+        # self.resetBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Reset)
+        # self.resetBtn.setEnabled(False)
+        # self.resetBtn.clicked.connect(self.reset)
+        # self.cancelBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Cancel)
+        # self.cancelBtn.setDefault(False)
+        # self.cancelBtn.clicked.connect(self.cancel)
+        # self.saveBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Save)
+        # self.saveBtn.setDefault(False)
 
         self.refresh_dialog()
         self.dlgUI.mainGB.setFocus()
@@ -109,9 +110,38 @@ class EditDlgHelper(object):
         self.validate()
 
 
+    def save(self):
+        self.qtDlg.accept()
+
+
+    def cancel(self):
+        if self.is_dirty():
+            mbox = QtWidgets.QMessageBox()
+            mbox.setText("This configuration has been modifed.\nDo you want to save your changes?")
+            mbox.setInformativeText("")
+            mbox.setWindowTitle("")
+            mbox.setStandardButtons(QtWidgets.QMessageBox().Save | QtWidgets.QMessageBox().Cancel | QtWidgets.QMessageBox().Discard)
+            ansBtn = mbox.exec()
+            if ansBtn == QtWidgets.QMessageBox().Cancel:
+                pass
+            elif ansBtn == QtWidgets.QMessageBox().Save:
+                self.qtDlg.accept()
+            else:
+                self.qtDlg.reject()
+        else:
+            self.qtDlg.reject()
+
+
     def reset(self):
-        self.dlgUI.new_cfg = copy.deepcopy(self.orig_cfg)
-        self.refresh_dialog()
+        mbox = QtWidgets.QMessageBox()
+        mbox.setText("This configuration has been modifed.\nYou will lose your changes. Do you wish to continue?")
+        mbox.setInformativeText("")
+        mbox.setWindowTitle("")
+        mbox.setStandardButtons(QtWidgets.QMessageBox().Yes | QtWidgets.QMessageBox().No)
+        mbox.setDefaultButton(QtWidgets.QMessageBox().No)
+        if mbox.exec() ==  QtWidgets.QMessageBox().Yes:
+            self.dlgUI.new_cfg = copy.deepcopy(self.orig_cfg)
+            self.refresh_dialog()
 
 
     def SensorAChange(self, new_ndx):
@@ -151,10 +181,26 @@ class EditDlgHelper(object):
         self.validate()
 
 
+    def is_dirty(self):
+        return not ((self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_NET] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_NET]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_STA] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_STA]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_IP] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_IP]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SN] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_SN]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DATAPORT] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_DATAPORT]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SFN_AUTH] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_SFN_AUTH]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CFG_AUTH] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_CFG_AUTH]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP1_AUTH] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_DP1_AUTH]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP2_AUTH] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_DP2_AUTH]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP3_AUTH] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_DP3_AUTH]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]))
+
     def validate(self):
         valid = True
-
-        self.resetBtn.setEnabled(self.is_dirty)
 
         # check NET
         if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_NET, self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_NET]):
@@ -243,6 +289,6 @@ class EditDlgHelper(object):
             valid = False
 
 
-
-        self.saveBtn.setEnabled(valid)
+        self.dlgUI.resetBtn.setEnabled(self.is_dirty())
+        self.dlgUI.saveBtn.setEnabled(valid and self.is_dirty())
 

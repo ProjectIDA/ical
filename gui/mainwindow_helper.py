@@ -1,4 +1,4 @@
-import subprocess
+from comms.ical_threads import PingThread, Q330Thread
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -20,13 +20,23 @@ from gui.cfg_data_model import CfgDataModel
 
 class MainWindowHelper(object):
 
-    def __init__(self, cfg, app_win, main_win):
+    def __init__(self, load_ok, cfg, errs, app_win, main_win):
+        self.cfg_load_ok = load_ok
         self.cfg = cfg
+        self.cfg_errs = errs
         self.cdm = CfgDataModel(self.cfg)
         self.app_win = app_win
         self.main_win = main_win
         self.cur_row = -1
         self.set_run_btns_enabled(self.cur_row)
+
+
+    def check_cfg_load(self):
+        if not self.cfg_load_ok:
+            QtWidgets.QMessageBox().critical(self.app_win, 'ICAL ERROR', ';\n'.join(self.cfg_errs), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+            return False
+        else:
+            return True
 
 
     def setup_main_window(self):
@@ -161,13 +171,10 @@ class MainWindowHelper(object):
                     progdlgHlpr = ProgressDlgHelper(rundlgHlpr.cmdline, rundlgHlpr.caldescr, rundlgHlpr.cal_time_mins, progdlg)
                     progdlgHlpr.setupUi(dlg)
 
-                    if dlg.exec() == QtWidgets.QDialog.Accepted:
-                        res = QtWidgets.QMessageBox().information(self.app_win, 'ICAL', 'Calibration Completed!', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+                    if (dlg.exec() == QtWidgets.QDialog.Accepted) and (progdlgHlpr.retcode == 0):
+                        res = QtWidgets.QMessageBox().information(self.app_win, 'ICAL', 'Calibration Completed!\n\n' + progdlgHlpr.msg, QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
                     else:
-                        res = QtWidgets.QMessageBox().warning(self.app_win, 'ICAL', 'Calibration canceled!', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
-
-                else:
-                    res = QtWidgets.QMessageBox().warning(self.app_win, 'ICAL', 'Calibration canceled!', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+                        res = QtWidgets.QMessageBox().warning(self.app_win, 'ICAL', 'Calibration failed with exit code: ' + str(progdlgHlpr.retcode) + '\n' + progdlgHlpr.msg, QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
 
 
     def run_cal_A_LF(self):
@@ -194,8 +201,6 @@ class MainWindowHelper(object):
             self.cur_row = -1
 
 
-        # self.ping_hosts()
-
     def update_details(self, row):
 
         self.main_win.editBtn.setEnabled(row != -1)
@@ -206,21 +211,8 @@ class MainWindowHelper(object):
         else:
             self.set_details(row)
 
-
-    def ping_hosts(self):
-
-        for wcfg in self.cfg:
-            print('IP:', wcfg.data[WrapperCfg.WRAPPER_KEY_IP])
-            ipaddress = wcfg.data[WrapperCfg.WRAPPER_KEY_IP]
-            # ipaddress = '132.239.153.83'  # guess who
-            proc = subprocess.Popen(
-                ['ping', '-c', '1', '-t', '1', ipaddress],
-                stdout=subprocess.PIPE)
-            stdout, stderr = proc.communicate()
-            if proc.returncode == 0:
-                print('{} is UP'.format(ipaddress))
-            else:
-                print('{} is DOWN'.format(ipaddress))
+        if self.pingThread:
+            self.pingThread.start()
 
 
     def set_run_btns_enabled(self, row):
@@ -237,10 +229,25 @@ class MainWindowHelper(object):
             self.main_win.sensBRunLFBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
             self.main_win.sensBRunHFBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
 
-        # self.main_win.sensARunLFBtn.changeEvent(QtCore.QEvent(QtCore.QEvent.EnabledChange))
-        # self.main_win.sensARunHFBtn.changeEvent(QtCore.QEvent(QtCore.QEvent.EnabledChange))
-        # self.main_win.sensBRunLFBtn.changeEvent(QtCore.QEvent(QtCore.QEvent.EnabledChange))
-        # self.main_win.sensBRunHFBtn.changeEvent(QtCore.QEvent(QtCore.QEvent.EnabledChange))
+
+    def ping_result_slot(self, host, up_status, ping_time):
+        if up_status:
+            self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
+            self.main_win.q330NetworkStatus.setStyleSheet("QLabel{color:rgb(0, 102, 0);}")
+            self.main_win.q330NetworkStatus.setText('Q330 is reachable. Ping: ' + ping_time)
+
+            self.q330Thread.start()
+        else:
+            self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
+            self.main_win.q330NetworkStatus.setStyleSheet("QLabel{color:rgb(179, 0, 0);}")
+            self.main_win.q330NetworkStatus.setText('Q330 is Unreachable!')
+
+
+    def q330_query_result_slot(self, host, ret_status, results):
+        if ret_status == 0:
+            self.main_win.statusBar.showMessage(results)
+        else:
+            self.main_win.statusBar.showMessage(results)
 
 
     def clear_details(self):
@@ -263,9 +270,18 @@ class MainWindowHelper(object):
         self.main_win.sensBLastLFLE.setText('');
         self.main_win.sensBLastHFLE.setText('');
 
+
     def set_details(self, cfg_ndx):
 
         cfg = self.cfg[cfg_ndx]
+
+        # start thread to check IP/HOST availability
+        self.pingThread = PingThread(cfg.data[WrapperCfg.WRAPPER_KEY_IP])
+        self.pingThread.pingResult.connect(self.ping_result_slot)
+
+        # start thread to get TAGNO and Firmware Vers
+        self.q330Thread = Q330Thread(cfg.data[WrapperCfg.WRAPPER_KEY_IP], 'id')
+        self.q330Thread.q330QueryResult.connect(self.q330_query_result_slot)
 
         self.main_win.netLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_NET])
         self.main_win.staLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_STA])
@@ -274,6 +290,8 @@ class MainWindowHelper(object):
         self.main_win.snLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_SN])
         self.main_win.dpLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_DATAPORT])
         self.main_win.dpauthLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_DP1_AUTH])
+
+        self.main_win.q330NetworkStatus.setText('')
 
         self.main_win.sensADescrLE.setPlainText(cfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A])
         if cfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A].lower() == 'none':

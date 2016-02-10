@@ -57,36 +57,6 @@ class Sensors(IcalConfigReader):
         return msgs
 
 
-    # def parse_cfg_records(self, recs):
-
-    #     msgs = []
-    #     self.clear()
-
-    #     for lineno, rec in enumerate(recs):
-
-    #         rec = rec.strip()
-
-    #         if not (rec.startswith('#') or (len(rec) == 0)):
-
-    #             try:
-    #                 sensor = Sensor(rec)
-    #             except SensorBadColumnCountExcept:
-    #                 msgs.append('ERROR: Sensor record should have at least ' + str(Sensor.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
-    #             except SensorMalformedRecordExcept:
-    #                 msgs.append('ERROR: Sensor record appears to be invalid: [' + rec + ']. Record ignored.')
-    #             except Exception as e:
-    #                 msgs.append('ERROR: Unknown error parsing Sensor record: [' + rec + ']. Record ignored.' + '\n' + str(e))
-    #             else:
-    #                 if next(filter(lambda s: s == sensor, self.items), None) == None:
-    #                     self.items.append(sensor)
-    #                 else:
-    #                     msgs.append('WARN: Duplicate Sensor record: [' + rec + ']. Record ignored.')
-
-    #     self.items.sort()
-
-    #     return msgs
-
-
     def sort(self):
         self.items.sort()
 

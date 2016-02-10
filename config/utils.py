@@ -1,6 +1,5 @@
 from collections import namedtuple
 
-configresult = namedtuple('ConfigResult', ['success', 'warnmsgs', 'errmsgs', 'data'])
+configresult = namedtuple('ConfigResult', ['success', 'errmsgs'])
 
-ParseResult =  namedtuple('ParseResult', ['warnmsgs', 'errmsgs', 'data'])
 

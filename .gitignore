@@ -60,5 +60,15 @@ docs/_build/
 # PyBuilder
 target/
 
+# external binaries
+bin/
+
+# miniseed files an logs
+CAL*.ms
+CAL*.log
+
+# cfg backup
+etc2/
+
 # OS X
 .DS_Store

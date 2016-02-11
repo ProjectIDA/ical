@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -9,54 +10,57 @@ from gui.progress_dlg import Ui_ProgressDlg
 from gui.progress_dlg_helper import ProgressDlgHelper
 from gui.edit_dlg import Ui_EditDlg
 from gui.edit_dlg_helper import EditDlgHelper
+from gui.logview_dlg import Ui_LogviewDlg
+from gui.logview_dlg_helper import LogviewDlgHelper
 from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
 from gui.cfg_data_model import CfgDataModel
 
 class MainWindowHelper(object):
 
-    def __init__(self, load_ok, cfg, errs, app_win, main_win):
+    def __init__(self, load_ok, cfg, app_win, main_win):
         self.cfg_load_ok = load_ok
         self.cfg = cfg
-        self.cfg_errs = errs
         self.cdm = CfgDataModel(self.cfg)
         self.app_win = app_win
         self.main_win = main_win
         self.cur_row = -1
         self.set_run_btns_enabled(self.cur_row)
         self.last_click = datetime.min
+        self.main_win.q330NetworkStatus.setText("")
+        self.main_win.q330Info.setText("")
 
 
     def check_cfg_load(self):
         if not self.cfg_load_ok:
-            QtWidgets.QMessageBox().critical(self.app_win, 'ICAL ERROR', ';\n'.join(self.cfg_errs), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+            QtWidgets.QMessageBox().critical(self.app_win, 
+                'ICAL ERROR', 
+                'There was an error reading the ICAL configuration files. Check the ical.log file for more information.', 
+                QtWidgets.QMessageBox().Close, 
+                QtWidgets.QMessageBox().Close)
             return False
         else:
             return True
 
 
     def setup_main_window(self):
-        self.setup_actionQuit()
+        self.setup_actions()
         self.setup_tableview()
-        self.setup_actionRun()
-        self.setup_actionEdit()
 
 
-    def setup_actionQuit(self):
-        self.main_win.actionQuit.triggered.connect(self.close)
+    def setup_actions(self):
+        self.main_win.acViewLogMessages.triggered.connect(self.view_log_messages)
         self.main_win.quitBtn.clicked.connect(self.main_win.actionQuit.trigger)
 
-
-    def setup_actionRun(self):
         self.main_win.sensARunLFBtn.clicked.connect(self.run_cal_A_LF)
         self.main_win.sensARunHFBtn.clicked.connect(self.run_cal_A_HF)
         self.main_win.sensBRunLFBtn.clicked.connect(self.run_cal_B_LF)
         self.main_win.sensBRunHFBtn.clicked.connect(self.run_cal_B_HF)
 
-
-    def setup_actionEdit(self):
         self.main_win.addBtn.clicked.connect(self.AddCfg)
         self.main_win.editBtn.clicked.connect(self.EditCfg)
+
+        self.main_win.actionQuit.triggered.connect(self.close)
 
 
     def setup_tableview(self): #MainWindow, mw_ui):
@@ -73,6 +77,15 @@ class MainWindowHelper(object):
         self.app_win.close()
 
 
+    def view_log_messages(self):
+        dlg = QtWidgets.QDialog()
+        dlgUI = Ui_LogviewDlg()
+        dlgUI.setupUi(dlg)
+        dlgHlpr = LogviewDlgHelper('ical.log', dlg, dlgUI)
+
+        dlg.exec()
+
+
     def MWSelectionChanged(self, seldelta, deseldelta):
         sel_ndxs = self.main_win.cfgListTV.selectedIndexes()
 
@@ -85,7 +98,6 @@ class MainWindowHelper(object):
 
     def record_click(self):
         gap = datetime.now() - self.last_click
-        print(type(gap), gap.seconds + gap.microseconds/10.0**6);
         self.last_click = datetime.now()
         if (gap.seconds + gap.microseconds/10.0**6) < 0.25:
             self.EditCfg()
@@ -114,6 +126,7 @@ class MainWindowHelper(object):
             # get tagno and then wcfg...
             mdlNdx = QtCore.QAbstractItemModel.createIndex(self.cdm, self.cur_row, CfgDataModel.TAGNO_COL)
             tagno = self.cdm.data(mdlNdx, QtCore.Qt.DisplayRole)
+            logging.info('Editing configuration for q330 tagno=' + str(tagno))
             wcfg = self.cfg.find(tagno)
             if wcfg:
 
@@ -133,6 +146,7 @@ class MainWindowHelper(object):
 
 
     def AddCfg(self):
+        logging.info('Editing new q330 configuration')
 
         dlg, dlgUI, dlgUIHlpr = self.setup_edit_dialog(EditDlgHelper.ADD_MODE, WrapperCfg.new_dict())
         # need to keep dlgUIHlpr in scope for GUI callbacks
@@ -233,14 +247,15 @@ class MainWindowHelper(object):
         else:
             self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
             self.main_win.q330NetworkStatus.setStyleSheet("QLabel{color:rgb(179, 0, 0);}")
-            self.main_win.q330NetworkStatus.setText('Q330 is Unreachable!')
+            self.main_win.q330NetworkStatus.setText('Q330 is Unreachable, no ping response.')
+            self.main_win.q330Info.setText("")
 
 
     def q330_query_result_slot(self, host, ret_status, results):
         if ret_status == 0:
-            self.main_win.statusBar.showMessage(results)
+            self.main_win.q330Info.setText('Firmware: ' + '/'.join(results.split()[-2:]))
         else:
-            self.main_win.statusBar.showMessage(results)
+            self.main_win.q330Info.setText("Q330 Error: " + results)
 
 
     def clear_details(self):
@@ -267,6 +282,9 @@ class MainWindowHelper(object):
     def set_details(self, cfg_ndx):
 
         cfg = self.cfg[cfg_ndx]
+
+        self.main_win.q330NetworkStatus.setText("")
+        self.main_win.q330Info.setText("")
 
         # start thread to check IP/HOST availability
         self.pingThread = PingThread(cfg.data[WrapperCfg.WRAPPER_KEY_IP])

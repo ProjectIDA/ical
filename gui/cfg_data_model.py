@@ -39,8 +39,6 @@ class CfgDataModel(QtCore.QAbstractTableModel):
 
         if self.cfg.update(orig_tagno, new_cfg):
             self.endResetModel()
-            # print('in ical merged:', self.cfg.find(new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]))
-            # self.cfg.merged_cfg[ndx].data.update(new_cfg)
         else:
             raise Exception('Error saving configuration for Q330 with TAG NUM: ' + orig_tagno)
 

@@ -35,6 +35,13 @@ class Icalcfg(IcalConfigItemReader):
     ICALCFG_KEY_LAST_LF_B = 'sensor_b_last_lf'
     ICALCFG_KEY_LAST_HF_B = 'sensor_b_last_hf'
 
+    ICALCFG_NET_VALID_REGEX = '[A-Za-z][A-Za-z0-9]{1,6}'
+    ICALCFG_STA_VALID_REGEX = '[A-Za-z][A-Za-z0-9]{2,5}'
+    ICALCFG_TAGNO_VALID_REGEX = '\d+'
+    ICALCFG_DATAPORT_VALID_REGEX = '[1-4]'
+    ICALCFG_MONPORT_A_VALID_REGEX = '[0,4-6]'
+    ICALCFG_MONPORT_B_VALID_REGEX = '[0,1-3]'
+
     ICALCFG_KEY_TIMESTAMP_UNK     = 'unk'
 
 
@@ -45,12 +52,12 @@ class Icalcfg(IcalConfigItemReader):
 
         if len(tokens) == self.ICALCFG_COLCOUNT:
 
-            if not ((re.fullmatch('[A-Za-z][A-Za-z0-9]{1,9}', tokens[self.ICALCFG_NDX_NET]) != None) and
-                    (re.fullmatch('[A-Za-z][A-Za-z0-9]{2,5}', tokens[self.ICALCFG_NDX_STA]) != None) and
-                    (re.fullmatch('\d+', tokens[self.ICALCFG_NDX_TAGNO]) != None) and
-                    (re.fullmatch('[1-4]', tokens[self.ICALCFG_NDX_DATAPORT]) != None) and
-                    (re.fullmatch('[0,4-6]', tokens[self.ICALCFG_NDX_MONPORT_A]) != None) and
-                    (re.fullmatch('[0,1-3]', tokens[self.ICALCFG_NDX_MONPORT_B]) != None)):
+            if not ((re.fullmatch(self.ICALCFG_NET_VALID_REGEX, tokens[self.ICALCFG_NDX_NET]) != None) and
+                    (re.fullmatch(self.ICALCFG_STA_VALID_REGEX, tokens[self.ICALCFG_NDX_STA]) != None) and
+                    (re.fullmatch(self.ICALCFG_TAGNO_VALID_REGEX, tokens[self.ICALCFG_NDX_TAGNO]) != None) and
+                    (re.fullmatch(self.ICALCFG_DATAPORT_VALID_REGEX, tokens[self.ICALCFG_NDX_DATAPORT]) != None) and
+                    (re.fullmatch(self.ICALCFG_MONPORT_A_VALID_REGEX, tokens[self.ICALCFG_NDX_MONPORT_A]) != None) and
+                    (re.fullmatch(self.ICALCFG_MONPORT_B_VALID_REGEX, tokens[self.ICALCFG_NDX_MONPORT_B]) != None)):
                 raise IcalcfgMalformedRecordExcept
 
             self.data[self.ICALCFG_KEY_NET]          = tokens[self.ICALCFG_NDX_NET]

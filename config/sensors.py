@@ -9,18 +9,14 @@ class Sensors(IcalConfigReader):
         self.fpath = fpath
         self.items = []
         self.iter_ndx = 0
-        self.parsed_ok = False
 
         # read & parse data
-        self.parsed_ok, self.msgs = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
-
-        if not self.parsed_ok:
-            for m in self.msgs:
-                print(m)
+        self.parsed_ok = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
 
 
     def clear(self):
         self.items = []
+
 
     def SensorModelList(self):
         resl = []
@@ -32,9 +28,6 @@ class Sensors(IcalConfigReader):
 
 
     def append(self, rec):
-    # def add_cfg_rec(self, rec):
-
-        msgs = []
         rec = rec.strip()
 
         if not (rec.startswith('#') or (len(rec) == 0)):
@@ -42,19 +35,16 @@ class Sensors(IcalConfigReader):
             try:
                 sensor = Sensor(rec)
             except SensorBadColumnCountExcept:
-                msgs.append('ERROR: Sensor record should have at least ' + str(Sensor.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
+                logging.warning('Sensor record should have at least ' + str(Sensor.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
             except SensorMalformedRecordExcept:
-                msgs.append('ERROR: Sensor record appears to be invalid: [' + rec + ']. Record ignored.')
+                logging.warning('Sensor record appears to be invalid: [' + rec + ']. Record ignored.')
             except Exception as e:
-                msgs.append('ERROR: Unknown error parsing Sensor record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+                logging.warning('Unknown error parsing Sensor record: [' + rec + ']. Record ignored.' + '\n' + str(e))
             else:
                 if next(filter(lambda s: s == sensor, self.items), None) == None:
                     self.items.append(sensor)
                 else:
-                    msgs.append('WARN: Duplicate Sensor record: [' + rec + ']. Record ignored.')
-
-
-        return msgs
+                    logging.warning('Duplicate Sensor record: [' + rec + ']. Record ignored.')
 
 
     def sort(self):

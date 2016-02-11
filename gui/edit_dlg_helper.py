@@ -60,15 +60,6 @@ class EditDlgHelper(object):
         self.dlgUI.saveBtn.setDefault(False)
         self.dlgUI.saveBtn.clicked.connect(self.save)
 
-        # self.resetBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Reset)
-        # self.resetBtn.setEnabled(False)
-        # self.resetBtn.clicked.connect(self.reset)
-        # self.cancelBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Cancel)
-        # self.cancelBtn.setDefault(False)
-        # self.cancelBtn.clicked.connect(self.cancel)
-        # self.saveBtn = self.dlgUI.buttonBox.button(QtWidgets.QDialogButtonBox.Save)
-        # self.saveBtn.setDefault(False)
-
         self.refresh_dialog()
         self.dlgUI.mainGB.setFocus()
 

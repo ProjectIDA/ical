@@ -9,14 +9,9 @@ class Calibs(IcalConfigReader):
         self.fpath = fpath
         self.items = []
         self.iter_ndx = 0
-        self.parsed_ok = False
 
         # read & parse data
-        self.parsed_ok, self.msgs = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
-
-        if not self.parsed_ok:
-            for m in msgs:
-                print(m)
+        self.parsed_ok = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
 
 
     def clear(self):
@@ -24,63 +19,23 @@ class Calibs(IcalConfigReader):
 
 
     def append(self, rec):
-    # def add_cfg_rec(self, rec):
-
-        msgs = []
         rec = rec.strip()
 
         if not (rec.startswith('#') or (len(rec) == 0)):
 
             try:
-
                 calib = Calib(rec)
-
             except CalibBadColumnCountExcept:
-                msgs.append('ERROR: Calib record should have at least ' + str(Calib.CALIB_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
+                logging.warning('Calib record should have at least ' + str(Calib.CALIB_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
             except CalibMalformedRecordExcept:
-                msgs.append('ERROR: Calib record appears to be invalid: [' + rec + ']. Record ignored.')
+                logging.warning('Calib record appears to be invalid: [' + rec + ']. Record ignored.')
             except Exception as e:
-                msgs.append('ERROR: Unknown error parsing Calib record: [' + rec + ']. Record ignored.' + '\n' + str(e))
+                logging.warning('Unknown error parsing Calib record: [' + rec + ']. Record ignored.' + '\n' + str(e))
             else:
                 if next(filter(lambda c: c == calib, self.items), None) == None:
                     self.items.append(calib)
                 else:
-                    msgs.append('WARN: Duplicate Calib record: [' + rec + ']. Record ignored.')
-
-
-        return msgs
-
-
-    # def parse_cfg_records(self, recs):
-
-    #     msgs = []
-    #     self.clear()
-
-    #     for lineno, rec in enumerate(recs):
-
-    #         rec = rec.strip()
-
-    #         if not (rec.startswith('#') or (len(rec) == 0)):
-
-    #             try:
-
-    #                 calib = Calib(rec)
-
-    #             except CalibBadColumnCountExcept:
-    #                 msgs.append('ERROR: Calib record should have at least ' + str(Calib.CALIB_COLCOUNT) + ' columns. [' + rec + ']. Record ignored.')
-    #             except CalibMalformedRecordExcept:
-    #                 msgs.append('ERROR: Calib record appears to be invalid: [' + rec + ']. Record ignored.')
-    #             except Exception as e:
-    #                 msgs.append('ERROR: Unknown error parsing Calib record: [' + rec + ']. Record ignored.' + '\n' + str(e))
-    #             else:
-    #                 if next(filter(lambda c: c == calib, self.items), None) == None:
-    #                     self.items.append(calib)
-    #                 else:
-    #                     msgs.append('WARN: Duplicate Calib record: [' + rec + ']. Record ignored.')
-
-    #     self.items.sort()
-
-    #     return msgs
+                    logging.warning('Duplicate Calib record: [' + rec + ']. Record ignored.')
 
 
     def sort(self):

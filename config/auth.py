@@ -31,6 +31,9 @@ class Auth(IcalConfigItemReader):
     AUTH_KEY_DP3_AUTH = 'dp3_auth'
     AUTH_KEY_DP4_AUTH = 'dp4_auth'
 
+    AUTH_TAGNO_VALID_REGEX = '\d+'
+    AUTH_SN_VALID_REGEX = '[0-9A-Fa-f]{16}'
+    AUTH_AUTHCODE_VALID_REGEX = '\d+'
 
     def __init__(self, record):
 
@@ -39,8 +42,10 @@ class Auth(IcalConfigItemReader):
 
         if len(tokens) == self.AUTH_COLCOUNT:
 
-            if not ((re.fullmatch('\d+', tokens[self.AUTH_NDX_TAGNO]) != None) and 
-                    (re.fullmatch('[0-9A-Fa-f]{16}', tokens[self.AUTH_NDX_SN]) != None)):
+            if not ((re.fullmatch(self.AUTH_TAGNO_VALID_REGEX, tokens[self.AUTH_NDX_TAGNO]) != None) and 
+                    (re.fullmatch(self.AUTH_SN_VALID_REGEX, tokens[self.AUTH_NDX_SN]) != None) and
+                    (re.fullmatch(self.AUTH_AUTHCODE_VALID_REGEX, tokens[self.AUTH_NDX_DP1_AUTH]) != None)
+                    ):
                 raise AuthMalformedRecordExcept
 
             self.data[self.AUTH_KEY_TAGNO]      = tokens[self.AUTH_NDX_TAGNO]

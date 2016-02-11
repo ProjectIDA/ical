@@ -25,6 +25,9 @@ class Q330(IcalConfigItemReader):
     Q330_KEY_SENS_ROOTNAME_A = 'sensor_a_root_name'
     Q330_KEY_SENS_ROOTNAME_B = 'sensor_b_root_name'
 
+    Q330_IP_VALID_REGEX = '(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])'
+    Q330_TAGNO_VALID_REGEX = '\d+'
+
 
     def __init__(self, record):
 
@@ -33,8 +36,8 @@ class Q330(IcalConfigItemReader):
 
         if len(tokens) == self.Q330_COLCOUNT:
 
-            if not ((re.fullmatch('\d+\.\d+\.\d+\.\d+', tokens[self.Q330_NDX_IP]) != None) and 
-                    (re.fullmatch('\d+', tokens[self.Q330_NDX_TAGNO]) != None)):
+            if not ((re.fullmatch(self.Q330_IP_VALID_REGEX, tokens[self.Q330_NDX_IP]) != None) and 
+                    (re.fullmatch(self.Q330_TAGNO_VALID_REGEX, tokens[self.Q330_NDX_TAGNO]) != None)):
                 raise Q330MalformedRecordExcept
 
             self.data[self.Q330_KEY_IP]                 = tokens[self.Q330_NDX_IP]

@@ -1,6 +1,7 @@
 import abc
 import os
 import functools
+import logging
 
 class IcalConfigReader(metaclass=abc.ABCMeta):
 
@@ -54,12 +55,11 @@ class IcalConfigReader(metaclass=abc.ABCMeta):
 
         if os.path.exists(fpath):
             success, recs = cls.read_data_file(fpath)
-            msgs.extend(parser(recs))
-            success = True
+            parser(recs)
         else:
-            msgs.append('ERROR: File does not exist: [' + os.path.abspath(fpath) + ']')
+            logging.error('File does not exist: [' + os.path.abspath(fpath) + ']')
 
-        return (success, msgs)
+        return success
 
 
     @abc.abstractmethod
@@ -79,13 +79,10 @@ class IcalConfigReader(metaclass=abc.ABCMeta):
 
     def parse_cfg_records(self, recs):
 
-        msgs = []
         self.clear()
 
         for lineno, rec in enumerate(recs):
-            msgs += self.append(rec)
+            self.append(rec)
 
         self.sort()
-
-        return msgs
 

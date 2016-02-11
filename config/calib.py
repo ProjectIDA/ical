@@ -88,12 +88,10 @@ class Calib(IcalConfigItemReader):
                 ])
 
     def cal_time_sec(self):
-        print(self)
         try:
             secs = int(self.data[Calib.CALIB_KEY_DUR]) + \
                     int(self.data[Calib.CALIB_KEY_SET]) + \
                     int(self.data[Calib.CALIB_KEY_TRL])
-            print(secs)
         except:
             secs = None
 

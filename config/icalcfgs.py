@@ -1,4 +1,5 @@
 import os
+import logging
 
 from config.ical_config_reader import IcalConfigReader
 from config.ical_config_writer import IcalConfigWriter
@@ -42,18 +43,13 @@ class Icalcfgs(IcalConfigReader, IcalConfigWriter):
         self.fpath = fpath
         self.items = []
         self.iter_ndx = 0
-        self.parsed_ok = False
         self.isdirty = False
 
         # if file doesn't exist, create it
         super().ensure_file(fpath)
 
         # read & parse data
-        self.parsed_ok, self.msgs = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
-
-        if not self.parsed_ok:
-            for m in msgs:
-                print(m)
+        self.parsed_ok = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
 
 
     def clear(self):
@@ -62,9 +58,6 @@ class Icalcfgs(IcalConfigReader, IcalConfigWriter):
 
 
     def append(self, rec):
-    # def add_cfg_rec(self, rec):
-
-        msgs = []
         rec = rec.strip()
 
         if not (rec.startswith('#') or (len(rec) == 0)):
@@ -72,48 +65,16 @@ class Icalcfgs(IcalConfigReader, IcalConfigWriter):
             try:
                 icalcfg = Icalcfg(rec)
             except IcalcfgBadColumnCountExcept:
-                msgs.append('ERROR: Ical.cfg record should have at least ' + str(Icalcfg.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record REMOVED.')
+                logging.warning('Ical.cfg record should have at least ' + str(Icalcfg.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record REMOVED.')
             except IcalcfgMalformedRecordExcept:
-                msgs.append('ERROR: Ical.cfg record appears to be invalid: [' + rec + ']. Record REMOVED.')
+                logging.warning('Ical.cfg record appears to be invalid: [' + rec + ']. Record REMOVED.')
             except Exception as e:
-                msgs.append('ERROR: Unknown error parsing Ical.cfg record: [' + rec + ']. Record REMOVED.' + '\n' + str(e))
+                logging.warning('Unknown error parsing Ical.cfg record: [' + rec + ']. Record REMOVED.' + '\n' + str(e))
             else:
                 if next(filter(lambda a: a == icalcfg, self.items), None) == None:
                     self.items.append(icalcfg)
                 else:
-                    msgs.append('WARN: Duplicate Ical.cfg record: [' + rec + ']. Record REMOVED.')
-
-        return msgs
-
-
-    # def parse_cfg_records(self, recs):
-
-    #     msgs = []
-    #     self.clear()
-
-    #     for lineno, rec in enumerate(recs):
-
-    #         rec = rec.strip()
-
-    #         if not (rec.startswith('#') or (len(rec) == 0)):
-
-    #             try:
-    #                 icalcfg = Icalcfg(rec)
-    #             except IcalcfgBadColumnCountExcept:
-    #                 msgs.append('ERROR: Ical.cfg record should have at least ' + str(Icalcfg.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record REMOVED.')
-    #             except IcalcfgMalformedRecordExcept:
-    #                 msgs.append('ERROR: Ical.cfg record appears to be invalid: [' + rec + ']. Record REMOVED.')
-    #             except Exception as e:
-    #                 msgs.append('ERROR: Unknown error parsing Ical.cfg record: [' + rec + ']. Record REMOVED.' + '\n' + str(e))
-    #             else:
-    #                 if next(filter(lambda a: a == icalcfg, self.items), None) == None:
-    #                     self.items.append(icalcfg)
-    #                 else:
-    #                     msgs.append('WARN: Duplicate Ical.cfg record: [' + rec + ']. Record REMOVED.')
-
-    #     self.items.sort()
-
-    #     return msgs
+                    logging.warning('Duplicate Ical.cfg record: [' + rec + ']. Record REMOVED.')
 
 
     def sort(self):

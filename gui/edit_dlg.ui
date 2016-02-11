@@ -166,7 +166,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration monitoring port for sensor B&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -373,7 +373,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration monitoring port for sensor A&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -523,7 +523,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Three to six (alpha-numeric) character Station Code&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Station Code&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -617,7 +617,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Two to six (alpha-numeric) character Station Code&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Network Code&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -665,7 +665,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IP4 network address used to communicate with this Q330.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IP4 network address used by this Q330.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -790,7 +790,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Internal Serial Number for this Q330. This can be obtained by ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Kinemetrics internal serial number for this Q330.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -964,7 +964,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Auth Code for access to the Data Port used in calibrations. If no auth code is set, this value should be '0'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Auth Code for the Q330 the Data Port&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>

@@ -5,11 +5,11 @@ from config.sensors import Sensors
 # from config.calibs import Calibs
 from config.calib import Calib
 # from config.auths import Auths
-# from config.auth import Auth
+from config.auth import Auth
 # from config.q330s import Q330s
-# from config.q330 import Q330
+from config.q330 import Q330
 # from config.icalcfgs import Icalcfgs
-# from config.icalcfg import Icalcfg
+from config.icalcfg import Icalcfg
 
 class WrapperCfg(object):
 
@@ -46,24 +46,24 @@ class WrapperCfg(object):
     def is_valid_wcfg_key(cls, key, val):
 
         if key == cls.WRAPPER_KEY_NET:
-            return re.fullmatch('[A-Za-z][A-Za-z0-9]{1,6}', val) != None
+            return re.fullmatch(Icalcfg.ICALCFG_NET_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_STA:
-            return re.fullmatch('[A-Za-z][A-Za-z0-9]{2,5}', val) != None
+            return re.fullmatch(Icalcfg.ICALCFG_STA_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_IP:
-            return re.fullmatch('(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])', 
+            return re.fullmatch(Q330.Q330_IP_VALID_REGEX, 
                 val) != None
         elif key == cls.WRAPPER_KEY_TAGNO:
-            return re.fullmatch('\d+', val) != None
+            return re.fullmatch(Icalcfg.ICALCFG_TAGNO_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_SN:
-            return re.fullmatch('[0-9A-Fa-f]{16}', val) != None
+            return re.fullmatch(Auth.AUTH_SN_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_DATAPORT:
-            return re.fullmatch('[1-4]', val) != None
+            return re.fullmatch(Icalcfg.ICALCFG_DATAPORT_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_DP1_AUTH:
-            return re.fullmatch('\d+', val) != None
+            return re.fullmatch(Auth.AUTH_AUTHCODE_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_MONPORT_A:
-            return re.fullmatch('[0,4-6]', val) != None
+            return re.fullmatch(Icalcfg.ICALCFG_MONPORT_A_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_MONPORT_B:
-            return re.fullmatch('[0,1-3]', val) != None
+            return re.fullmatch(Icalcfg.ICALCFG_MONPORT_B_VALID_REGEX, val) != None
 
     @classmethod
     def new_dict(cls):

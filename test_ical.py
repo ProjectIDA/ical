@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import argparse
+import logging
 
 from PyQt5 import QtGui, QtWidgets, QtCore
 
@@ -29,8 +30,6 @@ def load_cfg(argpath=None):
     foundcfg = False
     cfg = None
     cfg_searched_paths = []
-    warns = []
-    errs = []
 
     # first check for cmd line 'root='
     if args.path != None:
@@ -38,7 +37,7 @@ def load_cfg(argpath=None):
         foundcfg, etcpath = has_config_dir(args.path)
         if foundcfg:
             cfg = IcalConfig(os.path.abspath(etcpath))
-            success, errs = cfg.load()
+            success = cfg.load()
         else:
             cfg_searched_paths.append(etcpath)
 
@@ -46,7 +45,6 @@ def load_cfg(argpath=None):
         # path not on caommand line...
         # first check directory with ical executable
         # then user HOME dir
-
         if not foundcfg:
             fpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'etc')
             foundcfg, etcpath = has_config_dir(fpath)
@@ -54,7 +52,7 @@ def load_cfg(argpath=None):
             if foundcfg:
                 # cfg = IcalConfig(os.path.dirname(etcpath))
                 cfg = IcalConfig(etcpath)
-                success, errs = cfg.load()
+                success = cfg.load()
             else:
                 cfg_searched_paths.append(etcpath)
 
@@ -63,26 +61,31 @@ def load_cfg(argpath=None):
 
             if foundcfg:
                 cfg = IcalConfig(etcpath)
-                success, errs = cfg.load()
+                success = cfg.load()
             else:
                 cfg_searched_paths.append(etcpath)
 
     if not foundcfg:
-
         success = False
-        errs.append('ERROR: Could not find configuration dir:\n' + '\n'.join(cfg_searched_paths))
+        logging.error('Could not find ICAL configuration directory in these locations:\n' + '\n'.join(cfg_searched_paths))
 
-
-    return (success, cfg, errs)
+    return (success, cfg)
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(filename='ical.log', 
+        format='%(asctime)s %(levelname)s: %(message)s', 
+        level=logging.INFO, 
+        datefmt='%Y-%m-%d %I:%M:%S %Z')
+    logging.info('*--------------------------------------------------------------------------------*')
+    logging.info('ICAL Starting...')
 
     parser = argparse.ArgumentParser(description='ICAL Calibration Application.')
     parser.add_argument('-p', '--path', help='Local path to configuration files.')
     args = parser.parse_args()
 
-    load_ok, cfg, errs = load_cfg()
+    load_ok, cfg = load_cfg()
 
 
     app = QtWidgets.QApplication(sys.argv)
@@ -91,14 +94,18 @@ if __name__ == '__main__':
     main_win = Ui_MainWindow()
     main_win.setupUi(appMainWindow)
 
-    main_win_hlpr = MainWindowHelper(load_ok, cfg, errs, appMainWindow, main_win)
+    main_win_hlpr = MainWindowHelper(load_ok, cfg, appMainWindow, main_win)
 
     main_win_hlpr.setup_main_window()
 
     appMainWindow.show()
 
     if main_win_hlpr.check_cfg_load():
-        sys.exit(app.exec_())
+        res = app.exec()
+        logging.info('ICAL Quit')
+        sys.exit(res)
     else:
+        logging.error('Error loading configuration data.')
+        logging.info('ICAL Quit')
         sys.exit(1)
 

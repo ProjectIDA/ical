@@ -20,4 +20,5 @@ HEADERS  += mainwindow.h
 FORMS    += mainwindow.ui \
     run_dlg.ui \
     edit_dlg.ui \
-    progress_dlg.ui
+    progress_dlg.ui \
+    logview_dlg.ui

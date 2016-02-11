@@ -52,18 +52,13 @@ class Q330s(IcalConfigReader, IcalConfigWriter):
         self.fpath = fpath
         self.items = []
         self.iter_ndx = 0
-        self.parsed_ok = False
         self.isdirty = False
 
         # if file doesn't exist, create it
         super().ensure_file(fpath)
 
         # read & parse data
-        self.parsed_ok, self.msgs = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
-
-        if not self.parsed_ok:
-            for m in msgs:
-                print(m)
+        self.parsed_ok = super().parse_cfg_file(self.fpath, self.parse_cfg_records)
 
 
     def clear(self):
@@ -71,9 +66,7 @@ class Q330s(IcalConfigReader, IcalConfigWriter):
 
 
     def append(self, rec):
-    # def add_cfg_rec(self, rec):
 
-        msgs = []
         rec = rec.strip()
 
         if not (rec.startswith('#') or (len(rec) == 0)):
@@ -81,31 +74,16 @@ class Q330s(IcalConfigReader, IcalConfigWriter):
             try:
                 q330 = Q330(rec)
             except Q330BadColumnCountExcept:
-                msgs.append('ERROR: q330.cfg record should have at least ' + str(Q330.Q330_COLCOUNT) + ' columns. [' + rec + ']. Record REMOVED.')
+                logging.warning('q330.cfg record should have at least ' + str(Q330.Q330_COLCOUNT) + ' columns. [' + rec + ']. Record REMOVED.')
             except Q330MalformedRecordExcept:
-                msgs.append('ERROR: q330.cfg record appears to be invalid: [' + rec + ']. Record REMOVED.')
+                logging.warning('q330.cfg record appears to be invalid: [' + rec + ']. Record REMOVED.')
             except Exception as e:
-                msgs.append('ERROR: Unknown error parsing q330.cfg record: [' + rec + ']. Record REMOVED.' + str(e))
+                logging.warning('Unknown error parsing q330.cfg record: [' + rec + ']. Record REMOVED.' + str(e))
             else:
                 if next(filter(lambda a: a == q330, self.items), None) == None:
                     self.items.append(q330)
                 else:
-                    msgs.append('WARN: Duplicate q330.cfg record: [' + rec + ']. Record REMOVED.')
-
-        return msgs
-
-
-    # def parse_cfg_records(self, recs):
-
-    #     msgs = []
-    #     self.clear()
-
-    #     for lineno, rec in enumerate(recs):
-    #         msgs += self.append(rec)
-
-    #     self.sort()
-
-    #     return msgs
+                    logging.warning('Duplicate q330.cfg record: [' + rec + ']. Record REMOVED.')
 
 
     def sort(self):

@@ -10,6 +10,7 @@ from config.wrapper_cfg import WrapperCfg
 from config.calib import Calib
 
 from gui.cfg_data_model import CfgDataModel
+import config.pycal_globals as pcgl
 
 class RunDlgHelper(object):
 
@@ -55,5 +56,5 @@ class RunDlgHelper(object):
 
     def show_cmdline(self):
 
-        QtWidgets.QMessageBox().information(self.dlg, 'ICAL: qcal Cmd Line', self.cmdline, QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
+        QtWidgets.QMessageBox().information(self.dlg, 'PyCal: qcal Cmd Line', '/'.join([pcgl.get_bin_root(), self.cmdline]), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
 

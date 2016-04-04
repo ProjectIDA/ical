@@ -85,72 +85,73 @@ class IcalConfig(object):
     def load(self):
 
         self.clear()
-        success = True
 
         # read sensor
-        success_sensor_cfg  = self.load_config_file(self.ICAL_SENSOR_FILEKEY)
-        if not success_sensor_cfg:
-            success = False
-
+        success = self.load_config_file(self.ICAL_SENSOR_FILEKEY)
+        if not success:
+            return False
         # read calib, will sensors complex names against calib records for matches
-        success_calib_cfg  = self.load_config_file(self.ICAL_CALIB_FILEKEY)
-        if not success_calib_cfg:
-            success = False
-
+        success  = self.load_config_file(self.ICAL_CALIB_FILEKEY)
+        if not success:
+            return False
         # read ok so far, read q330
-        if success_sensor_cfg and success_calib_cfg:
-            success_ical_cfg = self.load_config_file(self.ICAL_ICALCFG_FILEKEY)
-            success_q330_cfg = self.load_config_file(self.ICAL_Q330CFG_FILEKEY)
-            success_auth_cfg = self.load_config_file(self.ICAL_AUTH_FILEKEY)
+        success = self.load_config_file(self.ICAL_ICALCFG_FILEKEY)
+        if not success:
+            return False
 
-            # build merged_config...
-            for icalentry in self._config[self.ICAL_ICALCFG_FILEKEY].items:
+        success = self.load_config_file(self.ICAL_Q330CFG_FILEKEY)
+        if not success:
+            return False
 
-                # lets see if there is matching q330 data by TAGNO
-                q330entry = self._config[self.ICAL_Q330CFG_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
-                if not q330entry:
-                    success = False
-                    logging.error('No Q330 record found for TAGNO: ' + icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
+        success = self.load_config_file(self.ICAL_AUTH_FILEKEY)
+        if not success:
+            return False
 
-                if success:
-                    # get info from sensor cfgs if q330 exists. Need q330 for sensor names
-                    sens_a = self._config[self.ICAL_SENSOR_FILEKEY]. \
-                                find(q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_A]) if q330entry else None
-                    sens_b = self._config[self.ICAL_SENSOR_FILEKEY]. \
-                                find(q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_B]) if q330entry else None
+        # everything lodaed ok... now check for data consistency
+        # and build merged config objects adn wrappers
+        for icalentry in self._config[self.ICAL_ICALCFG_FILEKEY].items:
 
-                    if not sens_a:
-                        success = False
-                        logging.error('No SENSOR record found for: ' + q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_A])
-                        
-                    if not sens_b:
-                        success = False
-                        logging.error('No SENSOR record found for: ' + q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_B])
+            config_data_ok = True
+            # lets see if there is matching q330 data by TAGNO
+            q330entry = self._config[self.ICAL_Q330CFG_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
+            if not q330entry:
+                config_data_ok = False
+                logging.error('No Q330 record found for TAGNO: ' + icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
 
-                # lets check for auth recs
-                authentry = self._config[self.ICAL_AUTH_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
-                if not authentry:
-                    success = False
-                    logging.error('No AUTH record found for Q330 TAGNO: ' + icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
+            if config_data_ok:
+                # get info from sensor cfgs if q330 exists. Need q330 for sensor names
+                sens_a = self._config[self.ICAL_SENSOR_FILEKEY]. \
+                            find(q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_A]) if q330entry else None
+                sens_b = self._config[self.ICAL_SENSOR_FILEKEY]. \
+                            find(q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_B]) if q330entry else None
 
-                if success:
-                    wrapcfg = self.create_wrapper(icalentry, q330entry, authentry, sens_a, sens_b)
-                    self.merged_cfg.append(wrapcfg)
-                else:
-                    break
+                if not sens_a:
+                    config_data_ok = False
+                    logging.error('No SENSOR record found for: ' + q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_A])
+                    
+                if not sens_b:
+                    config_data_ok = False
+                    logging.error('No SENSOR record found for: ' + q330entry.data[Q330.Q330_KEY_SENS_COMPNAME_B])
 
+            # lets check for auth recs
+            authentry = self._config[self.ICAL_AUTH_FILEKEY].find(icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
+            if not authentry:
+                config_data_ok = False
+                logging.error('No AUTH record found for Q330 TAGNO: ' + icalentry.data[Icalcfg.ICALCFG_KEY_TAGNO])
 
-            if not success:
-                self.merged_cfg.clear()
-            else:
-                self.merged_cfg.sort()
+            if config_data_ok:
+                wrapcfg = self.create_wrapper(icalentry, q330entry, authentry, sens_a, sens_b)
+                self.merged_cfg.append(wrapcfg)
 
-            # clear out ical, q300 and auth data so NO chance of confusion with merged_cfg data
-            self._config[self.ICAL_ICALCFG_FILEKEY] = None
-            self._config[self.ICAL_Q330CFG_FILEKEY] = None
-            self._config[self.ICAL_AUTH_FILEKEY] = None
+        self.merged_cfg.sort()
+
+        # clear out ical, q300 and auth data so NO chance of confusion with merged_cfg data
+        self._config[self.ICAL_ICALCFG_FILEKEY] = None
+        self._config[self.ICAL_Q330CFG_FILEKEY] = None
+        self._config[self.ICAL_AUTH_FILEKEY] = None
         
-        return success
+        # config loaded...
+        return True
 
 
     def load_config_file(self, file_key=None):
@@ -166,26 +167,37 @@ class IcalConfig(object):
             try:
 
                 if file_key == self.ICAL_SENSOR_FILEKEY:
+                    if not os.path.exists(fpath):
+                        raise Exception('SENSOR file missing: ' + fpath)
                     self._config[self.ICAL_SENSOR_FILEKEY] = Sensors(fpath)
                     success = self._config[self.ICAL_SENSOR_FILEKEY].parsed_ok
 
                 elif file_key == self.ICAL_CALIB_FILEKEY:
+                    if not os.path.exists(fpath):
+                        raise Exception('CALIB file missing: ' + fpath)
                     self._config[self.ICAL_CALIB_FILEKEY] = Calibs(fpath)
                     success = self._config[self.ICAL_CALIB_FILEKEY].parsed_ok
 
                 elif file_key == self.ICAL_AUTH_FILEKEY:
+                    if not os.path.exists(fpath):
+                        raise Exception('AUTH file missing: ' + fpath)
                     self._config[self.ICAL_AUTH_FILEKEY] = Auths(fpath)
                     success = self._config[self.ICAL_AUTH_FILEKEY].parsed_ok
 
                 elif file_key == self.ICAL_Q330CFG_FILEKEY:
+                    if not os.path.exists(fpath):
+                        raise Exception('q330.cfg file missing: ' + fpath)
                     self._config[self.ICAL_Q330CFG_FILEKEY] = Q330s(fpath)
                     success = self._config[self.ICAL_Q330CFG_FILEKEY].parsed_ok
 
                 elif file_key == self.ICAL_ICALCFG_FILEKEY:
+                    if not os.path.exists(fpath):
+                        raise Exception('ical.cfg file missing: ' + fpath)
                     self._config[self.ICAL_ICALCFG_FILEKEY] = Icalcfgs(fpath)
                     success = self._config[self.ICAL_ICALCFG_FILEKEY].parsed_ok
 
             except Exception as e:
+                success = False
                 logging.error('Failure reading or parsing file [' + fpath + ']\n' + e.__str__())
 
         else:

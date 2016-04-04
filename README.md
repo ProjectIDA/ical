@@ -1,5 +1,8 @@
 # ical
-Calibration results reporting &amp; GUI front-end to IDA qcal program
+Calibration results reporting &amp; GUI front-end to IDA qcal program.
+
+PyCal is a self contained Python application being developed for to be used on Apple computers running OS X version 10.10 or 10.11. PyCal utilizes the latest Python scientific computing and visualization libraries including NumPy, SciPy and Matplotlib (see http://scipy.org/). For seismic analysis it builds on ObsPy, a python-based framework for seismology (http://obspy.org/). PyCal makes use of a number of calibration utilities previously developed by Project IDA for calibrating the II network GSN stations.
+
 
 
 ## Build Dependencies

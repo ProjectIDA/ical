@@ -1,10 +1,11 @@
 import time
+import logging
 
 from PyQt5 import QtCore, QtWidgets
 
 from gui.progress_dlg import Ui_ProgressDlg
 
-# from config.ical_config import IcalConfig
+import config.pycal_globals as pcgl
 from config.wrapper_cfg import WrapperCfg
 from comms.ical_threads import QCalThread
 
@@ -14,7 +15,8 @@ class ProgressDlgHelper(object):
     UPDATE_PERIOD = 1 # seconds
 
 
-    def __init__(self, cmdline, caldescr, caltime, progdlg):
+    def __init__(self, bindir, cmdline, caldescr, caltime, progdlg):
+        self.bindir = bindir
         self.cmdline = cmdline
         self.caldescr = caldescr
         self.caltime = caltime
@@ -38,7 +40,7 @@ class ProgressDlgHelper(object):
         self.progdlg.progPB.setMaximum(int(self.caltime * 60))
 
         # qcal thread callback
-        self.qcalThread = QCalThread(self.cmdline)
+        self.qcalThread = QCalThread(pcgl.get_bin_root(), self.cmdline, pcgl.get_results_root())
         self.qcalThread.qcalResult.connect(self.qcal_finished)
 
         self.qcalThread.start()
@@ -59,11 +61,13 @@ class ProgressDlgHelper(object):
     def qcal_finished(self, retcode, msg):
         self.retcode = retcode
         self.msg = msg
+        logging.info('cal completed with error code: {}\n{}'.format(self.retcode, self.msg))
         self.qtdlg.accept()
 
 
     def cancelled(self):
         self.retcode = 1
+        logging.info('Calibration canceled by user.')
         self.msg = 'Calibration canceled by user.'
         self.qcalThread.cancel()
         self.qcalThread = None

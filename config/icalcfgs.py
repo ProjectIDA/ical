@@ -65,7 +65,7 @@ class Icalcfgs(IcalConfigReader, IcalConfigWriter):
             try:
                 icalcfg = Icalcfg(rec)
             except IcalcfgBadColumnCountExcept:
-                logging.warning('Ical.cfg record should have at least ' + str(Icalcfg.SENSOR_COLCOUNT) + ' columns. [' + rec + ']. Record REMOVED.')
+                logging.warning('Ical.cfg record should have at least ' + str(Icalcfg.ICALCFG_COLCOUNT) + ' columns. [' + rec + ']. Record REMOVED.')
             except IcalcfgMalformedRecordExcept:
                 logging.warning('Ical.cfg record appears to be invalid: [' + rec + ']. Record REMOVED.')
             except Exception as e:

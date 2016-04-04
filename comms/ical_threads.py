@@ -1,6 +1,8 @@
 from PyQt5 import QtCore
+import logging
 import subprocess
-import time
+import os.path
+from os import getcwd, chdir
 
 class PingThread(QtCore.QThread):
 
@@ -32,8 +34,9 @@ class Q330Thread(QtCore.QThread):
 
     q330QueryResult = QtCore.pyqtSignal(str, bool, str) 
 
-    def __init__(self, host, cmd, cfg_root_path='etc'):    
+    def __init__(self, host, cmd, bin_root_path, cfg_root_path):    
         super().__init__()
+        self.bin_path = os.path.join(bin_root_path, 'q330')
         self.host = host
         self.cmd = cmd
         self.cfg_path = cfg_root_path
@@ -44,7 +47,7 @@ class Q330Thread(QtCore.QThread):
 
     def q330_query(self, host, cmd):
         proc = subprocess.Popen(
-            ['./bin/q330', 'root='+self.cfg_path, host, cmd],
+            [self.bin_path, 'root='+self.cfg_path, host, cmd],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True)
@@ -62,9 +65,11 @@ class QCalThread(QtCore.QThread):
 
     qcalResult = QtCore.pyqtSignal(int, str) 
 
-    def __init__(self, cmdline):    
+    def __init__(self, bin_root_path, cmdline, output_path):    
         super().__init__()
+        self.bin_path = os.path.join(bin_root_path, 'qcal')
         self.cmdline = cmdline
+        self.output_path = output_path
 
     def cancel(self):
         self.proc.terminate()
@@ -78,13 +83,18 @@ class QCalThread(QtCore.QThread):
     def run_qcal(self):
         retcode = -666
         infomsg = ''
-        # time.sleep(15)
-        self.proc = subprocess.Popen(
-            ['./bin/qcal'] + self.cmdline.split()[1:],
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            universal_newlines=True)
-        stdout, stderr = self.proc.communicate()
+        chdir(self.output_path)
+        logging.info('Spawning calibration subprocess: ' + ' '.join([self.bin_path] + self.cmdline.split()[1:]))
+        logging.info('Output directory: ' + getcwd())
+        try:
+            self.proc = subprocess.Popen(
+                [self.bin_path] + self.cmdline.split()[1:],
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE, 
+                universal_newlines=True)
+            stdout, stderr = self.proc.communicate()
+        except Exception as e:
+            logging.error('EXCEPTION: '+str(e))
         retcode = self.proc.returncode
         if retcode == 0:
             lines = stdout.splitlines()

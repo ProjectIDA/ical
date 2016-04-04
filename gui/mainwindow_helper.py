@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+import config.pycal_globals as pcgl
 from comms.ical_threads import PingThread, Q330Thread
 import gui.mainwindow
 from gui.run_dlg import Ui_RunDlg
@@ -18,8 +19,7 @@ from gui.cfg_data_model import CfgDataModel
 
 class MainWindowHelper(object):
 
-    def __init__(self, load_ok, cfg, app_win, main_win):
-        self.cfg_load_ok = load_ok
+    def __init__(self, cfg, app_win, main_win):
         self.cfg = cfg
         self.cdm = CfgDataModel(self.cfg)
         self.app_win = app_win
@@ -31,22 +31,9 @@ class MainWindowHelper(object):
         self.main_win.q330Info.setText("")
 
 
-    def check_cfg_load(self):
-        if not self.cfg_load_ok:
-            QtWidgets.QMessageBox().critical(self.app_win, 
-                'ICAL ERROR', 
-                'There was an error reading the ICAL configuration files. Check the ical.log file for more information.', 
-                QtWidgets.QMessageBox().Close, 
-                QtWidgets.QMessageBox().Close)
-            return False
-        else:
-            return True
-
-
     def setup_main_window(self):
         self.setup_actions()
         self.setup_tableview()
-
 
     def setup_actions(self):
         self.main_win.acViewLogMessages.triggered.connect(self.view_log_messages)
@@ -81,7 +68,7 @@ class MainWindowHelper(object):
         dlg = QtWidgets.QDialog()
         dlgUI = Ui_LogviewDlg()
         dlgUI.setupUi(dlg)
-        dlgHlpr = LogviewDlgHelper('ical.log', dlg, dlgUI)
+        dlgHlpr = LogviewDlgHelper(pcgl.get_log_filename(), dlg, dlgUI)
 
         dlg.exec()
 
@@ -114,9 +101,9 @@ class MainWindowHelper(object):
         dlgUIHlpr.setupUi(cur_data, edit_mode, dlg, dlgUI)
     
         if edit_mode == EditDlgHelper.EDIT_MODE:
-            dlg.setWindowTitle('ICAL - Edit Configuration')
+            dlg.setWindowTitle('PyCal - Edit Configuration')
         elif edit_mode == EditDlgHelper.ADD_MODE:
-            dlg.setWindowTitle('ICAL - Add New Configuration')
+            dlg.setWindowTitle('PyCal - Add New Configuration')
 
         return (dlg, dlgUI, dlgUIHlpr)
 
@@ -137,8 +124,7 @@ class MainWindowHelper(object):
                         self.cdm.UpdateCfg(wcfg.tagno(), dlgUI.new_cfg)
                         self.update_details(self.cur_row)
                     except Exception as e:
-                        QtWidgets.QMessageBox().critical(self.app_win, 'ICAL ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
-
+                        QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
 
                     self.main_win.cfgListTV.resizeColumnsToContents()
 
@@ -154,7 +140,7 @@ class MainWindowHelper(object):
             try:
                 self.cdm.AddCfg(dlgUI.new_cfg)
             except Exception as e:
-                QtWidgets.QMessageBox().critical(self.app_win, 'ICAL ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
+                QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
 
             self.main_win.cfgListTV.resizeColumnsToContents()
 
@@ -169,11 +155,11 @@ class MainWindowHelper(object):
                     else wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]
                 calib = self.cfg.find_calib(sens_name + '|' + caltype)
                 if not calib:
-                    QtWidgets.QMessageBox().critical(self.app_win, 'ICAL ERROR', 'ERROR Calib Record not Found for ['+ sens_name + '|' + caltype + ']', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
+                    QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', 'ERROR Calib Record not Found for ['+ sens_name + '|' + caltype + ']', QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)                    
                 dlg = QtWidgets.QDialog(self.app_win)
                 rundlg = Ui_RunDlg()
                 rundlg.setupUi(dlg)
-                dlg.setWindowTitle('ICAL - Run Calibration Confirmation')
+                dlg.setWindowTitle('PyCal - Run Calibration Confirmation')
 
                 rundlgHlpr = RunDlgHelper(wcfg, calib, self.cfg.root_dir, rundlg, sensor, caltype)
                 rundlgHlpr.setupUi(dlg)
@@ -184,15 +170,15 @@ class MainWindowHelper(object):
 
                     progdlg = Ui_ProgressDlg()
                     progdlg.setupUi(dlg)
-                    dlg.setWindowTitle('ICAL - Calibration Running')
+                    dlg.setWindowTitle('PyCal - Calibration Running')
 
-                    progdlgHlpr = ProgressDlgHelper(rundlgHlpr.cmdline, rundlgHlpr.caldescr, rundlgHlpr.cal_time_mins, progdlg)
+                    progdlgHlpr = ProgressDlgHelper(pcgl.get_bin_root(), rundlgHlpr.cmdline, rundlgHlpr.caldescr, rundlgHlpr.cal_time_mins, progdlg)
                     progdlgHlpr.setupUi(dlg)
 
                     if (dlg.exec() == QtWidgets.QDialog.Accepted) and (progdlgHlpr.retcode == 0):
-                        res = QtWidgets.QMessageBox().information(self.app_win, 'ICAL', 'Calibration Completed!\n\n' + progdlgHlpr.msg, QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+                        res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal', 'Calibration Completed!\n\n' + progdlgHlpr.msg, QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
                     else:
-                        res = QtWidgets.QMessageBox().warning(self.app_win, 'ICAL', 'Calibration failed with exit code: ' + str(progdlgHlpr.retcode) + '\n' + progdlgHlpr.msg, QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+                        res = QtWidgets.QMessageBox().warning(self.app_win, 'PyCal', 'Calibration failed with exit code: ' + str(progdlgHlpr.retcode) + '\n' + progdlgHlpr.msg, QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
 
 
     def run_cal_A_LF(self):
@@ -291,7 +277,7 @@ class MainWindowHelper(object):
         self.pingThread.pingResult.connect(self.ping_result_slot)
 
         # start thread to get TAGNO and Firmware Vers
-        self.q330Thread = Q330Thread(cfg.data[WrapperCfg.WRAPPER_KEY_IP], 'id')
+        self.q330Thread = Q330Thread(cfg.data[WrapperCfg.WRAPPER_KEY_IP], 'id', pcgl.get_bin_root(), pcgl.get_config_root())
         self.q330Thread.q330QueryResult.connect(self.q330_query_result_slot)
 
         self.main_win.netLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_NET])

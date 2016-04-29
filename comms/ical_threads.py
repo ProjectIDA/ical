@@ -6,9 +6,9 @@ from os import getcwd, chdir
 
 class PingThread(QtCore.QThread):
 
-    pingResult = QtCore.pyqtSignal(str, bool, str) 
+    pingResult = QtCore.pyqtSignal(str, bool, str)
 
-    def __init__(self, host):    
+    def __init__(self, host):
         super().__init__()
         self.host = host
 
@@ -21,9 +21,9 @@ class PingThread(QtCore.QThread):
             ['ping', '-c', '1', '-t', '1', host],
             stdout=subprocess.PIPE)
         stdout, stderr = proc.communicate()
-        retcode = proc.returncode
+        ret_code = proc.returncode
         ping_time = ''
-        if retcode == 0:
+        if ret_code == 0:
             lines = str(stdout, 'utf-8').splitlines()
             time_line = lines[1]
             ping_time = time_line.split()[6].split('=')[1] + time_line.split()[7]
@@ -32,9 +32,9 @@ class PingThread(QtCore.QThread):
 
 class Q330Thread(QtCore.QThread):
 
-    q330QueryResult = QtCore.pyqtSignal(str, bool, str) 
+    q330QueryResult = QtCore.pyqtSignal(str, bool, str)
 
-    def __init__(self, host, cmd, bin_root_path, cfg_root_path):    
+    def __init__(self, host, cmd, bin_root_path, cfg_root_path):
         super().__init__()
         self.bin_path = os.path.join(bin_root_path, 'q330')
         self.host = host
@@ -52,20 +52,20 @@ class Q330Thread(QtCore.QThread):
             stderr=subprocess.PIPE,
             universal_newlines=True)
         stdout, stderr = proc.communicate()
-        retcode = proc.returncode
-        if retcode == 0:
-            infomsg = '\n'.join(stdout.splitlines())
+        ret_code = proc.returncode
+        if ret_code == 0:
+            infomsg = '\n'.join(str(stdout).splitlines())
         else:
-            lines = stderr.splitlines()
+            lines = str(stderr).splitlines()
             infomsg = ' '.join(lines)
         return (host, proc.returncode, infomsg)
 
 
 class QCalThread(QtCore.QThread):
 
-    qcalResult = QtCore.pyqtSignal(int, str) 
+    completed = QtCore.pyqtSignal(int, str, str)
 
-    def __init__(self, bin_root_path, cmdline, output_path):    
+    def __init__(self, bin_root_path, cmdline, output_path):
         super().__init__()
         self.bin_path = os.path.join(bin_root_path, 'qcal')
         self.cmdline = cmdline
@@ -78,30 +78,30 @@ class QCalThread(QtCore.QThread):
 
     def run(self):
         result = self.run_qcal()
-        self.qcalResult.emit(*result)
+        self.completed.emit(*result)
 
     def run_qcal(self):
-        retcode = -666
-        infomsg = ''
         chdir(self.output_path)
         logging.info('Spawning calibration subprocess: ' + ' '.join([self.bin_path] + self.cmdline.split()[1:]))
         logging.info('Output directory: ' + getcwd())
         try:
             self.proc = subprocess.Popen(
                 [self.bin_path] + self.cmdline.split()[1:],
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE, 
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 universal_newlines=True)
             stdout, stderr = self.proc.communicate()
         except Exception as e:
-            logging.error('EXCEPTION: '+str(e))
-        retcode = self.proc.returncode
-        if retcode == 0:
-            lines = stdout.splitlines()
+            stdout, stderr = '', ''
+            logging.error('EXCEPTION: ' + str(e))
+        ret_code = self.proc.returncode
+        if ret_code == 0:
+            lines = str(stdout).splitlines()
             infomsg = lines[1] + '\n\n' + lines[2]
+            msfilename = lines[1].split()[-1]
+            print(lines)
         else:
-            lines = stderr.splitlines()
+            lines = str(stderr).splitlines()
             infomsg = '\n'.join(lines)
-        return (retcode, infomsg)
-
-
+            msfilename = ''
+        return ret_code, infomsg, msfilename

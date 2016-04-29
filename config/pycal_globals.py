@@ -1,5 +1,5 @@
 import sys
-from os.path import expanduser, join
+from os.path import expanduser, join, abspath, dirname
 
 def get_root():
     return expanduser('~/PyCal')
@@ -8,8 +8,8 @@ def get_bin_root():
     if hasattr(sys, '_MEIPASS'):  # assuming running from .app bundle in MacOS folder
         return join(sys._MEIPASS, 'IDA/bin')
     else:
-        return './bin' # for when running outside of .app bundle
- 
+        return './bin'  # for when running outside of .app bundle
+
 
 def get_config_root():
     return join(get_root(), '.etc')

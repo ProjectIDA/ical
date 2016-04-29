@@ -60,6 +60,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Qt project stuff
+*.pro*
+
 # external binaries
 bin/
 
@@ -72,3 +75,11 @@ etc2/
 
 # OS X
 .DS_Store
+
+#PyCharm
+.idea/*
+
+# misc test files
+test*
+*.ipynb*
+sts2*

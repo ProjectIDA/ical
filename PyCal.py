@@ -83,7 +83,7 @@ if __name__ == '__main__':
     main_win = Ui_MainWindow()
     main_win.setupUi(appMainWindow)
 
-    main_win_hlpr = MainWindowHelper(cfg, appMainWindow, main_win)
+    main_win_hlpr = MainWindowHelper(cfg, appMainWindow, main_win, os.path.dirname(os.path.abspath(sys.argv[0])))
 
     main_win_hlpr.setup_main_window()
 
@@ -99,7 +99,7 @@ if __name__ == '__main__':
         logging.info('PyCal Quitting.')
         logging.info('*--------------------------------------------------------------------------------*')
         sys.exit(1)
-    # check 
+    # check
     else:
         res = app.exec()
         logging.info('PyCal exited normally.')

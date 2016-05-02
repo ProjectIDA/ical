@@ -5,6 +5,7 @@ SEISMOMETER_MODELS = [
     'STS1',
     'STS2',
     'STS2.5',
+    'STS2.5-F',
     'STS-5A',
     'TRILLIUM',
 ]
@@ -12,6 +13,7 @@ CALIBRATION_TYPES = ['rbhf', 'rblf']
 TRIAXIAL_SEISMOMETER_MODELS = [
     'STS2',
     'STS2.5',
+    'STS2.5-F',
     'STS-5A',
     'STS1HB',
     'TRILLIUM',
@@ -39,5 +41,6 @@ ChanCodesTpl = namedtuple('ChanCodes', ['north', 'east', 'vertical'])
 
 INSTRUMENT_NOMINAL_GAINS = {
     'STS2.5': 1500,
+    'STS2.5-F': 1500,
     'Q330': 1.67e6
 }

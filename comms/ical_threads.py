@@ -81,6 +81,7 @@ class QCalThread(QtCore.QThread):
         self.completed.emit(*result)
 
     def run_qcal(self):
+        curdir = getcwd()
         chdir(self.output_path)
         logging.info('Spawning calibration subprocess: ' + ' '.join([self.bin_path] + self.cmdline.split()[1:]))
         logging.info('Output directory: ' + getcwd())
@@ -95,11 +96,12 @@ class QCalThread(QtCore.QThread):
             stdout, stderr = '', ''
             logging.error('EXCEPTION: ' + str(e))
         ret_code = self.proc.returncode
+        chdir(curdir)
         if ret_code == 0:
             lines = str(stdout).splitlines()
             infomsg = lines[1] + '\n\n' + lines[2]
             msfilename = lines[1].split()[-1]
-            print(lines)
+            # print(lines)
         else:
             lines = str(stderr).splitlines()
             infomsg = '\n'.join(lines)

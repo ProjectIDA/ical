@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>ICAL - IDA Calibration Tool</string>
+   <string>PyCal - Calibration Tool</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QGroupBox" name="calListGB">
@@ -369,48 +369,26 @@
        <string/>
       </property>
      </widget>
-     <widget class="QPushButton" name="sensARunLFBtn">
+     <widget class="QPushButton" name="sensARunBtn">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>40</x>
+        <x>90</x>
         <y>170</y>
-        <width>120</width>
+        <width>181</width>
         <height>32</height>
        </rect>
       </property>
       <property name="toolTip">
-       <string>Initiate LOW Frequency calibration on this sensor.</string>
+       <string>Initiate sensor A calibration.</string>
       </property>
       <property name="styleSheet">
        <string notr="true">color: red;</string>
       </property>
       <property name="text">
-       <string>Run LF Cal...</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="sensARunHFBtn">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>200</x>
-        <y>170</y>
-        <width>120</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>Initiate HIGH Frequency calibration on this sensor.</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: red;</string>
-      </property>
-      <property name="text">
-       <string>Run HF Cal...</string>
+       <string>Run Sensor A Calibration</string>
       </property>
      </widget>
      <widget class="QPlainTextEdit" name="sensADescrLE">
@@ -707,26 +685,26 @@
        <string/>
       </property>
      </widget>
-     <widget class="QPushButton" name="sensBRunLFBtn">
+     <widget class="QPushButton" name="sensBRunBtn">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>40</x>
+        <x>90</x>
         <y>170</y>
-        <width>120</width>
+        <width>181</width>
         <height>32</height>
        </rect>
       </property>
       <property name="toolTip">
-       <string>Initiate LOW Frequency calibration on this sensor.</string>
+       <string>Initiate sensor B calibration.</string>
       </property>
       <property name="styleSheet">
        <string notr="true">color: red;</string>
       </property>
       <property name="text">
-       <string>Run LF Cal...</string>
+       <string>Run Sensor B Calibration</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_8">
@@ -1005,28 +983,6 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="sensBRunHFBtn">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>200</x>
-        <y>170</y>
-        <width>120</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>Initiate HIGH Frequency calibration on this sensor.</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: red;</string>
-      </property>
-      <property name="text">
-       <string>Run HF Cal...</string>
       </property>
      </widget>
     </widget>

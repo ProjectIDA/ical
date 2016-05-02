@@ -1,0 +1,44 @@
+# -*- mode: python -*-
+
+block_cipher = None
+
+
+a = Analysis(['PyCal.py'],
+             pathex=['/Users/dauerbach/dev/ical/src'],
+             binaries=[
+              ('bin/qcal', 'IDA/bin'),
+              ('bin/q330', 'IDA/bin'),
+              ('/usr/local/opt/libxml2/lib/libxml2.2.dylib', '.')
+              ],
+             datas=[
+              ('data/*', 'IDA/data'),
+              ('etc', 'etc')
+              ],
+             hiddenimports=[],
+             hookspath=[],
+             runtime_hooks=[],
+             excludes=[],
+             win_no_prefer_redirects=False,
+             win_private_assemblies=False,
+             cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data,
+             cipher=block_cipher)
+exe = EXE(pyz,
+          a.scripts,
+          exclude_binaries=True,
+          name='PyCal',
+          debug=True,
+          strip=False,
+          upx=True,
+          console=False )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               name='PyCal')
+app = BUNDLE(coll,
+             name='PyCal.app',
+             icon=None,
+             bundle_identifier='edu.ucsd.ida.PyCal')

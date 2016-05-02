@@ -2,6 +2,7 @@ import logging
 import os.path
 import sys
 from os import makedirs, getcwd
+from subprocess import call
 from datetime import datetime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -47,10 +48,8 @@ class MainWindowHelper(object):
         self.main_win.acViewLogMessages.triggered.connect(self.view_log_messages)
         self.main_win.quitBtn.clicked.connect(self.main_win.actionQuit.trigger)
 
-        self.main_win.sensARunLFBtn.clicked.connect(self.run_cal_A)
-        self.main_win.sensARunHFBtn.clicked.connect(self.run_cal_A_HF)
-        self.main_win.sensBRunLFBtn.clicked.connect(self.run_cal_B_LF)
-        self.main_win.sensBRunHFBtn.clicked.connect(self.run_cal_B_HF)
+        self.main_win.sensARunBtn.clicked.connect(self.run_cal_A)
+        self.main_win.sensBRunBtn.clicked.connect(self.run_cal_B)
 
         self.main_win.addBtn.clicked.connect(self.AddCfg)
         self.main_win.editBtn.clicked.connect(self.EditCfg)
@@ -153,152 +152,193 @@ class MainWindowHelper(object):
             self.main_win.cfgListTV.resizeColumnsToContents()
 
 
-    def run_cal_confirm(self, sensor, caltype):
+    def run_sensor_cal_type(self, sensor, caltype, cal_info):
 
         completed = False
-        sensor = sensor.upper()
-        caltype = caltype.lower()
-        output_dir = ''
-        output_msfn = ''
 
-        if self.cur_row >= 0:
+        # create qcal thread
+        qcal_thread = QCalThread(os.path.join(self.app_root_dir, pcgl.get_bin_root()),
+                                 cal_info['cmd_line'][caltype],
+                                 cal_info['output_dir'])
+
+        dlg = QtWidgets.QDialog(self.app_win)
+        dlg.setWindowTitle('PyCal - Calibration Running')
+        progdlg = Ui_ProgressDlg()
+        progdlg.setupUi(dlg)
+
+        if caltype == 'rblf':
+            cal_descr = 'Calibration Signal: LOW Frequency Random Binary\n\n' + cal_info['cal_descr']
+        else:
+            cal_descr = 'Calibration Signal: HIGH Frequency Random Binary\n\n' + cal_info['cal_descr']
+
+        progdlgHlpr = ProgressDlgHelper(dlg, cal_descr, cal_info['cal_time'][caltype], progdlg, qcal_thread)
+        progdlgHlpr.start()
+
+        if (dlg.exec() == QtWidgets.QDialog.Accepted) and (progdlgHlpr.retcode == 0):
+            completed = True
+            msg = 'Calibration completed successfully. Miniseed file saved: {}'.format(progdlgHlpr.calmsfn)
+            logging.info(msg)
+            # res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
+            #                                           'Calibration Completed!\n\n' + progdlgHlpr.msg,
+            #                                           QtWidgets.QMessageBox().Close,
+            #                                           QtWidgets.QMessageBox().Close)
+
+        else:
+            completed = False
+            msg1 = 'Calibration failed with exit code: {}'.format(progdlgHlpr.retcode)
+            msg2 = 'Calibration failed with message: {}'.format(progdlgHlpr.msg)
+            logging.error(msg1)
+            logging.error(msg2)
+            res = QtWidgets.QMessageBox().critical(self.app_win, 'PyCal', msg2,
+                                                  QtWidgets.QMessageBox().Close,
+                                                  QtWidgets.QMessageBox().Close)
+
+        return completed, progdlgHlpr.calmsfn
+
+
+    def run_sensor_cal(self, sensor):
+
+        if (self.cur_row < 0):
+            msg = 'No Q330 has been seleceted'
+            res = QtWidgets.QMessageBox().warning(self.app_win, 'PyCal', msg,
+                                                  QtWidgets.QMessageBox().Close,
+                                                  QtWidgets.QMessageBox().Close)
+        else:
             wcfg = self.cfg[self.cur_row]
-            sens_name = ''
-            if wcfg:
-                # need to get calib obj to estimate cal time
-                if sensor == 'A':
-                    sens_name = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A]
-                    sensor_descr = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A]
-                    chancodes =  'BH1,BH2,BHZ' #wcfg.data[WrapperCfg.WRAPPER_KEY_CHANCODES_A]
-                    loc = '50' # wcfg.data[WrapperCfg.WRAPPER_KEY_LOC_A]
-                elif sensor == 'B':
-                    sens_name = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]
-                    sensor_descr = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B]
-                    chancodes =  'BH1,BH2,BHZ' #wcfg.data[WrapperCfg.WRAPPER_KEY_CHANCODES_A]
-                    loc = '50' # wcfg.data[WrapperCfg.WRAPPER_KEY_LOC_B]
-                else:
-                    msg = 'Invalid A/B sensor: {}'.format(sensor)
-                    logging.error(msg)
-                    QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg,
-                                                     QtWidgets.QMessageBox().Close,
-                                                     QtWidgets.QMessageBox().Close)
-                    raise Exception(msg)
 
-                calib = self.cfg.find_calib(sens_name + '|' + caltype)
+            if sensor not in ['A', 'B']:
+                msg = 'Invalid sensor can not be calibrated:' + sensor
+                logging.error(msg)
+                raise Exception(msg)
 
-                if not calib:
-                    msg = 'Calib Record not Found for sensor [{}] and caltype [{}].'.format(sens_name, caltype)
-                    logging.error(msg)
-                    QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg,
-                                                     QtWidgets.QMessageBox().Close,
-                                                     QtWidgets.QMessageBox().Close)
-                    raise Exception(msg)
+            if sensor == 'A':
+                seis_model = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A]
+                sensor_descr = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A]
+                chancodes = 'BH1,BH2,BHZ'  # wcfg.data[WrapperCfg.WRAPPER_KEY_CHANCODES_A]
+                loc = '50'  # wcfg.data[WrapperCfg.WRAPPER_KEY_LOC_A]
+            elif sensor == 'B':
+                seis_model = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]
+                sensor_descr = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B]
+                chancodes = 'BH1,BH2,BHZ'  # wcfg.data[WrapperCfg.WRAPPER_KEY_CHANCODES_A]
+                loc = '50'  # wcfg.data[WrapperCfg.WRAPPER_KEY_LOC_B]
 
-                sta = wcfg.data[WrapperCfg.WRAPPER_KEY_STA]
-                ip = wcfg.data[WrapperCfg.WRAPPER_KEY_IP]
-                output_dir = os.path.join(pcgl.get_results_root(), '-'.join([sta, ip.replace('.', '_'), sensor, sens_name]))
-                makedirs(output_dir, mode=0o744, exist_ok=True)
+            lf_calib = self.cfg.find_calib(seis_model + '|' + 'rblf')
+            hf_calib = self.cfg.find_calib(seis_model + '|' + 'rbhf')
 
-                cal_descr =  '{:>11} : {:<6} at {}'.format('Q330 Tag#', wcfg.data[WrapperCfg.WRAPPER_KEY_TAGNO], ip)
-                cal_descr += '\n{:>11} : {} (Sensor {})'.format('Sensor', sensor_descr, sensor)
-                cmd_line = wcfg.gen_qcal_cmdline(sensor, caltype) + ' root=' + self.cfg.root_dir
+            if (not lf_calib) or (not hf_calib):
+                msg = 'Calib Record missing for sensor [{}].'.format(seis_model)
+                logging.error(msg)
+                QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg,
+                                                 QtWidgets.QMessageBox().Close,
+                                                 QtWidgets.QMessageBox().Close)
+                raise Exception(msg)
 
-                dlg = QtWidgets.QDialog(self.app_win)
-                rundlg = Ui_RunDlg()
-                rundlg.setupUi(dlg)
-                dlg.setWindowTitle('PyCal - Run Calibration Confirmation')
-                rundlgHlpr = RunDlgHelper(rundlg, cal_descr, calib.cal_time_min(), cmd_line)
-                rundlgHlpr.setup_ui(dlg)
+            sta = wcfg.data[WrapperCfg.WRAPPER_KEY_STA]
+            ip = wcfg.data[WrapperCfg.WRAPPER_KEY_IP]
 
-                # if dlg.exec() == QtWidgets.QDialog.Accepted:
+            output_dir = os.path.join(pcgl.get_results_root(), '-'.join([sta, ip.replace('.', '_'), sensor, seis_model]))
+            makedirs(output_dir, mode=0o744, exist_ok=True)
 
-                dlg = QtWidgets.QDialog(self.app_win)
-                progdlg = Ui_ProgressDlg()
-                progdlg.setupUi(dlg)
-                dlg.setWindowTitle('PyCal - Calibration Running')
 
-                # create qcal thread
-                qcal_thread = QCalThread(os.path.join(self.app_root_dir, pcgl.get_bin_root()), cmd_line, output_dir)
+            cal_descr = '{:>11} : {:<6} at {}'.format('Q330 Tag#', wcfg.data[WrapperCfg.WRAPPER_KEY_TAGNO], ip)
+            cal_descr += '\n{:>11} : {} (Sensor {})'.format('Sensor', sensor_descr, sensor)
+            cal_descr += '\n{:>11} : {}'.format('Station', wcfg.data[WrapperCfg.WRAPPER_KEY_STA])
+            cal_descr += '\n{:>11} : {}'.format('Loc', loc)
+            cal_descr += '\n{:>11} : {}'.format('Chan Codes', chancodes)
 
-                progdlgHlpr = ProgressDlgHelper(dlg, cal_descr, calib.cal_time_min(), progdlg, qcal_thread)
-                progdlgHlpr.start()
+            tot_cal_time = lf_calib.cal_time_min() + hf_calib.cal_time_min()
 
-                if (dlg.exec() == QtWidgets.QDialog.Accepted) and (progdlgHlpr.retcode == 0):
-                    output_msfn = progdlgHlpr.calmsfn
-                    completed = True
-                    msg = 'Calibration completed successfully. Miniseed file saved: {}'.format(progdlgHlpr.calmsfn)
-                    logging.info(msg)
-                    res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
-                                                              'Calibration Completed!\n\n' + progdlgHlpr.msg,
-                                                              QtWidgets.QMessageBox().Close,
-                                                              QtWidgets.QMessageBox().Close)
+            cal_info = {
+                'sta' : sta,
+                'loc' : loc,
+                'chancodes' : chancodes,
+                'ip' : ip,
+                'seis_model' : seis_model,
+                'cal_descr': cal_descr,
+                'cal_tot_time_mins': tot_cal_time,
+                'cal_time' : {
+                    'rblf' : lf_calib.cal_time_min(),
+                    'rbhf' : hf_calib.cal_time_min(),
+                },
+                'cmd_line' : {
+                    'rbhf' : wcfg.gen_qcal_cmdline(sensor, 'rbhf') + ' root=' + self.cfg.root_dir,
+                    'rblf' : wcfg.gen_qcal_cmdline(sensor, 'rblf') + ' root=' + self.cfg.root_dir
+                },
+                'output_dir': output_dir
+            }
 
-                else:
-                    msg1 = 'Calibration failed with exit code: {}'.format(progdlgHlpr.retcode)
-                    msg2 = 'Calibration failed with message: {}'.format(progdlgHlpr.msg)
-                    logging.error(msg1)
-                    logging.error(msg2)
-                    res = QtWidgets.QMessageBox().warning(self.app_win, 'PyCal', msg2,
+            # dlg = QtWidgets.QDialog(self.app_win)
+            # rundlg = Ui_RunDlg()
+            # rundlg.setupUi(dlg)
+            # dlg.setWindowTitle('PyCal - Run Calibration Confirmation')
+            # rundlgHlpr = RunDlgHelper(rundlg, cal_info)  # cal_descr, calib.cal_time_min(), cmd_line)
+            # rundlgHlpr.setup_ui(dlg)
+
+            # if dlg.exec() == QtWidgets.QDialog.Accepted:
+
+
+            success, lf_msfn = self.run_sensor_cal_type(sensor, 'rblf', cal_info)
+            if success:
+                lf_logfn = os.path.splitext(lf_msfn)[0] + '.log'
+                logging.info('QCal RBLF Miniseed file saved:' + lf_msfn)
+                logging.info('QCal RBLF Log file saved:' + lf_logfn)
+
+                success, hf_msfn = self.run_sensor_cal_type(sensor, 'rbhf', cal_info)
+                if success:
+                    chancodeslst = chancodes.split(',')
+                    channel_codes = ida.seismometers.ChanCodesTpl(north=chancodeslst[0], east=chancodeslst[1], vertical=chancodeslst[2])
+
+                    hf_logfn = os.path.splitext(hf_msfn)[0] + '.log'
+                    logging.info('QCal RBLF Miniseed file saved:' + hf_msfn)
+                    logging.info('QCal RBLF Log file saved:' + hf_logfn)
+
+                    # Calibrations completed successfully.
+                    # you may disconnect from network
+                    #
+                    # prompt to continue with analysis
+                    #
+                    # get initial component independent response
+
+                    if 'MacOS' in getcwd():
+                        resp_fpath = os.path.abspath(os.path.join('.', 'IDA', 'data', 'nom_resp_sts2_5.ida'))
+                    else:  # DEBUG...
+                        resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
+
+
+                    cal_ims_msg_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
+                                                                                                                 channel_codes,
+                                                                                                                 loc,
+                                                                                                                 output_dir,
+                                                                                                                 (lf_msfn, lf_logfn),
+                                                                                                                 (hf_msfn, hf_logfn),
+                                                                                                                 seis_model.upper(),
+                                                                                                                 resp_fpath)
+
+            if success:
+                msg_list = ['Calibration completed successfully. ',
+                            'The following files have been saved:\n\n',
+                            '{}:\n{}\n\n'.format('IMS Message Template', cal_ims_msg_fn),
+                            '{}:\n{}\n\n'.format('Amplitude Response Plots', cal_amp_plot_fn),
+                            '{}:\n{}'.format('Phase Response Plots', cal_pha_plot_fn)]
+                [ logging.info(msg) for msg in msg_list]
+                res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
+                                                          'Calibration Completed!\n\n' + ''.join(msg_list),
                                                           QtWidgets.QMessageBox().Close,
                                                           QtWidgets.QMessageBox().Close)
 
-        return completed, output_dir, output_msfn, sens_name, sta, chancodes, loc
+                call(['open', output_dir])
+                call(['open', cal_ims_msg_fn])
+                call(['open', cal_amp_plot_fn])
+                call(['open', cal_pha_plot_fn])
+
 
 
     def run_cal_A(self):
-        success, output_dir, lf_msfn, seis_model, sta, chancodes, loc = self.run_cal_confirm('A', 'rblf')
-        if success:
-            success, output_dir, hf_msfn, seis_model, _, _, _ = self.run_cal_confirm('A', 'rbhf')
-            if success:
-                chancodeslst = chancodes.split(',')
-                channel_codes = ida.seismometers.ChanCodesTpl(chancodeslst[0], chancodeslst[1], chancodeslst[2])
-                lf_logfn = os.path.splitext(lf_msfn)[0] + '.log'
-                hf_logfn = os.path.splitext(hf_msfn)[0] + '.log'
-                print('LF data: ',
-                      os.path.join(output_dir, lf_msfn),
-                      os.path.exists(os.path.join(output_dir, lf_msfn)),
-                      os.path.exists(os.path.join(output_dir, lf_logfn))
-                      )
-                print('HF data: ',
-                      os.path.join(output_dir, hf_msfn),
-                      os.path.exists(os.path.join(output_dir, hf_msfn)),
-                      os.path.exists(os.path.join(output_dir, hf_logfn))
-                      )
-
-                # Calibrations completed successfully.
-                # you may disconnect from network
-                #
-                # prompt to continue with analysis
-                #
-                # get initial component independent response
-
-                if 'MacOS' in getcwd():
-                    resp_fpath = os.path.abspath(os.path.join('.', 'IDA', 'data', 'nom_resp_sts2_5.ida'))
-                else:  # DEBUG...
-                    resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
+        self.run_sensor_cal('A')
 
 
-                ida.calibration.process_qcal_data(sta, channel_codes, loc,
-                                                  output_dir,
-                                                 (lf_msfn, lf_logfn),
-                                                 (hf_msfn, hf_logfn),
-                                                 seis_model.upper(),
-                                                 resp_fpath)
-
-
-
-
-    def run_cal_A_LF(self):
-        lf_output_dir, lf_msfn = self.run_cal_confirm('A', 'rblf')
-
-    def run_cal_A_HF(self):
-        self.run_cal_confirm('A', 'rbhf')
-
-    def run_cal_B_LF(self):
-        self.run_cal_confirm('B', 'rblf')
-
-    def run_cal_B_HF(self):
-        self.run_cal_confirm('B', 'rbhf')
+    def run_cal_B(self):
+        self.run_sensor_cal('B')
 
 
     def update_details(self, row):
@@ -318,16 +358,16 @@ class MainWindowHelper(object):
     def set_run_btns_enabled(self, row):
 
         if (row == -1):
-            self.main_win.sensARunLFBtn.setEnabled(False)
-            self.main_win.sensARunHFBtn.setEnabled(False)
-            self.main_win.sensBRunLFBtn.setEnabled(False)
-            self.main_win.sensBRunHFBtn.setEnabled(False)
+            self.main_win.sensARunBtn.setEnabled(False)
+            self.main_win.sensARunBtn.setEnabled(False)
+            self.main_win.sensBRunBtn.setEnabled(False)
+            self.main_win.sensBRunBtn.setEnabled(False)
         else:
             wcfg = self.cfg[self.cur_row]
-            self.main_win.sensARunLFBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] != 'none')
-            self.main_win.sensARunHFBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] != 'none')
-            self.main_win.sensBRunLFBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
-            self.main_win.sensBRunHFBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
+            self.main_win.sensARunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] != 'none')
+            self.main_win.sensARunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] != 'none')
+            self.main_win.sensBRunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
+            self.main_win.sensBRunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
 
 
     def ping_result_slot(self, host, up_status, ping_time):

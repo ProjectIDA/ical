@@ -2,9 +2,6 @@ import os.path
 from datetime import datetime
 import numpy as np
 import scipy.signal
-import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
-
 from obspy.signal.invsim import paz_to_freq_resp
 # import ida.obspy_utils as op
 # import ida.response.paz
@@ -98,24 +95,24 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
                                                         in_spec=(v_adev_max <= 5.0) and (v_pdev_max <= 5), paz=v_paz,
                                                         A0=v_a0)
 
+    report_files_basename = os.path.splitext(lf_fnames[0])[0].replace('rblf-', '')
+
+    amp_fn = os.path.join(data_dir, report_files_basename + '_AMP_Resp.png')
+    pha_fn = os.path.join(data_dir, report_files_basename + '_PHA_Resp.png')
     ida.calibration.plots.save_response_comparison_plots(sta, chancodes, loc,
-                                                         data_dir, os.path.splitext(lf_fnames[0])[0],
+                                                         data_dir, amp_fn, pha_fn,
                                                          seis_model,
                                                          lf_start_time, freqs, nom_resp,
                                                          n_resp, n_adev, n_pdev,
                                                          e_resp, e_adev, e_pdev,
                                                          v_resp, v_adev, v_pdev)
 
-    cal_txt_fn = os.path.join(data_dir, os.path.splitext(lf_fnames[0])[0] + '_IMS20_MSG.txt')
+    cal_txt_fn = os.path.join(data_dir, report_files_basename + '_IMS20_MSG.txt')
     ims_msg = ida.ctbto.messages.calibration_result_msg(sta, loc, seis_model, hf_start_time,
                                                         [north_chan_result, east_chan_result, vert_chan_result],
                                                         filename=cal_txt_fn)
-    # print(north_chan_result)
-    # print(east_chan_result)
-    # print(vert_chan_result)
-    # print(ims_msg)
 
-    return ims_msg
+    return cal_txt_fn, amp_fn, pha_fn
 
 
 def system_sensitivity_at_1hz(freqs, resp, seis_model):

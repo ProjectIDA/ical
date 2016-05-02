@@ -12,11 +12,13 @@ from PyQt5 import QtCore, QtWidgets
 class RunDlgHelper(object):
 
     # def __init__(self, wcfg, calib_rec, cfg_root_dir, run_dlg, sensor, caltype):
-    def __init__(self, run_dlg, cal_descr, cal_time_mins, cmd_line):
+    def __init__(self, run_dlg, cal_info_dict): #cal_descr, cal_time_mins, hf_cmd_line, lf_cmd_line):
         self.run_dlg = run_dlg
+        self.cal_info
         self.cal_descr = cal_descr
         self.cal_time_mins = cal_time_mins
-        self.cmd_line = cmd_line
+        self.lf_cmd_line = lf_cmd_line
+        self.hf_cmd_line = hf_cmd_line
 
 
     def setup_ui(self, dlg):

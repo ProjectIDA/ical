@@ -26,6 +26,9 @@ class ProgressDlgHelper(object):
         self.retcode = -1
         self.msg = ''
         self.calmsfn = ''
+        self.progdlg.calWarningLbl.setText('Do NOT disconnect from the network and\n'
+                                           'Do NOT allow the computer to sleep\n ' +
+                                           'while the calibration is running.')
 
 
     def start(self):

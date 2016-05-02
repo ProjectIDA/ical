@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>670</width>
-    <height>250</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -25,7 +25,7 @@
   <property name="maximumSize">
    <size>
     <width>670</width>
-    <height>250</height>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
      <x>10</x>
      <y>10</y>
      <width>651</width>
-     <height>181</height>
+     <height>341</height>
     </rect>
    </property>
    <property name="font">
@@ -61,8 +61,8 @@
      <rect>
       <x>20</x>
       <y>50</y>
-      <width>551</width>
-      <height>51</height>
+      <width>611</width>
+      <height>121</height>
      </rect>
     </property>
     <property name="font">
@@ -87,7 +87,7 @@ Line 2</string>
     <property name="geometry">
      <rect>
       <x>468</x>
-      <y>137</y>
+      <y>287</y>
       <width>161</width>
       <height>20</height>
      </rect>
@@ -110,7 +110,7 @@ Line 2</string>
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>120</y>
+      <y>270</y>
       <width>611</width>
       <height>23</height>
      </rect>
@@ -123,7 +123,7 @@ Line 2</string>
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>138</y>
+      <y>288</y>
       <width>71</width>
       <height>16</height>
      </rect>
@@ -143,7 +143,7 @@ Line 2</string>
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>139</y>
+      <y>289</y>
       <width>71</width>
       <height>16</height>
      </rect>
@@ -162,12 +162,44 @@ Line 2</string>
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QLabel" name="calWarningLbl">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>190</y>
+      <width>611</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Consolas</family>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <italic>true</italic>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: red;
+line-height: 150%</string>
+    </property>
+    <property name="text">
+     <string>text goes here...</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QPushButton" name="cancelBtn">
    <property name="geometry">
     <rect>
      <x>550</x>
-     <y>210</y>
+     <y>360</y>
      <width>115</width>
      <height>32</height>
     </rect>

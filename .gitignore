@@ -67,8 +67,11 @@ target/
 bin/
 
 # miniseed files an logs
-CAL*.ms
-CAL*.log
+CAL-*.ms
+CAL-*.log
+CAL-*.png
+CAL-*.pdf
+CAL-*.txt
 
 # cfg backup
 etc2/

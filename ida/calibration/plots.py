@@ -1,16 +1,17 @@
 from os.path import join
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 
 
-def save_response_comparison_plots(sta, chancodes, loc, data_dir, fname_root, seis_model, timestamp, freqs, nom_resp,
+def save_response_comparison_plots(sta, chancodes, loc, data_dir, amp_fn, pha_fn, seis_model, timestamp, freqs, nom_resp,
                                    n_resp, n_adev, n_pdev,
                                    e_resp, e_adev, e_pdev,
                                    v_resp, v_adev, v_pdev):
+    # pass
     # lets construct output filenames
-    amp_fn = join(data_dir, fname_root + '_AMP_Resp.png')
-    pha_fn = join(data_dir, fname_root + '_PHA_Resp.png')
     datestr = timestamp.strftime('%Y-%m-%d %H:%M UTC')
 
     f100 = plt.figure(100, figsize=(15, 20))
@@ -87,7 +88,8 @@ def save_response_comparison_plots(sta, chancodes, loc, data_dir, fname_root, se
 
 
 def apc_plot(sampling_freq, freqs, amp, pha, coh):
-    # freq_max = 0.4 * sampling_freq
+    pass
+    freq_max = 0.4 * sampling_freq
 
     plt.subplot(311)
     plt.semilogx(freqs, amp)
@@ -108,6 +110,7 @@ def apc_plot(sampling_freq, freqs, amp, pha, coh):
     plt.show()
 
 def plot_cal_output_with_residual(calout, calinp):
+    pass
 
     resid = np.subtract(calout, calinp)
     snr = 1 / resid.std()

@@ -3,12 +3,9 @@ import os
 import shutil
 import sys
 import logging
-
-from PyQt5 import QtGui, QtWidgets, QtCore, QtPrintSupport
-
+from PyQt5 import QtGui, QtWidgets, QtCore #, QtPrintSupport
 from gui.mainwindow import *
 from gui.mainwindow_helper import MainWindowHelper
-
 from config.ical_config import IcalConfig
 import config.pycal_globals as pcgl
 
@@ -84,7 +81,6 @@ if __name__ == '__main__':
     main_win.setupUi(appMainWindow)
 
     main_win_hlpr = MainWindowHelper(cfg, appMainWindow, main_win, os.path.dirname(os.path.abspath(sys.argv[0])))
-
     main_win_hlpr.setup_main_window()
 
     appMainWindow.show()

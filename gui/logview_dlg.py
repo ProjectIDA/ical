@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'logview_dlg.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -29,6 +29,7 @@ class Ui_LogviewDlg(object):
         self.logPTE.setFont(font)
         self.logPTE.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.logPTE.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.logPTE.setReadOnly(True)
         self.logPTE.setObjectName("logPTE")
         self.closeBtn = QtWidgets.QPushButton(LogviewDlg)
         self.closeBtn.setGeometry(QtCore.QRect(580, 650, 115, 32))

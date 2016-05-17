@@ -11,10 +11,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_LogviewDlg(object):
     def setupUi(self, LogviewDlg):
         LogviewDlg.setObjectName("LogviewDlg")
-        LogviewDlg.resize(701, 690)
+        LogviewDlg.resize(701, 790)
         LogviewDlg.setSizeGripEnabled(False)
         self.groupBox = QtWidgets.QGroupBox(LogviewDlg)
         self.groupBox.setGeometry(QtCore.QRect(10, 10, 681, 631))
+        self.groupBox.setMinimumSize(QtCore.QSize(0, 0))
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)

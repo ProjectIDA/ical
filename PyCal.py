@@ -1,9 +1,8 @@
-# import sip
 import os
 import shutil
 import sys
 import logging
-from PyQt5 import QtGui, QtWidgets, QtCore #, QtPrintSupport
+from PyQt5 import QtGui, QtWidgets, QtCore
 from gui.mainwindow import *
 from gui.mainwindow_helper import MainWindowHelper
 from config.ical_config import IcalConfig
@@ -67,7 +66,7 @@ if __name__ == '__main__':
 
     logging.basicConfig(filename=pcgl.get_log_filename(),
                         format='%(asctime)s %(levelname)s: %(message)s',
-                        level=logging.INFO,
+                        level=logging.DEBUG,
                         datefmt='%Y-%m-%d %I:%M:%S %Z')
     logging.info('*--------------------------------------------------------------------------------*')
     logging.info('PyCal Starting...')

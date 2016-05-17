@@ -139,7 +139,7 @@
      <property name="geometry">
       <rect>
        <x>330</x>
-       <y>34</y>
+       <y>30</y>
        <width>360</width>
        <height>211</height>
       </rect>
@@ -188,9 +188,9 @@
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>15</x>
+        <x>7</x>
         <y>78</y>
-        <width>95</width>
+        <width>102</width>
         <height>16</height>
        </rect>
       </property>
@@ -202,13 +202,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>95</width>
+        <width>102</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>95</width>
+        <width>102</width>
         <height>16777215</height>
        </size>
       </property>
@@ -223,7 +223,7 @@
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
-       <string>Calib Mon Port:</string>
+       <string>Calib Mon Chan:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -267,7 +267,7 @@
        <string>Timestamp of previous (successful) HIGH Frequency calibration (UTC)</string>
       </property>
       <property name="text">
-       <string>Last LF Cal:</string>
+       <string>Last Cal:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -324,7 +324,7 @@
        <string/>
       </property>
      </widget>
-     <widget class="QLineEdit" name="sensALastLFLE">
+     <widget class="QLineEdit" name="sensALastCalLE">
       <property name="geometry">
        <rect>
         <x>118</x>
@@ -472,95 +472,6 @@
        <string>Sensor A</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="sensALastHFLE">
-      <property name="geometry">
-       <rect>
-        <x>118</x>
-        <y>133</y>
-        <width>230</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>230</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>230</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Consolas</family>
-        <pointsize>15</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Timestamp of previous (successful) LOW Frequency calibration (UTC)</string>
-      </property>
-      <property name="frame">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-      <property name="placeholderText">
-       <string/>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_4">
-      <property name="geometry">
-       <rect>
-        <x>35</x>
-        <y>133</y>
-        <width>75</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>75</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>75</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Timestamp of previous (successful) LOW Frequency calibration (UTC)</string>
-      </property>
-      <property name="text">
-       <string>Last HF Cal:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
     </widget>
     <widget class="QGroupBox" name="sensorBGB">
      <property name="geometry">
@@ -595,7 +506,7 @@
        <string>Sensor B</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="sensBLastLFLE">
+     <widget class="QLineEdit" name="sensBLastCalLE">
       <property name="geometry">
        <rect>
         <x>118</x>
@@ -626,51 +537,6 @@
       </property>
       <property name="toolTip">
        <string>Timestamp of previous (successful) HIGH Frequency calibration (UTC)</string>
-      </property>
-      <property name="frame">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-      <property name="placeholderText">
-       <string/>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="sensBLastHFLE">
-      <property name="geometry">
-       <rect>
-        <x>118</x>
-        <y>133</y>
-        <width>230</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>230</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>230</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Consolas</family>
-        <pointsize>15</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Timestamp of previous (successful) LOW Frequency calibration (UTC)</string>
       </property>
       <property name="frame">
        <bool>false</bool>
@@ -745,51 +611,7 @@
        <string>Timestamp of previous (successful) HIGH Frequency calibration (UTC)</string>
       </property>
       <property name="text">
-       <string>Last LF Cal:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_9">
-      <property name="geometry">
-       <rect>
-        <x>35</x>
-        <y>133</y>
-        <width>75</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>75</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>75</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Timestamp of previous (successful) LOW Frequency calibration (UTC)</string>
-      </property>
-      <property name="text">
-       <string>Last HF Cal:</string>
+       <string>Last Cal:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -944,9 +766,9 @@
      <widget class="QLabel" name="label_14">
       <property name="geometry">
        <rect>
-        <x>15</x>
+        <x>7</x>
         <y>78</y>
-        <width>95</width>
+        <width>102</width>
         <height>16</height>
        </rect>
       </property>
@@ -958,13 +780,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>95</width>
+        <width>102</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>95</width>
+        <width>102</width>
         <height>16777215</height>
        </size>
       </property>
@@ -979,7 +801,7 @@
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
-       <string>Calib Mon Port:</string>
+       <string>Calib Mon Chan:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -992,7 +814,7 @@
        <x>10</x>
        <y>34</y>
        <width>310</width>
-       <height>245</height>
+       <height>211</height>
       </rect>
      </property>
      <property name="font">
@@ -1029,7 +851,7 @@
       <property name="geometry">
        <rect>
         <x>5</x>
-        <y>21</y>
+        <y>17</y>
         <width>295</width>
         <height>188</height>
        </rect>
@@ -1480,13 +1302,26 @@
        </item>
       </layout>
      </widget>
-     <widget class="QLabel" name="q330NetworkStatus">
+    </widget>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>250</y>
+       <width>931</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QLabel" name="q330Info">
       <property name="geometry">
        <rect>
-        <x>8</x>
-        <y>210</y>
-        <width>291</width>
-        <height>16</height>
+        <x>10</x>
+        <y>6</y>
+        <width>911</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="font">
@@ -1502,28 +1337,28 @@
        <string>TextLabel</string>
       </property>
      </widget>
-     <widget class="QLabel" name="q330Info">
-      <property name="geometry">
-       <rect>
-        <x>8</x>
-        <y>226</y>
-        <width>291</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <family>Consolas</family>
-        <pointsize>12</pointsize>
-        <weight>50</weight>
-        <italic>false</italic>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-     </widget>
+    </widget>
+    <widget class="QPushButton" name="testAnalysisBtn">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>950</x>
+       <y>250</y>
+       <width>111</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Initiate sensor A calibration.</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: red;</string>
+     </property>
+     <property name="text">
+      <string>Test Analysis</string>
+     </property>
     </widget>
    </widget>
    <widget class="QPushButton" name="quitBtn">

@@ -1,4 +1,5 @@
 from math import floor, atan2, sqrt
+import logging
 import numpy as np
 
 
@@ -11,9 +12,11 @@ def cross_correlate(sampling_rate, ts1, ts2):
         raise TypeError(msg)
 
 
+    logging.debug('Making copies of time series...')
     ts1_data = ts1.copy()
     ts2_data = ts2.copy()
 
+    logging.debug('De-mean timeseries and capture variance...')
     # remove mean then calc variance
     ts1_mean = ts1_data.mean()
     ts1_data.__isub__(ts1_mean)
@@ -31,7 +34,11 @@ def cross_correlate(sampling_rate, ts1, ts2):
     #     for r in range(ts_info['ts1']['data'].size):
     #         ofl.write('{} {}\n'.format(ts_info['ts1']['data'][r], ts_info['ts2']['data'][r]))
 
+    logging.debug('calling spcmat...')
+
     sxy, fft_usable_len = spcmat(ts1_data, ts2_data, taper_cnt)
+
+    logging.debug('calling spcmat... complete (fft-len: ' + str(fft_usable_len) + ')')
 
     power = 0.5 * (sxy[0, 0] + sxy[-1, 0]) + sxy[1:fft_usable_len - 1, 0].sum()
     # for ndx in range(1,ts_info['fft_usable_len']-1):
@@ -63,22 +70,24 @@ def cross_correlate(sampling_rate, ts1, ts2):
     gain = np.zeros(fft_usable_len, dtype=np.float64)
     coh = np.zeros(fft_usable_len, dtype=np.float64)
     phase = np.zeros(fft_usable_len, dtype=np.float64)
-    with open('py-cross-results.txt', 'wt') as ofl:
-        for freqndx in range(fft_usable_len):
-            coh[freqndx] = (sxy[freqndx, 2] ** 2 + sxy[freqndx, 3] ** 2) / (sxy[freqndx, 0] * sxy[freqndx, 1])
-            gain[freqndx] = sqrt(coh[freqndx] * sxy[freqndx, 1] / sxy[freqndx, 0])
-            phase[freqndx] = deg_per_rad * atan2(sxy[freqndx, 3], sxy[freqndx, 2])
-            # gain[freqndx] = np.sqrt(coh[freqndx] * sxy[freqndx, 1] / sxy[freqndx, 0])
-            # phase[freqndx] = DEG_PER_RAD * np.arctan(sxy[freqndx, 3] / sxy[freqndx, 2])
-            #     ofl.write('{:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f}\n'.format(
-            #         freqs[freqndx ],
-            #         sxy[freqndx, 0], sxy[freqndx, 1], sxy[freqndx, 2], sxy[freqndx, 3],
-            #         gain[freqndx], coh[freqndx], phase[freqndx]
-            #     ))
-            # ofl.write('\n')
 
-            # lag(ts_info, freqndx, phase, gamsq)
+    logging.debug('Writing results for file system...')
+    for freqndx in range(fft_usable_len):
+        coh[freqndx] = (sxy[freqndx, 2] ** 2 + sxy[freqndx, 3] ** 2) / (sxy[freqndx, 0] * sxy[freqndx, 1])
+        gain[freqndx] = sqrt(coh[freqndx] * sxy[freqndx, 1] / sxy[freqndx, 0])
+        phase[freqndx] = deg_per_rad * atan2(sxy[freqndx, 3], sxy[freqndx, 2])
+        # gain[freqndx] = np.sqrt(coh[freqndx] * sxy[freqndx, 1] / sxy[freqndx, 0])
+        # phase[freqndx] = DEG_PER_RAD * np.arctan(sxy[freqndx, 3] / sxy[freqndx, 2])
+        #     ofl.write('{:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f} {:>15.9f}\n'.format(
+        #         freqs[freqndx ],
+        #         sxy[freqndx, 0], sxy[freqndx, 1], sxy[freqndx, 2], sxy[freqndx, 3],
+        #         gain[freqndx], coh[freqndx], phase[freqndx]
+        #     ))
+        # ofl.write('\n')
 
+        # lag(ts_info, freqndx, phase, gamsq)
+
+    logging.debug('Writing results for file system... complete')
     # kmin=nf
     #     kmax=0
     #     kbar=0

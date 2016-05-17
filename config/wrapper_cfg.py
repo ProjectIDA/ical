@@ -1,14 +1,7 @@
 import re
-
-from config.sensors import Sensors
-# from config.sensor import Sensor
-# from config.calibs import Calibs
 from config.calib import Calib
-# from config.auths import Auths
 from config.auth import Auth
-# from config.q330s import Q330s
 from config.q330 import Q330
-# from config.icalcfgs import Icalcfgs
 from config.icalcfg import Icalcfg
 
 class WrapperCfg(object):
@@ -21,10 +14,12 @@ class WrapperCfg(object):
     WRAPPER_KEY_DATAPORT          = 'dataport'
     WRAPPER_KEY_MONPORT_A         = 'sensor_a_mon_port'
     WRAPPER_KEY_MONPORT_B         = 'sensor_b_mon_port'
-    WRAPPER_KEY_LAST_LF_A         = 'sensor_a_last_lf'
-    WRAPPER_KEY_LAST_LF_B         = 'sensor_b_last_lf'
-    WRAPPER_KEY_LAST_HF_A         = 'sensor_a_last_hf'
-    WRAPPER_KEY_LAST_HF_B         = 'sensor_b_last_hf'
+    WRAPPER_KEY_LOCATION_A        = 'sensor_a_location'
+    WRAPPER_KEY_LOCATION_B        = 'sensor_b_location'
+    WRAPPER_KEY_CHANNELS_A        = 'sensor_a_channels'
+    WRAPPER_KEY_CHANNELS_B        = 'sensor_b_channels'
+    WRAPPER_KEY_LAST_CAL_A        = 'sensor_a_last_cal'
+    WRAPPER_KEY_LAST_CAL_B        = 'sensor_b_last_cal'
     WRAPPER_KEY_SENS_COMPNAME_A   = 'sensor_a_comp_name'
     WRAPPER_KEY_SENS_COMPNAME_B   = 'sensor_b_comp_name'
     WRAPPER_KEY_SENS_ROOTNAME_A   = 'sensor_a_root_name'
@@ -38,7 +33,7 @@ class WrapperCfg(object):
     WRAPPER_KEY_DP3_AUTH          = 'dp3_auth'
     WRAPPER_KEY_DP4_AUTH          = 'dp4_auth'
 
-    WRAPPER_KEY_TIMESTAMP_UNK     = 'unk'
+    WRAPPER_KEY_NONE              = 'none'  # this text val much match 'none' in the sensor and calib cfg files.
     WRAPPER_SENSOR_UNK            = 'UNK SENSOR'
 
 
@@ -64,6 +59,14 @@ class WrapperCfg(object):
             return re.fullmatch(Icalcfg.ICALCFG_MONPORT_A_VALID_REGEX, val) != None
         elif key == cls.WRAPPER_KEY_MONPORT_B:
             return re.fullmatch(Icalcfg.ICALCFG_MONPORT_B_VALID_REGEX, val) != None
+        elif key == cls.WRAPPER_KEY_LOCATION_A:
+            return re.fullmatch(Icalcfg.ICALCFG_LOCATION_VALID_REGEX, val) != None
+        elif key == cls.WRAPPER_KEY_LOCATION_B:
+            return re.fullmatch(Icalcfg.ICALCFG_LOCATION_VALID_REGEX, val) != None
+        elif key == cls.WRAPPER_KEY_CHANNELS_A:
+            return re.fullmatch(Icalcfg.ICALCFG_CHANNELS_VALID_REGEX, val) != None
+        elif key == cls.WRAPPER_KEY_CHANNELS_B:
+            return re.fullmatch(Icalcfg.ICALCFG_CHANNELS_VALID_REGEX, val) != None
 
     @classmethod
     def new_dict(cls):
@@ -74,16 +77,14 @@ class WrapperCfg(object):
             cls.WRAPPER_KEY_SN : '',
             cls.WRAPPER_KEY_IP : '',
             cls.WRAPPER_KEY_DATAPORT : '',
-            cls.WRAPPER_KEY_MONPORT_A : '',
-            cls.WRAPPER_KEY_MONPORT_B : '',
-            cls.WRAPPER_KEY_LAST_LF_A : '',
-            cls.WRAPPER_KEY_LAST_LF_B : '',
-            cls.WRAPPER_KEY_LAST_HF_A : '',
-            cls.WRAPPER_KEY_LAST_HF_B : '',
-            cls.WRAPPER_KEY_SENS_COMPNAME_A : '',
-            cls.WRAPPER_KEY_SENS_COMPNAME_B : '',
-            cls.WRAPPER_KEY_SENS_ROOTNAME_A : '',
-            cls.WRAPPER_KEY_SENS_ROOTNAME_B : '',
+            cls.WRAPPER_KEY_MONPORT_A : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_MONPORT_B : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_LAST_CAL_A : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_LAST_CAL_B : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_SENS_COMPNAME_A : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_SENS_COMPNAME_B : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_SENS_ROOTNAME_A : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_SENS_ROOTNAME_B : cls.WRAPPER_KEY_NONE,
             cls.WRAPPER_KEY_SENS_DESCR_A : '',
             cls.WRAPPER_KEY_SENS_DESCR_B : '',
             cls.WRAPPER_KEY_CFG_AUTH : '',
@@ -91,7 +92,11 @@ class WrapperCfg(object):
             cls.WRAPPER_KEY_DP1_AUTH : '',
             cls.WRAPPER_KEY_DP2_AUTH : '',
             cls.WRAPPER_KEY_DP3_AUTH : '',
-            cls.WRAPPER_KEY_DP4_AUTH : ''
+            cls.WRAPPER_KEY_DP4_AUTH : '',
+            cls.WRAPPER_KEY_LOCATION_A : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_LOCATION_B : cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_CHANNELS_A: cls.WRAPPER_KEY_NONE,
+            cls.WRAPPER_KEY_CHANNELS_B: cls.WRAPPER_KEY_NONE
         }
 
     def __init__(self, init_dict={}):
@@ -138,17 +143,22 @@ class WrapperCfg(object):
 
 
     def ical_rec(self):
-        return  ' '.join([self.data[self.WRAPPER_KEY_NET],
-                self.data[self.WRAPPER_KEY_STA],
-                self.data[self.WRAPPER_KEY_TAGNO],
-                self.data[self.WRAPPER_KEY_DATAPORT],
-                self.data[self.WRAPPER_KEY_MONPORT_A],
-                self.data[self.WRAPPER_KEY_MONPORT_B],
-                self.data[self.WRAPPER_KEY_LAST_LF_A],
-                self.data[self.WRAPPER_KEY_LAST_LF_B],
-                self.data[self.WRAPPER_KEY_LAST_HF_A],
-                self.data[self.WRAPPER_KEY_LAST_HF_B]])
 
+        rec = '{:<3} {:<6} {:<7} {:<2} {:<5} {:<5} {:<30} {:<30} {:<3} {:<3} {:<12} {:<12}'.format(
+                    self.data[self.WRAPPER_KEY_NET],
+                    self.data[self.WRAPPER_KEY_STA],
+                    self.data[self.WRAPPER_KEY_TAGNO],
+                    self.data[self.WRAPPER_KEY_DATAPORT],
+                    self.data[self.WRAPPER_KEY_MONPORT_A],
+                    self.data[self.WRAPPER_KEY_MONPORT_B],
+                    self.data[self.WRAPPER_KEY_LAST_CAL_A],
+                    self.data[self.WRAPPER_KEY_LAST_CAL_B],
+                    self.data[self.WRAPPER_KEY_LOCATION_A],
+                    self.data[self.WRAPPER_KEY_LOCATION_B],
+                    self.data[self.WRAPPER_KEY_CHANNELS_A],
+                    self.data[self.WRAPPER_KEY_CHANNELS_B])
+
+        return rec
 
     def q330_rec(self):
         return ' '.join([self.data[self.WRAPPER_KEY_IP],

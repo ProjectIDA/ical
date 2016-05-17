@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>340</height>
+    <height>380</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,13 +22,13 @@
   <property name="minimumSize">
    <size>
     <width>720</width>
-    <height>340</height>
+    <height>380</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>720</width>
-    <height>340</height>
+    <height>380</height>
    </size>
   </property>
   <property name="mouseTracking">
@@ -49,7 +49,7 @@
      <x>15</x>
      <y>10</y>
      <width>691</width>
-     <height>281</height>
+     <height>331</height>
     </rect>
    </property>
    <property name="font">
@@ -69,9 +69,9 @@
     <property name="geometry">
      <rect>
       <x>330</x>
-      <y>180</y>
+      <y>191</y>
       <width>351</width>
-      <height>91</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="title">
@@ -101,8 +101,8 @@
     <widget class="QLabel" name="label_10">
      <property name="geometry">
       <rect>
-       <x>68</x>
-       <y>31</y>
+       <x>70</x>
+       <y>26</y>
        <width>42</width>
        <height>16</height>
       </rect>
@@ -134,7 +134,7 @@
      <property name="geometry">
       <rect>
        <x>122</x>
-       <y>60</y>
+       <y>52</y>
        <width>50</width>
        <height>19</height>
       </rect>
@@ -166,7 +166,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration monitoring port for sensor B&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration monitoring channel for sensor B&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -181,10 +181,10 @@
     <widget class="QLabel" name="label_14">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>61</y>
-       <width>95</width>
-       <height>16</height>
+       <x>10</x>
+       <y>52</y>
+       <width>102</width>
+       <height>20</height>
       </rect>
      </property>
      <property name="sizePolicy">
@@ -195,13 +195,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>95</width>
+       <width>102</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>95</width>
+       <width>102</width>
        <height>16777215</height>
       </size>
      </property>
@@ -216,7 +216,7 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
-      <string>Calib Mon Port:</string>
+      <string>Q330 Cal Chan:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -226,7 +226,7 @@
      <property name="geometry">
       <rect>
        <x>117</x>
-       <y>27</y>
+       <y>22</y>
        <width>231</width>
        <height>26</height>
       </rect>
@@ -242,6 +242,193 @@
       <string>Sensor B Model</string>
      </property>
     </widget>
+    <widget class="QLineEdit" name="sensBLocLE">
+     <property name="geometry">
+      <rect>
+       <x>122</x>
+       <y>77</y>
+       <width>50</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>50</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>35</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Location code for sensor B&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="frame">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+     </property>
+     <property name="placeholderText">
+      <string>##</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_8">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>77</y>
+       <width>102</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>102</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>102</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Location Code:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="sensBPriChnsLE">
+     <property name="geometry">
+      <rect>
+       <x>122</x>
+       <y>102</y>
+       <width>125</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>125</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>125</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Primary channels for sensor B&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="frame">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+     </property>
+     <property name="placeholderText">
+      <string>NCH,ECH,VCH</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_9">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>103</y>
+       <width>102</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>102</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>102</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Primary Chns:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="sensorAGB">
     <property name="geometry">
@@ -249,7 +436,7 @@
       <x>330</x>
       <y>40</y>
       <width>351</width>
-      <height>91</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="font">
@@ -264,8 +451,8 @@
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
-       <x>68</x>
-       <y>31</y>
+       <x>70</x>
+       <y>27</y>
        <width>42</width>
        <height>16</height>
       </rect>
@@ -296,10 +483,10 @@
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>61</y>
-       <width>95</width>
-       <height>16</height>
+       <x>10</x>
+       <y>54</y>
+       <width>102</width>
+       <height>20</height>
       </rect>
      </property>
      <property name="sizePolicy">
@@ -310,13 +497,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>95</width>
+       <width>102</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>95</width>
+       <width>102</width>
        <height>16777215</height>
       </size>
      </property>
@@ -331,7 +518,7 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
-      <string>Calib Mon Port:</string>
+      <string>Q330 Cal Chan:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -341,7 +528,7 @@
      <property name="geometry">
       <rect>
        <x>122</x>
-       <y>60</y>
+       <y>53</y>
        <width>50</width>
        <height>19</height>
       </rect>
@@ -373,7 +560,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration monitoring port for sensor A&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration monitoring channel for sensor A&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frame">
       <bool>false</bool>
@@ -410,7 +597,7 @@
      <property name="geometry">
       <rect>
        <x>117</x>
-       <y>27</y>
+       <y>23</y>
        <width>231</width>
        <height>26</height>
       </rect>
@@ -424,6 +611,193 @@
       <string>Sensor A Model</string>
      </property>
     </widget>
+    <widget class="QLineEdit" name="sensALocLE">
+     <property name="geometry">
+      <rect>
+       <x>122</x>
+       <y>79</y>
+       <width>50</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>50</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>50</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Location code for sensor A&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="frame">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+     </property>
+     <property name="placeholderText">
+      <string>##</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>79</y>
+       <width>102</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>102</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>102</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Location Code:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="sensAPriChnsLE">
+     <property name="geometry">
+      <rect>
+       <x>122</x>
+       <y>105</y>
+       <width>125</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>125</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>125</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Primary channels for sensor A&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="frame">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+     </property>
+     <property name="placeholderText">
+      <string>NCH,ECH,VCH</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>106</y>
+       <width>102</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>102</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>102</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calibration Monitoring Port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Primary Chns:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="q330GB">
     <property name="geometry">
@@ -431,7 +805,7 @@
       <x>10</x>
       <y>40</y>
       <width>310</width>
-      <height>231</height>
+      <height>281</height>
      </rect>
     </property>
     <property name="font">
@@ -490,7 +864,7 @@
     <widget class="QLineEdit" name="staLE">
      <property name="geometry">
       <rect>
-       <x>149</x>
+       <x>145</x>
        <y>59</y>
        <width>60</width>
        <height>19</height>
@@ -584,9 +958,9 @@
     <widget class="QLineEdit" name="netLE">
      <property name="geometry">
       <rect>
-       <x>149</x>
+       <x>145</x>
        <y>31</y>
-       <width>60</width>
+       <width>40</width>
        <height>19</height>
       </rect>
      </property>
@@ -598,13 +972,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>60</width>
+       <width>40</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>60</width>
+       <width>40</width>
        <height>16777215</height>
       </size>
      </property>
@@ -632,9 +1006,9 @@
     <widget class="QLineEdit" name="ipLE">
      <property name="geometry">
       <rect>
-       <x>149</x>
+       <x>145</x>
        <y>87</y>
-       <width>145</width>
+       <width>160</width>
        <height>19</height>
       </rect>
      </property>
@@ -646,13 +1020,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>145</width>
+       <width>160</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>145</width>
+       <width>160</width>
        <height>16777215</height>
       </size>
      </property>
@@ -706,7 +1080,7 @@
     <widget class="QLineEdit" name="dpLE">
      <property name="geometry">
       <rect>
-       <x>149</x>
+       <x>145</x>
        <y>171</y>
        <width>60</width>
        <height>19</height>
@@ -757,9 +1131,9 @@
     <widget class="QLineEdit" name="snLE">
      <property name="geometry">
       <rect>
-       <x>149</x>
+       <x>145</x>
        <y>143</y>
-       <width>145</width>
+       <width>160</width>
        <height>19</height>
       </rect>
      </property>
@@ -771,13 +1145,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>145</width>
+       <width>160</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>145</width>
+       <width>160</width>
        <height>16777215</height>
       </size>
      </property>
@@ -831,7 +1205,7 @@
     <widget class="QLineEdit" name="tagnoLE">
      <property name="geometry">
       <rect>
-       <x>149</x>
+       <x>145</x>
        <y>115</y>
        <width>60</width>
        <height>19</height>
@@ -931,7 +1305,7 @@
     <widget class="QLineEdit" name="dpauthLE">
      <property name="geometry">
       <rect>
-       <x>149</x>
+       <x>145</x>
        <y>199</y>
        <width>60</width>
        <height>19</height>
@@ -982,7 +1356,7 @@
    <property name="geometry">
     <rect>
      <x>633</x>
-     <y>300</y>
+     <y>346</y>
      <width>81</width>
      <height>32</height>
     </rect>
@@ -995,7 +1369,7 @@
    <property name="geometry">
     <rect>
      <x>550</x>
-     <y>300</y>
+     <y>346</y>
      <width>81</width>
      <height>32</height>
     </rect>
@@ -1008,7 +1382,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>300</y>
+     <y>346</y>
      <width>81</width>
      <height>32</height>
     </rect>
@@ -1028,8 +1402,15 @@
   <tabstop>dpauthLE</tabstop>
   <tabstop>sensACB</tabstop>
   <tabstop>sensAMonPortLE</tabstop>
+  <tabstop>sensALocLE</tabstop>
+  <tabstop>sensAPriChnsLE</tabstop>
   <tabstop>sensBCB</tabstop>
   <tabstop>sensBMonPortLE</tabstop>
+  <tabstop>sensBLocLE</tabstop>
+  <tabstop>sensBPriChnsLE</tabstop>
+  <tabstop>cancelBtn</tabstop>
+  <tabstop>saveBtn</tabstop>
+  <tabstop>resetBtn</tabstop>
  </tabstops>
  <resources/>
  <connections/>

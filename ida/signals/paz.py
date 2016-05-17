@@ -1,6 +1,7 @@
 import numpy as np
 import os.path
 import logging
+import ida.signals.utils
 
 
 class PAZ(object):
@@ -11,6 +12,7 @@ class PAZ(object):
         'disp': 2
     }
     UNITS = ['hz', 'rad']
+    PAZ_HEADER_IDA = '0x8001  # type 0x8001 = analog'
 
     def __init__(self, mode, units, pzfilename=None, fileformat=None):
 
@@ -97,6 +99,23 @@ class PAZ(object):
                 logging.error(msg)
                 raise Exception(msg)
 
+
+    def save(self, filename):
+
+        with open(filename, 'wt') as ofl:
+            ofl.write(self.PAZ_HEADER_IDA + '\n')
+            ofl.write('{:<3} # number of zeros\n'.format(self.num_zeros))
+            ofl.write('{:<3} # number of poles\n'.format(self.num_poles))
+            ofl.write('\n')
+            ofl.write('# zeros\n')
+            for zero in self._zeros:
+                ofl.write('{:>12.5E}, {:>12.5E}\n'.format(zero.real, zero.imag))
+            ofl.write('\n')
+            ofl.write('# poles\n')
+            for pole in self._poles:
+                ofl.write('{:>12.5E}, {:>12.5E}\n'.format(pole.real, pole.imag))
+
+
     @property
     def h0(self):
         return self._h0
@@ -169,3 +188,38 @@ class PAZ(object):
             poles *= 2 * np.pi
 
         return poles
+
+
+    def merge_paz_partial(self, paz_partial, paz_map, norm_freq):
+
+        if len(paz_map[0]) > 0:
+            self._poles[paz_map[0]] = paz_partial._poles
+
+        if len(paz_map[1]) > 0:
+            self._zeros[paz_map[1]] = paz_partial._zeros
+
+        resp = ida.signals.utils.compute_response(np.array([norm_freq]), self, mode=self.mode)
+        self.h0 = 1.0 / abs(resp)
+
+
+    def make_partial(self, paz_map, norm_freq):
+
+        newpaz = PAZ(mode=self.mode, units=self.units, fileformat=self.fileformat)
+        newpaz.h0 = self.h0
+        newpaz._poles = self._poles[paz_map[0]]
+        newpaz._zeros = self._zeros[paz_map[1]]
+
+        resp = ida.signals.utils.compute_response(np.array([norm_freq]), newpaz, mode=self.mode)
+        newpaz.h0 = 1.0 / abs(resp)
+
+        return newpaz
+
+
+    def copy(self):
+
+        newpaz = PAZ(mode=self.mode, units=self.units, fileformat=self.fileformat)
+        newpaz.h0 = self.h0
+        newpaz._poles = self._poles.copy()
+        newpaz._zeros = self._zeros.copy()
+
+        return newpaz

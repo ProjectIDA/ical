@@ -5,7 +5,6 @@ from config.wrapper_cfg import WrapperCfg
 from config.sensors import Sensors
 from config.sensor import Sensor
 from config.calibs import Calibs
-from config.calib import Calib
 from config.auths import Auths
 from config.auth import Auth
 from config.q330s import Q330s
@@ -249,10 +248,12 @@ class IcalConfig(object):
         tmpdict[WrapperCfg.WRAPPER_KEY_DATAPORT]  = icalentry.data[Icalcfg.ICALCFG_KEY_DATAPORT]
         tmpdict[WrapperCfg.WRAPPER_KEY_MONPORT_A] = icalentry.data[Icalcfg.ICALCFG_KEY_MONPORT_A]
         tmpdict[WrapperCfg.WRAPPER_KEY_MONPORT_B] = icalentry.data[Icalcfg.ICALCFG_KEY_MONPORT_B]
-        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_LF_A] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_LF_A]
-        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_HF_A] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_HF_A]
-        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_LF_B] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_LF_B]
-        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_HF_B] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_HF_B]
+        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_CAL_A] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_CAL_A]
+        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_CAL_B] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_CAL_B]
+        tmpdict[WrapperCfg.WRAPPER_KEY_LOCATION_A] = icalentry.data[Icalcfg.ICALCFG_KEY_LOCATION_A]
+        tmpdict[WrapperCfg.WRAPPER_KEY_LOCATION_B] = icalentry.data[Icalcfg.ICALCFG_KEY_LOCATION_B]
+        tmpdict[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = icalentry.data[Icalcfg.ICALCFG_KEY_CHANNELS_A]
+        tmpdict[WrapperCfg.WRAPPER_KEY_CHANNELS_B] = icalentry.data[Icalcfg.ICALCFG_KEY_CHANNELS_B]
 
         if q330entry:
             tmpdict[WrapperCfg.WRAPPER_KEY_IP] = q330entry.data[Q330.Q330_KEY_IP]
@@ -295,7 +296,7 @@ class IcalConfig(object):
             self.save()
 
         except Exception as e:
-            logger.error('Error saving new configuration:', str(e))
+            logging.error('Error saving new configuration:', str(e))
             return False
 
         return True
@@ -312,8 +313,8 @@ class IcalConfig(object):
 
             return True
         else:
+            logging.error('Could not update configuration for q330 tagno=' + new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO])
             return False
-
 
     def sensor_list(self):
         return self._config[self.ICAL_SENSOR_FILEKEY].SensorModelList()

@@ -52,6 +52,10 @@ class EditDlgHelper(object):
         self.dlgUI.dpauthLE.textEdited.connect(self.LEEdited)
         self.dlgUI.sensAMonPortLE.textEdited.connect(self.LEEdited)
         self.dlgUI.sensBMonPortLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.sensALocLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.sensBLocLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.sensAPriChnsLE.textEdited.connect(self.LEEdited)
+        self.dlgUI.sensBPriChnsLE.textEdited.connect(self.LEEdited)
 
         self.dlgUI.resetBtn.setEnabled(False)
         self.dlgUI.resetBtn.clicked.connect(self.reset)
@@ -78,25 +82,16 @@ class EditDlgHelper(object):
         self.dlgUI.dpauthLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_DP1_AUTH, ''))
         self.dlgUI.sensAMonPortLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_A, ''))
         self.dlgUI.sensBMonPortLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_MONPORT_B, ''))
+        self.dlgUI.sensALocLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_LOCATION_A, ''))
+        self.dlgUI.sensBLocLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_LOCATION_B, ''))
+        self.dlgUI.sensAPriChnsLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_CHANNELS_A, ''))
+        self.dlgUI.sensBPriChnsLE.setText(self.dlgUI.new_cfg.get(WrapperCfg.WRAPPER_KEY_CHANNELS_B, ''))
 
-        self.dlgUI.sensACB.setCurrentText('UNKNOWN SENSOR MODEL')
-        self.dlgUI.sensBCB.setCurrentText('UNKNOWN SENSOR MODEL')
-        self.dlgUI.sensACB.setCurrentIndex(-1)
-        self.dlgUI.sensBCB.setCurrentIndex(-1)
         for senkey, sendesc in self._sensorlist:
-            # self.dlgUI.sensACB.addItem(sendesc, QtCore.QVariant(senkey))
-            # self.dlgUI.sensBCB.addItem(sendesc, QtCore.QVariant(senkey))
-            if self.mode == EditDlgHelper.EDIT_MODE:
-                if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A]:
-                    # self.dlgUI.sensACB.setCurrentIndex(self.dlgUI.sensACB.count() - 1)
-                    self.dlgUI.sensACB.setCurrentText(sendesc)
-                if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]:
-                    # self.dlgUI.sensBCB.setCurrentIndex(self.dlgUI.sensBCB.count() - 1)
-                    self.dlgUI.sensBCB.setCurrentText(sendesc)
-            else:
-                if senkey == 'none':
-                    self.dlgUI.sensACB.setCurrentText(sendesc)
-                    self.dlgUI.sensBCB.setCurrentText(sendesc)
+            if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A]:
+                self.dlgUI.sensACB.setCurrentText(sendesc)
+            if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]:
+                self.dlgUI.sensBCB.setCurrentText(sendesc)
 
         self.validate()
 
@@ -141,6 +136,20 @@ class EditDlgHelper(object):
             self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] = senskey
             self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] = senskey
             self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A] = list(filter(lambda s: s[0] == senskey, self.sensorlist))[0][1]
+            if senskey == WrapperCfg.WRAPPER_KEY_NONE:
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] = WrapperCfg.WRAPPER_KEY_NONE
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A] = WrapperCfg.WRAPPER_KEY_NONE
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = WrapperCfg.WRAPPER_KEY_NONE
+            else:
+                if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] == WrapperCfg.WRAPPER_KEY_NONE:
+                    self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] = ''
+                if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A] == WrapperCfg.WRAPPER_KEY_NONE:
+                    self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A] = ''
+                if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] == WrapperCfg.WRAPPER_KEY_NONE:
+                    self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = ''
+
+            self.refresh_dialog()
+
             self.validate()
 
 
@@ -150,6 +159,21 @@ class EditDlgHelper(object):
             self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] = senskey
             self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] = senskey
             self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B] = list(filter(lambda s: s[0] == senskey, self.sensorlist))[0][1]
+
+            if senskey == WrapperCfg.WRAPPER_KEY_NONE:
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] = WrapperCfg.WRAPPER_KEY_NONE
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B] = WrapperCfg.WRAPPER_KEY_NONE
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] = WrapperCfg.WRAPPER_KEY_NONE
+            else:
+                if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] == WrapperCfg.WRAPPER_KEY_NONE:
+                    self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] = ''
+                if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B] == WrapperCfg.WRAPPER_KEY_NONE:
+                    self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B] = ''
+                if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] == WrapperCfg.WRAPPER_KEY_NONE:
+                    self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] = ''
+
+            self.refresh_dialog()
+
             self.validate()
 
 
@@ -169,6 +193,10 @@ class EditDlgHelper(object):
         self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH] = self.dlgUI.dpauthLE.text()
         self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] = self.dlgUI.sensAMonPortLE.text()
         self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] = self.dlgUI.sensBMonPortLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A] = self.dlgUI.sensALocLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B] = self.dlgUI.sensBLocLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = self.dlgUI.sensAPriChnsLE.text()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] = self.dlgUI.sensBPriChnsLE.text()
         self.validate()
 
 
@@ -187,6 +215,10 @@ class EditDlgHelper(object):
             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_DP4_AUTH]) and
             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A]) and
             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A]) and
+            (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B]) and
             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A]) and
             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] == self.orig_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]))
 
@@ -244,41 +276,82 @@ class EditDlgHelper(object):
 
         # check SENSOR A
         if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] in [x[0] for x in self.sensorlist]:
-            pal = self.dlgUI.sensACB.palette();
+            pal = self.dlgUI.sensACB.palette()
             pal.setColor(QtGui.QPalette.Text, QtGui.QColor(0, 102, 0))
-            self.dlgUI.sensACB.setPalette(pal);
+            self.dlgUI.sensACB.setPalette(pal)
         else:
-            pal = self.dlgUI.sensACB.palette();
+            pal = self.dlgUI.sensACB.palette()
             pal.setColor(QtGui.QPalette.Text, QtGui.QColor(179, 0, 0))
-            self.dlgUI.sensACB.setPalette(pal);
+            self.dlgUI.sensACB.setPalette(pal)
             valid = False
 
         # check SENSOR A CAL MON PORT
-        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_MONPORT_A, self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A]):
+        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_MONPORT_A, self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A]) or \
+            ((self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] == WrapperCfg.WRAPPER_KEY_NONE) and
+             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_A] == WrapperCfg.WRAPPER_KEY_NONE)):
             self.dlgUI.sensAMonPortLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
         else:
             self.dlgUI.sensAMonPortLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
             valid = False
 
+        # check SENSOR A LOCATION
+        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_LOCATION_A, self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A]) or \
+            ((self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] == WrapperCfg.WRAPPER_KEY_NONE) and
+             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_A] == WrapperCfg.WRAPPER_KEY_NONE)):
+            self.dlgUI.sensALocLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
+        else:
+            self.dlgUI.sensALocLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
+            valid = False
+
+        # check SENSOR A Prim Channels
+        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_CHANNELS_A, self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A]) or \
+            ((self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] == WrapperCfg.WRAPPER_KEY_NONE) and
+             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] == WrapperCfg.WRAPPER_KEY_NONE)):
+            self.dlgUI.sensAPriChnsLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
+        else:
+            self.dlgUI.sensAPriChnsLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
+            valid = False
+
         # check SENSOR B
         if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] in [x[0] for x in self.sensorlist]:
-            pal = self.dlgUI.sensBCB.palette();
+            pal = self.dlgUI.sensBCB.palette()
             pal.setColor(QtGui.QPalette.Text, QtGui.QColor(0, 102, 0))
-            self.dlgUI.sensBCB.setPalette(pal);
+            self.dlgUI.sensBCB.setPalette(pal)
         else:
-            pal = self.dlgUI.sensBCB.palette();
+            pal = self.dlgUI.sensBCB.palette()
             pal.setColor(QtGui.QPalette.Text, QtGui.QColor(179, 0, 0))
-            self.dlgUI.sensBCB.setPalette(pal);
+            self.dlgUI.sensBCB.setPalette(pal)
             # self.dlgUI.sensBCB.setStyleSheet("QComboBox{color:rgb(179, 0, 0);}")
             valid = False
 
         # check SENSOR B CAL MON PORT
-        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_MONPORT_B, self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B]):
+        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_MONPORT_B, self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B]) or \
+            ((self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] == WrapperCfg.WRAPPER_KEY_NONE) and
+             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_MONPORT_B] == WrapperCfg.WRAPPER_KEY_NONE)):
             self.dlgUI.sensBMonPortLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
         else:
             self.dlgUI.sensBMonPortLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
             valid = False
 
+        # check SENSOR B LOCATION
+        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_LOCATION_B,
+                                        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B]) or \
+            ((self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] == WrapperCfg.WRAPPER_KEY_NONE) and
+             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_LOCATION_B] == WrapperCfg.WRAPPER_KEY_NONE)):
+            self.dlgUI.sensBLocLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
+        else:
+            self.dlgUI.sensBLocLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
+            valid = False
+
+        # check SENSOR B Prim Channels
+        if WrapperCfg.is_valid_wcfg_key(WrapperCfg.WRAPPER_KEY_CHANNELS_B,
+                                        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B]) or \
+            ((self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] == WrapperCfg.WRAPPER_KEY_NONE) and
+             (self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] == WrapperCfg.WRAPPER_KEY_NONE)):
+            self.dlgUI.sensBPriChnsLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
+        else:
+            self.dlgUI.sensBPriChnsLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
+            valid = False
 
         self.dlgUI.resetBtn.setEnabled(self.is_dirty())
         self.dlgUI.saveBtn.setEnabled(valid and self.is_dirty())

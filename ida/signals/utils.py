@@ -1,12 +1,12 @@
 import logging
-import obspy.core.stream
-import obspy.core.trace
-from obspy.signal.invsim import paz_to_freq_resp
+import copy
+from ida.signals.trace import IDATrace
+# from ida.signals.stream import IDAStream
 import scipy.signal
-# import scipy.signal.ltisys
 import numpy as np
 import ida.calibration.qcal_utils
 import ida.seismometers
+import ida.signals.paz
 
 TAPER_TYPES = [
     'tukey'
@@ -19,7 +19,7 @@ Q330_FIR_RESPONSE_AT_1HZ = 1.01
 def check_and_fix_polarities(strm, seis_model):
 
     for tr in strm:
-        if invert_signal(tr.stats.channel, seis_model):
+        if invert_signal(tr.channel, seis_model):
             tr.data *= -1.0
 
 
@@ -74,49 +74,34 @@ def invert_signal(channel, seis_model):
 def trim_stream(src_stream, left=0, right=0):
 
     for trace in src_stream:
-        trace.trim(trace.stats.starttime + left, trace.stats.endtime - right)
+        trace.trim(trace.starttime + left, trace.endtime - right)
 
 
-def prepare_normalized_response(bin_cnt, samp_rate, paz, nom_freq):
+def ntrim_stream(traces, left=0, right=0):
 
-    # read normative PAZ response and create FAP freq resp
-    resp, resp_freqs = pz2fap(bin_cnt,
-                             paz.poles('acc', 'rad'),
-                             paz.zeros('acc', 'rad'),
-                             1.0,
-                             samp_rate)
-    resp_freqs /= (2.0 * np.pi)
-    resp_norm, scale, ndx = normalize(resp, resp_freqs, nom_freq)
-
-    return resp_norm, resp_freqs
+    for trace in traces:
+        trace.trim(left, right)
 
 
-# def pz2fap(fft_len, poles, zeros, gain, sampling_freq):
-#     """need to supply poles/zeros in rad/sec"""
-#
-#     resp, lin_freq_hz = paz_to_freq_resp(poles, zeros, gain, 1.0/sampling_freq, fft_len, freq=True)
-#
-#     # n = fft_len // 2
-#     # b, a = scipy.signal.ltisys.zpk2tf(zeros, poles, gain)
-#     # a has to be a list for the scipy.signal.freqs() call later but zpk2tf()
-#     # strangely returns it as an integer.
-#     # if not isinstance(a, np.ndarray) and a == 1.0:
-#     #     a = [1.0]
-#     # fy = 0.5 * sampling_freq
-#     # start at zero to get zero for offset / DC of fft
-#     # f = np.linspace(0, fy, n + 1)
-#     # freq, resp = scipy.signal.freqs(b, a, f * 2 * np.pi)
-#     #
-#     # for r in nditer(resp, op_flags=['readwrite']):
-#     #     r[...] = r.conjugate()
-#
-#     return resp, lin_freq_hz * 2 * np.pi
+def compute_response(freqs, paz, mode='vel'):
+
+    b, a = scipy.signal.ltisys.zpk2tf(paz.zeros(units='rad', mode=mode),
+                                      paz.poles(units='rad', mode=mode),
+                                      paz.h0)
+    # a has to be a list for the scipy.signal.freqs() call later but zpk2tf()
+    # strangely returns it as an integer.
+    if not isinstance(a, np.ndarray) and a == 1.0:
+        a = [1.0]
+
+    _, h = scipy.signal.freqs(b, a, freqs * 2 * np.pi)
+
+    return h
 
 
 def normalize(freq_resp, freqs, norm_freq):
 
     normed = None
-    # find the index in freqs of the frist freq >= nom_freq
+    # find the index in freqs of the first freq >= nom_freq
     ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= norm_freq])
     if not (ndx is None):
         scale = np.abs(freq_resp[ndx])
@@ -127,123 +112,28 @@ def normalize(freq_resp, freqs, norm_freq):
     return normed, scale, ndx
 
 
-
-# def xyz2uvw(trace_tpl, xfrm=None):
-#     # trace_tpl.plot()
-#
-#     # (X, Y, Z)
-#
-#     tr_X = trace_tpl[0]
-#     tr_Y = trace_tpl[1]
-#     tr_Z = trace_tpl[2]
-#
-#     stats = tr_X.stats.copy()
-#
-#     tr_u = obspy.core.Trace(
-#         np.multiply(tr_X.data, xfrm[0][0]) + \
-#         np.multiply(tr_Y.data, xfrm[0][1]) + \
-#         np.multiply(tr_Z.data, xfrm[0][2])
-#         )
-#     tr_u.stats = stats.copy()
-#     tr_u.stats['channel'] = tr_u.stats['channel'][0:2] + 'U'
-#
-#     tr_v = obspy.core.Trace(
-#         np.multiply(tr_X.data, xfrm[1][0]) + \
-#         np.multiply(tr_Y.data, xfrm[1][1]) + \
-#         np.multiply(tr_Z.data, xfrm[1][2])
-#     )
-#     tr_v.stats = stats.copy()
-#     tr_v.stats['channel'] = tr_v.stats['channel'][0:2] + 'V'
-#
-#     tr_w = obspy.core.Trace(
-#         np.multiply(tr_X.data, xfrm[2][0]) + \
-#         np.multiply(tr_Y.data, xfrm[2][1]) + \
-#         np.multiply(tr_Z.data, xfrm[2][2])
-#     )
-#     tr_w.stats = stats.copy()
-#     tr_w.stats['channel'] = tr_w.stats['channel'][0:2] + 'W'
-#
-#     # uvw_strm = obspy.core.stream.Stream(traces=[tr_u, tr_v, tr_w])
-#     # tstart = obspy.core.UTCDateTime(tr_u.stats['starttime'] + 60*60)
-#     # tend = obspy.core.UTCDateTime(tstart + 600)
-#     # uvw_strm.slice(tstart, tend).plot()
-#     #
-#     uvw_trace_tpl = (tr_u, tr_v, tr_w)
-#
-#     return uvw_trace_tpl
-#
-# def uvw2enz(trace_tpl, xfrm=None):
-#     # trace_tpl.plot()
-#
-#     # (U, V, W)
-#
-#     tr_U = trace_tpl[0]
-#     tr_V = trace_tpl[1]
-#     tr_W = trace_tpl[2]
-#
-#     stats = tr_U.stats.copy()
-#
-#     tr_E = obspy.core.Trace(
-#         np.multiply(tr_U.data, xfrm[0][0]) + \
-#         np.multiply(tr_V.data, xfrm[0][1]) + \
-#         np.multiply(tr_W.data, xfrm[0][2])
-#         )
-#     tr_E.stats = stats.copy()
-#     tr_E.stats['channel'] = tr_E.stats['channel'][0:2] + '2'
-#
-#     tr_N = obspy.core.Trace(
-#         np.multiply(tr_U.data, xfrm[1][0]) + \
-#         np.multiply(tr_V.data, xfrm[1][1]) + \
-#         np.multiply(tr_W.data, xfrm[1][2])
-#     )
-#     tr_N.stats = stats.copy()
-#     tr_N.stats['channel'] = tr_N.stats['channel'][0:2] + '1'
-#
-#     tr_Z = obspy.core.Trace(
-#         np.multiply(tr_U.data, xfrm[2][0]) + \
-#         np.multiply(tr_V.data, xfrm[2][1]) + \
-#         np.multiply(tr_W.data, xfrm[2][2])
-#     )
-#     tr_Z.stats = stats.copy()
-#     tr_Z.stats['channel'] = tr_Z.stats['channel'][0:2] + 'Z'
-#
-#     # strm = obspy.core.stream.Stream(traces=[tr_E, tr_N, tr_Z])
-#     # tstart = obspy.core.UTCDateTime(tr_U.stats['starttime'] + 60*60)
-#     # tend = obspy.core.UTCDateTime(tstart + 600)
-#     # strm.slice(tstart, tend).plot()
-#
-#     enz_trace_tpl = (tr_E, tr_N, tr_Z)
-#
-#     return enz_trace_tpl
-
 def channel_xform(trace_tpl, xfrm):
 
     #  traces and xfrms assumed to be ENZ (aka 21Z and XYZ for triaxial seis output) order
-    stats = trace_tpl[0].stats.copy()
+    header = trace_tpl[0].header
 
-    tr_E = obspy.core.Trace(
-        np.multiply(trace_tpl[0].data, xfrm[0][0]) + \
-        np.multiply(trace_tpl[1].data, xfrm[0][1]) + \
-        np.multiply(trace_tpl[2].data, xfrm[0][2])
+    tr_E = IDATrace(copy.deepcopy(header), data=(np.multiply(trace_tpl[0].data, xfrm[0][0]) +
+                                                 np.multiply(trace_tpl[1].data, xfrm[0][1]) +
+                                                 np.multiply(trace_tpl[2].data, xfrm[0][2]))
     )
-    tr_E.stats = stats.copy()
-    tr_E.stats['channel'] = tr_E.stats['channel'][0:2] + '2'
+    tr_E.channel = header['channel'][0:2] + '2'
 
-    tr_N = obspy.core.Trace(
-        np.multiply(trace_tpl[0].data, xfrm[1][0]) + \
-        np.multiply(trace_tpl[1].data, xfrm[1][1]) + \
-        np.multiply(trace_tpl[2].data, xfrm[1][2])
+    tr_N = IDATrace(copy.deepcopy(header), data=(np.multiply(trace_tpl[0].data, xfrm[1][0]) +
+                                                 np.multiply(trace_tpl[1].data, xfrm[1][1]) +
+                                                 np.multiply(trace_tpl[2].data, xfrm[1][2]))
     )
-    tr_N.stats = stats.copy()
-    tr_N.stats['channel'] = tr_N.stats['channel'][0:2] + '1'
+    tr_N.channel = header['channel'][0:2] + '1'
 
-    tr_Z = obspy.core.Trace(
-        np.multiply(trace_tpl[0].data, xfrm[2][0]) + \
-        np.multiply(trace_tpl[1].data, xfrm[2][1]) + \
-        np.multiply(trace_tpl[2].data, xfrm[2][2])
+    tr_Z = IDATrace(copy.deepcopy(header), data=(np.multiply(trace_tpl[0].data, xfrm[2][0]) +
+                                                 np.multiply(trace_tpl[1].data, xfrm[2][1]) +
+                                                 np.multiply(trace_tpl[2].data, xfrm[2][2]))
     )
-    tr_Z.stats = stats.copy()
-    tr_Z.stats['channel'] = tr_Z.stats['channel'][0:2] + 'Z'
+    tr_Z.channel = header['channel'][0:2] + 'Z'
 
     # if isinstance(trace_tpl, ida.calibration.qcal_utils.QCalData):
     #     output_trace_tpl = ida.calibration.qcal_utils.QCalData(east=tr_E, north=tr_N, vertical=tr_Z, input=trace_tpl.input.copy())
@@ -252,3 +142,114 @@ def channel_xform(trace_tpl, xfrm):
 
     return output_trace_tpl
 
+
+def unpack_paz(paz, paz_map):
+
+    nump = len(paz_map[0])
+    numz = len(paz_map[1])
+
+    poles = paz._poles[paz_map[0]]
+    zeros = paz._zeros[paz_map[1]]
+
+    data = []
+    flags = ([],[])
+
+    prev = ''
+    cur = ''
+    for ndx in range(0, nump):
+        if np.isclose(abs(poles[ndx]), 0):  # check for 0+0j
+            cur = 'zero'
+        elif not np.isclose(poles[ndx].imag, 0):  # check for complex value
+            if (prev == 'complex'):
+                if np.isclose(poles[ndx].imag, -poles[ndx-1].imag):
+                    cur = 'conjugate'
+                else:
+                    cur = 'complex'
+                    data.extend([poles[ndx].real, poles[ndx].imag])
+            else:
+                cur = 'complex'
+                data.extend([poles[ndx].real, poles[ndx].imag])
+        else:
+            if (prev == 'real') and np.isclose(poles[ndx].real, poles[ndx-1].real):
+                cur = 'real-double'   # if not zer and not complex must be real
+            else:
+                data.append(poles[ndx].real)
+                cur = 'real'
+
+        flags[0].append(cur)
+        prev = cur
+
+    prev = ''
+    cur = ''
+    for ndx in range(0, numz):
+        if np.isclose(abs(zeros[ndx]), 0):  # check for 0+0j
+            cur = 'zero'
+        elif not np.isclose(zeros[ndx].imag, 0):  # check for complex value
+            if (prev == 'complex'):
+                if np.isclose(zeros[ndx].imag, zeros[ndx-1].imag):
+                    cur = 'conjugate'
+                else:
+                    cur = 'complex'
+                    data.extend([zeros[ndx].real, zeros[ndx].imag])
+            else:
+                cur = 'complex'
+                data.extend([zeros[ndx].real, zeros[ndx].imag])
+        else:
+            if (prev == 'real') and np.isclose(zeros[ndx].real, zeros[ndx-1].real):
+                cur = 'real-double'   # if not zer and not complex must be real
+            else:
+                data.append(zeros[ndx].real)
+                cur = 'real'
+
+        flags[1].append(cur)
+        prev = cur
+
+    data.append(1.0)
+    return np.array(data), flags
+
+
+def pack_paz(data, flags):
+
+    nump = len(flags[0])
+    numz = len(flags[1])
+
+    paz_partial = ida.signals.paz.PAZ('vel', 'hz')
+
+    datandx = 0
+    for ndx in range(0, nump):
+        if flags[0][ndx] == 'zero':
+            paz_partial.add_pole(complex(0,0))
+        elif flags[0][ndx] == 'complex':
+            paz_partial.add_pole(complex(data[datandx], data[datandx+1]))
+            datandx += 2
+        elif flags[0][ndx] == 'conjugate':
+            paz_partial.add_pole(complex(data[datandx-2], -data[datandx-1]))
+        elif flags[0][ndx] == 'real':
+            paz_partial.add_pole(complex(data[datandx],0))
+            datandx += 1
+        elif flags[0][ndx] == 'real-double':
+            paz_partial.add_pole(complex(data[datandx-1],0))
+        else:
+            print('VERYBAD-p')
+
+    for ndx in range(0, numz):
+        if flags[1][ndx] == 'zero':
+            paz_partial.add_zero(complex(0,0))
+        elif flags[1][ndx] == 'complex':
+            paz_partial.add_zero(complex(data[datandx], data[datandx+1]))
+            datandx += 2
+        elif flags[1][ndx] == 'conjugate':
+            paz_partial.add_zero(complex(data[datandx-2], -data[datandx-1]))
+        elif flags[1][ndx] == 'real':
+            paz_partial.add_zero(complex(data[datandx],0))
+            datandx += 1
+        elif flags[1][ndx] == 'real-double':
+            paz_partial.add_zero(complex(data[datandx-1],0))
+        else:
+            print('VERYBAD-z')
+
+    paz_partial.h0 = data[-1]
+
+#     print('Partial Poles:',paz_partial._poles)
+#     print('Partial Zeros:',paz_partial._zeros)
+    return paz_partial

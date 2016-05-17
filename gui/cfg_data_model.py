@@ -15,8 +15,9 @@ class CfgDataModel(QtCore.QAbstractTableModel):
     DESCR_B_COL = 6
     DP_COL = 7
     DPAUTH_COL = 8
+    LOC_COL = 9
+    CHANS_COL = 10
 
-    # signal = QtCore.pyqtSignal(object)
 
     def __init__(self, cfg):
         super(CfgDataModel, self).__init__()

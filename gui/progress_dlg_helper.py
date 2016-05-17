@@ -49,6 +49,8 @@ class ProgressDlgHelper(object):
         self.qcal_thread.completed.connect(self.completed)
         self.qcal_thread.start()
 
+        self.elapsed = 0
+
         # noinspection PyUnresolvedReferences
         self.timer.timeout.connect(self.tick)
         self.timer.start(self.UPDATE_PERIOD * 1000)

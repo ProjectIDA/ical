@@ -7,7 +7,7 @@ from datetime import datetime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 import config.pycal_globals as pcgl
-from comms.ical_threads import PingThread, Q330Thread, QCalThread
+from comms.ical_threads import QCalThread, QVerifyThread
 import gui.mainwindow
 from gui.run_dlg import Ui_RunDlg
 from gui.run_dlg_helper import RunDlgHelper
@@ -35,7 +35,6 @@ class MainWindowHelper(object):
         self.cur_row = -1
         self.set_run_btns_enabled(self.cur_row)
         self.last_click = datetime.min
-        self.main_win.q330NetworkStatus.setText("")
         self.main_win.q330Info.setText("")
         self.app_root_dir = app_root_dir
 
@@ -53,6 +52,8 @@ class MainWindowHelper(object):
 
         self.main_win.addBtn.clicked.connect(self.AddCfg)
         self.main_win.editBtn.clicked.connect(self.EditCfg)
+
+        self.main_win.testAnalysisBtn.clicked.connect(self.run_test_analysis)
 
         self.main_win.actionQuit.triggered.connect(self.close)
 
@@ -131,6 +132,7 @@ class MainWindowHelper(object):
                         self.cdm.UpdateCfg(wcfg.tagno(), dlgUI.new_cfg)
                         self.update_details(self.cur_row)
                     except Exception as e:
+                        print(e)
                         QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
 
                     self.main_win.cfgListTV.resizeColumnsToContents()
@@ -151,6 +153,73 @@ class MainWindowHelper(object):
 
             self.main_win.cfgListTV.resizeColumnsToContents()
 
+
+    def run_test_analysis(self):
+
+        channel_codes = ida.seismometers.ChanCodesTpl(north='BHN', east='BHE',
+                                                      vertical='BHZ')
+        sensor = 'A'
+        seis_model = 'sts2.5'
+
+        sta = 'AS108'
+        loc = '10'
+        ip = '198.202.124.228'
+        hf_msfn  = 'CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.ms'
+        hf_logfn = 'CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.log'
+        lf_msfn  = 'CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.ms'
+        lf_logfn = 'CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.log'
+
+        # XPFO "Fast" test
+        seis_model = 'sts2.5-F'
+        sta='XPFO'
+        ip = '172.23.34.108'
+        hf_msfn = 'CAL-172.23.34.108-sts2.5-F-rbhf-2016-0511-0838.ms'
+        hf_logfn = 'CAL-172.23.34.108-sts2.5-F-rbhf-2016-0511-0838.log'
+        lf_msfn = 'CAL-172.23.34.108-sts2.5-F-rblf-2016-0511-0836.ms'
+        lf_logfn = 'CAL-172.23.34.108-sts2.5-F-rblf-2016-0511-0836.log'
+
+        output_dir = os.path.join(pcgl.get_results_root(), '-'.join([sta, ip.replace('.','_'), sensor, seis_model]))
+
+        # if 'MacOS' in getcwd():
+        #     resp_fpath = os.path.abspath(os.path.join('.', 'IDA', 'data', 'nom_resp_sts2_5.ida'))
+        # else:  # DEBUG...
+        #     resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
+        #
+        if getattr(sys, 'frozen', False):
+            bundle_dir = sys._MEIPASS
+            resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'nom_resp_sts2_5.ida'))
+        else:
+            bundle_dir = os.path.dirname(os.path.abspath(__file__))
+            resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'data', 'nom_resp_sts2_5.ida'))
+
+        ims_calres_txt_fn, ims_resp_txt_fn, \
+        cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
+                                                                                     channel_codes,
+                                                                                     loc,
+                                                                                     output_dir,
+                                                                                     (lf_msfn, lf_logfn),
+                                                                                     (hf_msfn, hf_logfn),
+                                                                                     seis_model.upper(),
+                                                                                     resp_fpath)
+
+        call(['open', output_dir])
+        call(['open', ims_calres_txt_fn])
+        call(['open', ims_resp_txt_fn])
+        call(['open', cal_amp_plot_fn])
+        call(['open', cal_pha_plot_fn])
+
+        msg_list = ['Calibration completed successfully. ',
+                    'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
+                    '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
+                    '{}:\n\n{}\n\n'.format('RESPONSE Msg', os.path.basename(ims_resp_txt_fn)),
+                    '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
+                    '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
+
+        [logging.info(msg) for msg in msg_list]
+        res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
+                                                  'Calibration Completed!\n\n' + ''.join(msg_list),
+                                                  QtWidgets.QMessageBox().Close,
+                                                  QtWidgets.QMessageBox().Close)
 
     def run_sensor_cal_type(self, sensor, caltype, cal_info):
 
@@ -214,13 +283,13 @@ class MainWindowHelper(object):
             if sensor == 'A':
                 seis_model = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A]
                 sensor_descr = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A]
-                chancodes = 'BH1,BH2,BHZ'  # wcfg.data[WrapperCfg.WRAPPER_KEY_CHANCODES_A]
-                loc = '50'  # wcfg.data[WrapperCfg.WRAPPER_KEY_LOC_A]
+                chancodes = wcfg.data[WrapperCfg.WRAPPER_KEY_CHANNELS_A]
+                loc = wcfg.data[WrapperCfg.WRAPPER_KEY_LOCATION_A]
             elif sensor == 'B':
                 seis_model = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]
                 sensor_descr = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B]
-                chancodes = 'BH1,BH2,BHZ'  # wcfg.data[WrapperCfg.WRAPPER_KEY_CHANCODES_A]
-                loc = '50'  # wcfg.data[WrapperCfg.WRAPPER_KEY_LOC_B]
+                chancodes = wcfg.data[WrapperCfg.WRAPPER_KEY_CHANNELS_A]
+                loc = wcfg.data[WrapperCfg.WRAPPER_KEY_LOCATION_B]
 
             lf_calib = self.cfg.find_calib(seis_model + '|' + 'rblf')
             hf_calib = self.cfg.find_calib(seis_model + '|' + 'rbhf')
@@ -289,48 +358,53 @@ class MainWindowHelper(object):
                     channel_codes = ida.seismometers.ChanCodesTpl(north=chancodeslst[0], east=chancodeslst[1], vertical=chancodeslst[2])
 
                     hf_logfn = os.path.splitext(hf_msfn)[0] + '.log'
-                    logging.info('QCal RBLF Miniseed file saved:' + hf_msfn)
-                    logging.info('QCal RBLF Log file saved:' + hf_logfn)
+                    logging.info('QCal RBHF Miniseed file saved:' + hf_msfn)
+                    logging.info('QCal RBHF Log file saved:' + hf_logfn)
 
-                    # Calibrations completed successfully.
-                    # you may disconnect from network
-                    #
-                    # prompt to continue with analysis
-                    #
-                    # get initial component independent response
+                    if getattr(sys, 'frozen', False):
+                        bundle_dir = sys._MEIPASS
+                        resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'nom_resp_sts2_5.ida'))
+                    else:
+                        bundle_dir = os.path.dirname(os.path.abspath(__file__))
+                        resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'data', 'nom_resp_sts2_5.ida'))
 
-                    if 'MacOS' in getcwd():
-                        resp_fpath = os.path.abspath(os.path.join('.', 'IDA', 'data', 'nom_resp_sts2_5.ida'))
-                    else:  # DEBUG...
-                        resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
+                    logging.info('Analysis starting...')
+                    logging.info('resp_fpath: ' + resp_fpath)
 
-
-                    cal_ims_msg_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
-                                                                                                                 channel_codes,
-                                                                                                                 loc,
-                                                                                                                 output_dir,
-                                                                                                                 (lf_msfn, lf_logfn),
-                                                                                                                 (hf_msfn, hf_logfn),
-                                                                                                                 seis_model.upper(),
-                                                                                                                 resp_fpath)
+                    ims_calres_txt_fn, \
+                    ims_resp_txt_fn, \
+                    cal_amp_plot_fn, \
+                    cal_pha_plot_fn = process_qcal_data(
+                        sta,
+                        channel_codes,
+                        loc,
+                        output_dir,
+                        (lf_msfn, lf_logfn),
+                        (hf_msfn, hf_logfn),
+                        seis_model.upper(),
+                        resp_fpath)
 
             if success:
                 msg_list = ['Calibration completed successfully. ',
-                            'The following files have been saved:\n\n',
-                            '{}:\n{}\n\n'.format('IMS Message Template', cal_ims_msg_fn),
-                            '{}:\n{}\n\n'.format('Amplitude Response Plots', cal_amp_plot_fn),
-                            '{}:\n{}'.format('Phase Response Plots', cal_pha_plot_fn)]
-                [ logging.info(msg) for msg in msg_list]
+                            'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
+                            '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
+                            '{}:\n\n{}\n\n'.format('RESPONSE Msg', os.path.basename(ims_resp_txt_fn)),
+                            '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
+                            '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
+                logging.info('CALIBRATE_RESULT Msg in file: ' + os.path.basename(ims_calres_txt_fn))
+                logging.info('RESPONSE Msg in file: ' + os.path.basename(ims_resp_txt_fn))
+                logging.info('Amplitude Response Plots in file: ' + os.path.basename(cal_amp_plot_fn))
+                logging.info('Phase Response Plots in file: ' + os.path.basename(cal_pha_plot_fn))
                 res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
                                                           'Calibration Completed!\n\n' + ''.join(msg_list),
                                                           QtWidgets.QMessageBox().Close,
                                                           QtWidgets.QMessageBox().Close)
 
                 call(['open', output_dir])
-                call(['open', cal_ims_msg_fn])
+                call(['open', ims_calres_txt_fn])
+                call(['open', ims_resp_txt_fn])
                 call(['open', cal_amp_plot_fn])
                 call(['open', cal_pha_plot_fn])
-
 
 
     def run_cal_A(self):
@@ -351,44 +425,55 @@ class MainWindowHelper(object):
         else:
             self.set_details(row)
 
-        if self.pingThread:
-            self.pingThread.start()
+        if self.qVerifyThread:
+            self.qVerifyThread.start()
 
 
     def set_run_btns_enabled(self, row):
 
         if (row == -1):
             self.main_win.sensARunBtn.setEnabled(False)
-            self.main_win.sensARunBtn.setEnabled(False)
-            self.main_win.sensBRunBtn.setEnabled(False)
             self.main_win.sensBRunBtn.setEnabled(False)
         else:
             wcfg = self.cfg[self.cur_row]
-            self.main_win.sensARunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] != 'none')
-            self.main_win.sensARunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A] != 'none')
-            self.main_win.sensBRunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
-            self.main_win.sensBRunBtn.setEnabled(wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B] != 'none')
+            self.main_win.sensARunBtn.setEnabled(
+                wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] != WrapperCfg.WRAPPER_KEY_NONE
+            )
+            self.main_win.sensBRunBtn.setEnabled(
+                wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] != WrapperCfg.WRAPPER_KEY_NONE
+            )
 
 
-    def ping_result_slot(self, host, up_status, ping_time):
-        if up_status:
-            self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
-            self.main_win.q330NetworkStatus.setStyleSheet("QLabel{color:rgb(0, 102, 0);}")
-            self.main_win.q330NetworkStatus.setText('Q330 is reachable. Ping: ' + ping_time)
+    def qVerify_query_result_slot(self, host, port, ret_status, results):
 
-            self.q330Thread.start()
-        else:
-            self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
-            self.main_win.q330NetworkStatus.setStyleSheet("QLabel{color:rgb(179, 0, 0);}")
-            self.main_win.q330NetworkStatus.setText('Q330 is Unreachable, no ping response.')
-            self.main_win.q330Info.setText("")
-
-
-    def q330_query_result_slot(self, host, ret_status, results):
         if ret_status == 0:
-            self.main_win.q330Info.setText('Firmware: ' + '/'.join(results.split()[-2:]))
+            act_ports = results.split()[7:]
+            if port in act_ports:
+                self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
+                self.main_win.q330Info.setStyleSheet("QLabel{color:rgb(0, 102, 0);}")
+                self.main_win.q330Info.setText('Q330 is reachable and ready to rumble. (Q330 Firmware versions: ' + '/'.join(results.split()[3:5])+')')
+            else:
+                self.main_win.sensARunBtn.setEnabled(False)
+                self.main_win.sensARunBtn.setEnabled(False)
+                self.main_win.sensBRunBtn.setEnabled(False)
+                self.main_win.sensBRunBtn.setEnabled(False)
+                self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
+                self.main_win.q330Info.setStyleSheet("QLabel{color:rgb(179, 0, 0);}")
+                self.main_win.q330Info.setText(
+                    'Q330 is reachable but the configured [{}] Data Port is not in the list of Active Channels: [{}].'.format(
+                        port,
+                        ', '.join(act_ports)
+                    )
+                )
+
         else:
-            self.main_win.q330Info.setText("Q330 Error: " + results)
+            self.main_win.sensARunBtn.setEnabled(False)
+            self.main_win.sensARunBtn.setEnabled(False)
+            self.main_win.sensBRunBtn.setEnabled(False)
+            self.main_win.sensBRunBtn.setEnabled(False)
+            self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
+            self.main_win.q330Info.setStyleSheet("QLabel{color:rgb(179, 0, 0);}")
+            self.main_win.q330Info.setText("Error: " + results)
 
 
     def clear_details(self):
@@ -403,33 +488,28 @@ class MainWindowHelper(object):
 
         self.main_win.sensADescrLE.setPlainText('')
         self.main_win.sensAMonPortLE.setText('')
-        self.main_win.sensALastLFLE.setText('')
-        self.main_win.sensALastHFLE.setText('')
+        self.main_win.sensALastCalLE.setText('')
 
         self.main_win.sensBDescrLE.setPlainText('')
         self.main_win.sensBMonPortLE.setText('')
-        self.main_win.sensBLastLFLE.setText('')
-        self.main_win.sensBLastHFLE.setText('')
+        self.main_win.sensBLastCalLE.setText('')
+
+        self.main_win.q330Info.setText('')
 
 
     def set_details(self, cfg_ndx):
 
         cfg = self.cfg[cfg_ndx]
 
-        self.main_win.q330NetworkStatus.setText("")
         self.main_win.q330Info.setText("")
 
-        # start thread to check IP/HOST availability
-        self.pingThread = PingThread(cfg.data[WrapperCfg.WRAPPER_KEY_IP])
-        self.pingThread.pingResult.connect(self.ping_result_slot)
-
-        # start thread to get TAGNO and Firmware Vers
-        self.q330Thread = Q330Thread(cfg.data[WrapperCfg.WRAPPER_KEY_IP],
-                                     'id',
+        # start thread to check IP/HOST availability, staus with qverify
+        self.qVerifyThread = QVerifyThread(cfg.data[WrapperCfg.WRAPPER_KEY_IP],
+                                     cfg.data[WrapperCfg.WRAPPER_KEY_DATAPORT],
                                      pcgl.get_bin_root(),
                                      pcgl.get_config_root())
 
-        self.q330Thread.q330QueryResult.connect(self.q330_query_result_slot)
+        self.qVerifyThread.qVerifyQueryResult.connect(self.qVerify_query_result_slot)
 
         self.main_win.netLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_NET])
         self.main_win.staLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_STA])
@@ -439,25 +519,19 @@ class MainWindowHelper(object):
         self.main_win.dpLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_DATAPORT])
         self.main_win.dpauthLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_DP1_AUTH])
 
-        self.main_win.q330NetworkStatus.setText('')
-
         self.main_win.sensADescrLE.setPlainText(cfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_A])
-        if cfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A].lower() == 'none':
+        if cfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_A].lower() == WrapperCfg.WRAPPER_KEY_NONE:
             self.main_win.sensAMonPortLE.setText('')
-            self.main_win.sensALastLFLE.setText('')
-            self.main_win.sensALastHFLE.setText('')
+            self.main_win.sensALastCalLE.setText('')
         else:
             self.main_win.sensAMonPortLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_MONPORT_A])
-            self.main_win.sensALastLFLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_LAST_LF_A])
-            self.main_win.sensALastHFLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_LAST_HF_A])
+            self.main_win.sensALastCalLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_LAST_CAL_A])
 
         self.main_win.sensBDescrLE.setPlainText(cfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B])
-        if cfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B].lower() == 'none':
+        if cfg.data[WrapperCfg.WRAPPER_KEY_SENS_ROOTNAME_B].lower() == WrapperCfg.WRAPPER_KEY_NONE:
             self.main_win.sensBMonPortLE.setText('')
-            self.main_win.sensBLastLFLE.setText('')
-            self.main_win.sensBLastHFLE.setText('')
+            self.main_win.sensBLastCalLE.setText('')
         else:
             self.main_win.sensBMonPortLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_MONPORT_B])
-            self.main_win.sensBLastLFLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_LAST_LF_B])
-            self.main_win.sensBLastHFLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_LAST_HF_B])
+            self.main_win.sensBLastCalLE.setText(cfg.data[WrapperCfg.WRAPPER_KEY_LAST_CAL_B])
 

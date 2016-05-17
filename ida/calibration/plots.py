@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 
 
-def save_response_comparison_plots(sta, chancodes, loc, data_dir, amp_fn, pha_fn, seis_model, timestamp, freqs, nom_resp,
+def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_model, timestamp, freqs, nom_resp,
                                    n_resp, n_adev, n_pdev,
                                    e_resp, e_adev, e_pdev,
                                    v_resp, v_adev, v_pdev):
@@ -88,29 +88,29 @@ def save_response_comparison_plots(sta, chancodes, loc, data_dir, amp_fn, pha_fn
 
 
 def apc_plot(sampling_freq, freqs, amp, pha, coh):
-    pass
+
     freq_max = 0.4 * sampling_freq
+
 
     plt.subplot(311)
     plt.semilogx(freqs, amp)
     plt.grid(which='both')
-    plt.xlim(sampling_freq / 1.0e4, freq_max)
+    plt.xlim(1e-3, freq_max)
     plt.ylim()
 
     plt.subplot(312)
     plt.semilogx(freqs, pha)
     plt.grid(which='both')
-    plt.xlim(sampling_freq / 1.0e4, freq_max)
+    plt.xlim(1e-3, freq_max)
 
     plt.subplot(313)
     plt.semilogx(freqs, coh)
     plt.grid(which='both')
-    plt.xlim(sampling_freq / 1.0e4, freq_max)
+    plt.xlim(1e-3, freq_max)
     plt.ylim(0.95, 1.05)
     plt.show()
 
 def plot_cal_output_with_residual(calout, calinp):
-    pass
 
     resid = np.subtract(calout, calinp)
     snr = 1 / resid.std()

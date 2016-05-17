@@ -22,21 +22,29 @@ CTBTChannelResult = namedtuple('CTBTChannelResult', [
     'A0'
 ])
 
+def ctbto_cal_messages(sta, loc, seis_model, cal_timestamp, channel_results, calresultfn=None, responsefn=None):
 
-def calibration_result_msg(sta, loc, seis_model, cal_timestamp, channel_results, filename=None):
+    cal_result_txt = calibration_result_msg(sta, loc, seis_model, cal_timestamp, channel_results, calresultfn)
+    cal_response_txt = response_msg(sta, loc, seis_model, cal_timestamp, channel_results, responsefn)
 
-    # msg_id = 'RB_CAL_' + sta + '_' + cal_timestamp.strftime('%Y-%m-%d')
-    # ref_id = 'RB_CAL_' + sta + '_' + cal_timestamp.strftime('%Y-%m-%d')
-    msg_id = 'VALUE'
-    ref_id = 'VALUE'
+    return cal_result_txt, cal_response_txt
+
+
+def calibration_result_msg(sta, loc, seis_model, cal_timestamp, channel_results, calresultfn=None):
+
     ts_str = cal_timestamp.strftime('%Y/%m/%d %H:%M:%S')
 
-    msg = \
-    "\n========================================\nBEGIN IMS2.0\n\n" \
-    "MSG_TYPE command_response\n" \
-    "MSG_ID {}\n" \
-    "REF_ID {}\n" \
-    "TIME_STAMP {}\n".format(msg_id, ref_id, ts_str)
+    msg = "Below is the IMS 2.0 CALIBRATE_RESULT message \n" \
+        "for the [{}] at station [{}] and location [{}] calibrated on [{} UTC].\n\n".format(
+        seis_model,
+        sta.upper(),
+        loc,
+        cal_timestamp.isoformat()) + \
+        "\n========================================\nBEGIN IMS2.0\n\n" \
+        "MSG_TYPE COMMAND_RESPONSE\n" \
+        "MSG_ID <REPLACE WITH VALUE>\n" \
+        "REF_ID <REPLACE WITH VALUE>\n" \
+        "TIME_STAMP {}\n".format(ts_str)
 
     for ndx, chn_res in enumerate(channel_results):
 
@@ -50,70 +58,77 @@ def calibration_result_msg(sta, loc, seis_model, cal_timestamp, channel_results,
             "CALIB {:<15.8f}\n" \
             "CALPER {}\n\n".format(sta, chn_res.channel, chn_res.in_spec, chn_res.calib, chn_res.calper)
 
-        msg = msg + response_msg(sta, loc, seis_model, cal_timestamp, chn_res)
-
     msg = msg + "STOP\n========================================\n\n"
 
-    if filename:
-        with open(filename, 'wt') as mfl:
+    if calresultfn:
+        with open(calresultfn, 'wt') as mfl:
             mfl.write(msg)
+
 
     return msg
 
 
-def response_msg(sta, loc, seis_model, cal_timestamp, channel_result):
+def response_msg(sta, loc, seis_model, cal_timestamp, channel_results, responsefn=None):
 
-    assert isinstance(channel_result, CTBTChannelResult)
-
-    # msg_id = 'RB_CAL_' + sta + '_' + cal_timestamp.strftime('%Y-%m-%d')
-    msg_id = 'VALUE'
     date_str = cal_timestamp.strftime('%Y/%m/%d')
     time_str = cal_timestamp.strftime('%H:%M')
 
-    # "BEGIN IMS2.0\n\n" \
-    msg = \
+    msg = "Below is the IMS 2.0 RESPONSE message \n" \
+        "for the [{}] at station [{}] and location [{}] calibrated on [{} UTC].\n\n".format(
+        seis_model,
+        sta.upper(),
+        loc,
+        cal_timestamp.isoformat()) + \
+        "\n========================================\nBEGIN IMS2.0\n\n" \
         "MSG_TYPE DATA\n" \
         "DATA_TYPE RESPONSE\n" \
-        "MSG_ID {}\n\n".format(msg_id)
+        "MSG_ID <REPLACE WITH VALUE>\n" \
+        "REF_ID <REPLACE WITH VALUE>"
 
+    for ndx, chn_res in enumerate(channel_results):
+        assert isinstance(chn_res, CTBTChannelResult)
 
-    # CAL2 header record...
-    msg = msg + '{:<4} {:<5} {:<3} {:<4} {:<6} {:15.8e} {:7.3f} {:11.5f} {:<10} {:<5}\n'.format(
-                                            'CAL2',
-                                             sta,
-                                             channel_result.channel,
-                                             '',
-                                             seis_model,
-                                             channel_result.calib,
-                                             channel_result.calper,
-                                             channel_result.sample_rate,
-                                             date_str,
-                                             time_str)
-    # PAZ2 header records...
-    msg = msg + '{:<4} {:>2} {:1} {:15.8e} {:<4} {:<8.3f} {:>3d} {:>3d} {:<25}\n'.format('PAZ2',
-                                                                           1,
-                                                                           'V',
-                                                                           channel_result.A0 * \
-                                                                                         ida.seismometers.INSTRUMENT_NOMINAL_GAINS[
-                                                                                             seis_model.upper()] * \
-                                                                                         ida.seismometers.INSTRUMENT_NOMINAL_GAINS[
-                                                                                             'Q330'],
-                                                                           '',
-                                                                           0,
-                                                                           channel_result.paz.num_poles,
-                                                                           len(channel_result.paz.zeros(mode='disp', units='hz')),
-                                                                           '({} Resp: Disp, Hz)'.format(channel_result.channel))
+        # CAL2 header record...
+        msg = msg + '\n\n{:<4} {:<5} {:<3} {:<4} {:<6} {:15.8e} {:7.3f} {:11.5f} {:<10} {:<5}\n'.format(
+            'CAL2',
+            sta,
+            chn_res.channel,
+            loc,
+            seis_model,
+            chn_res.calib,
+            chn_res.calper,
+            chn_res.sample_rate,
+            date_str,
+            time_str)
 
-    # PAZ values - in displacement units and radians/sec
-    poles = channel_result.paz.poles(units='hz')
-    for pole in poles:
-        msg = msg + '{:15.8e} {:15.8e}\n'.format(pole.real, pole.imag)
+        # PAZ2 header records...
+        msg = msg + '{:<4} {:>2} {:1} {:15.8e} {:<4} {:<8.3f} {:>3d} {:>3d} {:<25}\n'.format('PAZ2',
+            1,
+            'V',
+            chn_res.A0 * \
+            ida.seismometers.INSTRUMENT_NOMINAL_GAINS[
+             seis_model.upper()] * \
+            ida.seismometers.INSTRUMENT_NOMINAL_GAINS[
+             'Q330'],
+            '',
+            0,
+            chn_res.paz.num_poles,
+            len(chn_res.paz.zeros(mode='disp', units='hz')),
+            '({} Resp: Disp, Hz)'.format(chn_res.channel))
 
-    zeros = channel_result.paz.zeros(mode='disp', units='hz')
-    for zero in zeros:
-        msg = msg + '{:15.8e} {:15.8e}\n'.format(zero.real, zero.imag)
+        # PAZ values - in displacement units and radians/sec
+        poles = chn_res.paz.poles(units='hz')
+        for pole in poles:
+            msg = msg + '{:15.8e} {:15.8e}\n'.format(pole.real, pole.imag)
 
-    # msg = msg + 'STOP\n'
-    msg = msg + '\n'
+        zeros = chn_res.paz.zeros(mode='disp', units='hz')
+        for zero in zeros:
+            msg = msg + '{:15.8e} {:15.8e}\n'.format(zero.real, zero.imag)
+
+    msg = msg + "\nSTOP\n========================================\n\n"
+
+    if responsefn:
+        with open(responsefn, 'wt') as mfl:
+            mfl.write(msg)
 
     return msg

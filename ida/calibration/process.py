@@ -66,6 +66,7 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
         compare_component_response(freqs, paz, v_paz, norm_freq=1.0, mode='vel')
     logging.debug('Comparing VERTICAL response with Nominal complete.')
 
+    logging.debug('Finding sensitivities @ 1hz...')
     n_sys_sens = system_sensitivity_at_1hz(freqs, n_resp, seis_model)
     e_sys_sens = system_sensitivity_at_1hz(freqs, e_resp, seis_model)
     v_sys_sens = system_sensitivity_at_1hz(freqs, v_resp, seis_model)
@@ -74,11 +75,15 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     n_sys_sens = 1 / (n_sys_sens * (2 * np.pi * 1) / 1e9)
     e_sys_sens = 1 / (e_sys_sens * (2 * np.pi * 1) / 1e9)
     v_sys_sens = 1 / (v_sys_sens * (2 * np.pi * 1) / 1e9)
+    logging.debug('Finding sensitivities @ 1hz... complete.')
 
+    logging.debug('Computing IN_SPEC status...')
     north_inspec = 'YES' if ((n_adev_max <= 5.0) and (n_pdev_max <= 5)) else 'NO'
     east_inspec = 'YES'  if ((e_adev_max <= 5.0) and (e_pdev_max <= 5)) else 'NO'
     vert_inspec = 'YES'  if ((v_adev_max <= 5.0) and (v_pdev_max <= 5)) else 'NO'
+    logging.debug('Computing IN_SPEC status... complete')
 
+    logging.debug('Creating result tuples...')
     north_chan_result = ida.ctbto.messages.CTBTChannelResult(channel=chancodes.north, calib=n_sys_sens, calper=1.0,
                                                              sample_rate=40.0,
                                                              in_spec=north_inspec, paz=n_paz, A0=n_a0)
@@ -90,9 +95,11 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     vert_chan_result = ida.ctbto.messages.CTBTChannelResult(channel=chancodes.vertical, calib=v_sys_sens, calper=1.0,
                                                         sample_rate=40.0,
                                                         in_spec=vert_inspec, paz=v_paz, A0=v_a0)
+    logging.debug('Creating result tuples... complete.')
 
     report_files_basename = os.path.splitext(lf_fnames[0])[0].replace('rblf-', '')
 
+    logging.info('Generating Response plots...')
     amp_fn = os.path.join(data_dir, report_files_basename + '_AMP_Resp.png')
     pha_fn = os.path.join(data_dir, report_files_basename + '_PHA_Resp.png')
     ida.calibration.plots.save_response_comparison_plots(sta, chancodes, loc,
@@ -102,14 +109,17 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
                                                          n_resp, n_adev, n_pdev,
                                                          e_resp, e_adev, e_pdev,
                                                          v_resp, v_adev, v_pdev)
+    logging.info('Generating Response plots... complete.')
 
     ims_calres_txt_fn = os.path.join(data_dir, report_files_basename + '_CALRES_MSG.txt')
     ims_resp_txt_fn = os.path.join(data_dir, report_files_basename + '_RESP_MSG.txt')
 
+    logging.info('Generating IMS 2.0 messages...')
     calres_msg, resp_msg = ida.ctbto.messages.ctbto_cal_messages(
         sta, loc, seis_model, hf_start_time,
         [north_chan_result, east_chan_result, vert_chan_result],
         calresultfn=ims_calres_txt_fn, responsefn=ims_resp_txt_fn)
+    logging.info('Generating IMS 2.0 messages... complete.')
 
     return ims_calres_txt_fn, ims_resp_txt_fn, amp_fn, pha_fn
 
@@ -137,10 +147,13 @@ def system_sensitivity_at_1hz(freqs, resp, seis_model):
 def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfmeas):
 
     # generate coherence info for each component
-    logging.debug('Cross_correlate for LF time series...')
+    logging.debug('Compute coherence for LF time series...')
     lfmeas_f, lfmeas_amp, lfmeas_pha, lfmeas_coh     = ida.calibration.cross.cross_correlate(lf_sr, lfinput, lfmeas)
-    logging.debug('Cross_correlate for LF time series... complete.')
+    logging.debug('Compute coherence for LF time series... complete.')
+
+    logging.debug('Compute coherence for HF time series...')
     hfmeas_f, hfmeas_amp, hfmeas_pha, hfmeas_coh     = ida.calibration.cross.cross_correlate(hf_sr, hfinput, hfmeas)
+    logging.debug('Compute coherence for HF time series... complete.')
 
     lfmeas_pha_rad = lfmeas_pha * np.pi / 180
     hfmeas_pha_rad = hfmeas_pha * np.pi / 180
@@ -167,7 +180,10 @@ def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfm
     hfmeas_tf_norm, _, _ = ida.signals.utils.normalize(hfmeas_tf, hfmeas_f_t, hf_norm_freq)
     lfmeas_tf_norm, _, _ = ida.signals.utils.normalize(lfmeas_tf, lfmeas_f_t, lf_norm_freq)
 
-    hf_paz_pert_map = ([4, 5], [2, 3])  # for sts2.5 ONLY
+    #TODO need to move this to be sensor dependent in seismometers.py
+    # for sts2.5 ONLY
+    logging.debug('Setting paz perturbation map and splitting...')
+    hf_paz_pert_map = ([4, 5], [2, 3]) # perturbed paz must not be in both lf anf hf sets
     lf_paz_pert_map = ([0,1], [])
 
     hf_paz_pert = nom_paz.make_partial(hf_paz_pert_map, hf_norm_freq)
@@ -185,10 +201,13 @@ def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfm
     hf_pazpert_ub = hf_paz_pert_flat + 0.5 * np.abs(hf_paz_pert_flat)
     lf_pazpert_lb = lf_paz_pert_flat - 0.5 * np.abs(lf_paz_pert_flat)
     lf_pazpert_ub = lf_paz_pert_flat + 0.5 * np.abs(lf_paz_pert_flat)
+    logging.debug('Setting paz perturbation map and splitting... complete.')
 
+    logging.debug('Computing response of perturbed paz...')
     # initial response of paz_pert over freq_band of interest
     hf_resp0 = ida.signals.utils.compute_response(hfmeas_f_t, hf_paz_pert)
     lf_resp0 = ida.signals.utils.compute_response(lfmeas_f_t, lf_paz_pert)
+    logging.debug('Computing response of perturbed paz... complete.')
 
     def resp_cost(p, paz_partial_flags, freqs, normfreq, tf_target, resp_pert0):
 
@@ -226,29 +245,31 @@ def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfm
                                  hfmeas_tf_norm,
                                  hf_resp0
                                  ),
-                        verbose=0)
-    logging.info('HF fitting termination: ' + hf_res.message)
+                           verbose=0)
+    logging.info('Fitting new HF response... complete.')
+    logging.debug('HF fitting termination: ' + hf_res.message)
 
     logging.info('Fitting new LF response...')
     lf_res = least_squares(resp_cost,  # cost function
-                           lf_paz_pert_flat,  # initial values
-                           bounds=(lf_pazpert_lb,
-                                   lf_pazpert_ub),  # lb, ub for each parameter
-                           method='trf',
-                           jac='3-point',  # I think this matches MATLAB FiniteDifferenceType='central'
-                           xtol=1e-6,
-                           ftol=1e-4,
-                           diff_step=0.001,
-                           max_nfev=300,  # max number of function evaluations
-                           # list addl args to fittung fun
-                           args=(lf_paz_pert_flags,
-                                 lfmeas_f_t,
-                                 lf_norm_freq,
-                                 lfmeas_tf_norm,
-                                 lf_resp0
-                                 ),
+                            lf_paz_pert_flat,  # initial values
+                            bounds=(lf_pazpert_lb,
+                                    lf_pazpert_ub),  # lb, ub for each parameter
+                            method='trf',
+                            jac='3-point',  # I think this matches MATLAB FiniteDifferenceType='central'
+                            xtol=1e-6,
+                            ftol=1e-4,
+                            diff_step=0.001,
+                            max_nfev=300,  # max number of function evaluations
+                            # list addl args to fittung fun
+                            args=(lf_paz_pert_flags,
+                                  lfmeas_f_t,
+                                  lf_norm_freq,
+                                  lfmeas_tf_norm,
+                                  lf_resp0
+                                  ),
                            verbose=0)
-    logging.info('HF fitting termination: ' + lf_res.message)
+    logging.info('Fitting new LF response... complete.')
+    logging.debug('LF fitting termination: ' + lf_res.message)
 
     new_hf_paz_pert = ida.signals.utils.pack_paz(hf_res.x, hf_paz_pert_flags)
     new_lf_paz_pert = ida.signals.utils.pack_paz(lf_res.x, lf_paz_pert_flags)

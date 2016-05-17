@@ -100,7 +100,7 @@ class Calib(IcalConfigItemReader):
     def cal_time_min(self):
         secs = self.cal_time_sec()
         if secs:
-            mins = int(secs / 60) + 1
+            mins = secs / 60
         else:
             mins = None
 

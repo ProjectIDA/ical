@@ -1,11 +1,7 @@
 import copy
-import re
-
+import logging
 from PyQt5 import QtGui, QtCore, QtWidgets
-
 from config.wrapper_cfg import WrapperCfg
-
-from gui.edit_dlg import Ui_EditDlg
 
 
 class EditDlgHelper(object):
@@ -97,6 +93,7 @@ class EditDlgHelper(object):
 
 
     def save(self):
+        logging.debug('User saving configuration edit.')
         self.qtDlg.accept()
 
 
@@ -114,8 +111,10 @@ class EditDlgHelper(object):
                 self.qtDlg.accept()
             else:
                 self.qtDlg.reject()
+                logging.debug('User canceled configuration edit.')
         else:
             self.qtDlg.reject()
+            logging.debug('User canceled configuration edit.')
 
 
     def reset(self):
@@ -126,6 +125,7 @@ class EditDlgHelper(object):
         mbox.setStandardButtons(QtWidgets.QMessageBox().Yes | QtWidgets.QMessageBox().No)
         mbox.setDefaultButton(QtWidgets.QMessageBox().No)
         if mbox.exec() ==  QtWidgets.QMessageBox().Yes:
+            logging.debug('User resetting configuration edit.')
             self.dlgUI.new_cfg = copy.deepcopy(self.orig_cfg)
             self.refresh_dialog()
 

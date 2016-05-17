@@ -9,8 +9,6 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 import config.pycal_globals as pcgl
 from comms.ical_threads import QCalThread, QVerifyThread
 import gui.mainwindow
-from gui.run_dlg import Ui_RunDlg
-from gui.run_dlg_helper import RunDlgHelper
 from gui.progress_dlg import Ui_ProgressDlg
 from gui.progress_dlg_helper import ProgressDlgHelper
 from gui.edit_dlg import Ui_EditDlg
@@ -20,7 +18,6 @@ from gui.logview_dlg_helper import LogviewDlgHelper
 from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
 from gui.cfg_data_model import CfgDataModel
-
 from ida.calibration.process import process_qcal_data
 import ida.seismometers
 
@@ -131,8 +128,9 @@ class MainWindowHelper(object):
                     try:
                         self.cdm.UpdateCfg(wcfg.tagno(), dlgUI.new_cfg)
                         self.update_details(self.cur_row)
+                        logging.debug('PyCal Q330 configuration updated.')
                     except Exception as e:
-                        print(e)
+                        logging.error('Error saving PyCal Q330 config record. ' + str(e))
                         QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
 
                     self.main_win.cfgListTV.resizeColumnsToContents()
@@ -148,7 +146,9 @@ class MainWindowHelper(object):
         if dlg.exec() == QtWidgets.QDialog.Accepted:
             try:
                 self.cdm.AddCfg(dlgUI.new_cfg)
+                logging.debug('New PyCal Q330 configuration saved.')
             except Exception as e:
+                logging.error('Error saving new PyCal Q330 config record. ' + str(e))
                 QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
 
             self.main_win.cfgListTV.resizeColumnsToContents()
@@ -189,8 +189,10 @@ class MainWindowHelper(object):
             bundle_dir = sys._MEIPASS
             resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'nom_resp_sts2_5.ida'))
         else:
-            bundle_dir = os.path.dirname(os.path.abspath(__file__))
-            resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'data', 'nom_resp_sts2_5.ida'))
+            # bundle_dir = os.path.dirname(os.path.abspath(__file__))
+            resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
+
+        print(resp_fpath)
 
         ims_calres_txt_fn, ims_resp_txt_fn, \
         cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
@@ -215,7 +217,12 @@ class MainWindowHelper(object):
                     '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
                     '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
 
-        [logging.info(msg) for msg in msg_list]
+        logging.info('The following files have been saved in directory: ' + output_dir)
+        logging.info('   CALIBRATE_RESULT Msg: ' + os.path.basename(ims_calres_txt_fn))
+        logging.info('   RESPONSE Msg' + os.path.basename(ims_resp_txt_fn))
+        logging.info('   Amplitude Response Plots: ' + os.path.basename(cal_amp_plot_fn))
+        logging.info('   Phase Response Plots: ' + os.path.basename(cal_pha_plot_fn))
+
         res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
                                                   'Calibration Completed!\n\n' + ''.join(msg_list),
                                                   QtWidgets.QMessageBox().Close,
@@ -224,6 +231,8 @@ class MainWindowHelper(object):
     def run_sensor_cal_type(self, sensor, caltype, cal_info):
 
         completed = False
+
+        logging.info('Running {} calibration for sensor {} on q330 (hostname: {})'.format(caltype.upper(), sensor, cal_info['ip']))
 
         # create qcal thread
         qcal_thread = QCalThread(os.path.join(self.app_root_dir, pcgl.get_bin_root()),
@@ -269,6 +278,7 @@ class MainWindowHelper(object):
 
         if (self.cur_row < 0):
             msg = 'No Q330 has been seleceted'
+            logging.info(msg)
             res = QtWidgets.QMessageBox().warning(self.app_win, 'PyCal', msg,
                                                   QtWidgets.QMessageBox().Close,
                                                   QtWidgets.QMessageBox().Close)
@@ -336,21 +346,11 @@ class MainWindowHelper(object):
                 'output_dir': output_dir
             }
 
-            # dlg = QtWidgets.QDialog(self.app_win)
-            # rundlg = Ui_RunDlg()
-            # rundlg.setupUi(dlg)
-            # dlg.setWindowTitle('PyCal - Run Calibration Confirmation')
-            # rundlgHlpr = RunDlgHelper(rundlg, cal_info)  # cal_descr, calib.cal_time_min(), cmd_line)
-            # rundlgHlpr.setup_ui(dlg)
-
-            # if dlg.exec() == QtWidgets.QDialog.Accepted:
-
-
             success, lf_msfn = self.run_sensor_cal_type(sensor, 'rblf', cal_info)
             if success:
                 lf_logfn = os.path.splitext(lf_msfn)[0] + '.log'
-                logging.info('QCal RBLF Miniseed file saved:' + lf_msfn)
-                logging.info('QCal RBLF Log file saved:' + lf_logfn)
+                logging.info('QCal RBLF Miniseed file saved: ' + os.path.join(output_dir, lf_msfn))
+                logging.info('QCal RBLF Log file saved: ' + os.path.join(output_dir, lf_logfn))
 
                 success, hf_msfn = self.run_sensor_cal_type(sensor, 'rbhf', cal_info)
                 if success:
@@ -358,15 +358,14 @@ class MainWindowHelper(object):
                     channel_codes = ida.seismometers.ChanCodesTpl(north=chancodeslst[0], east=chancodeslst[1], vertical=chancodeslst[2])
 
                     hf_logfn = os.path.splitext(hf_msfn)[0] + '.log'
-                    logging.info('QCal RBHF Miniseed file saved:' + hf_msfn)
-                    logging.info('QCal RBHF Log file saved:' + hf_logfn)
+                    logging.info('QCal RBHF Miniseed file saved: ' + os.path.join(output_dir, hf_msfn))
+                    logging.info('QCal RBHF Log file saved: ' + os.path.join(output_dir, hf_logfn))
 
                     if getattr(sys, 'frozen', False):
                         bundle_dir = sys._MEIPASS
                         resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'nom_resp_sts2_5.ida'))
                     else:
-                        bundle_dir = os.path.dirname(os.path.abspath(__file__))
-                        resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'data', 'nom_resp_sts2_5.ida'))
+                        resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
 
                     logging.info('Analysis starting...')
                     logging.info('resp_fpath: ' + resp_fpath)
@@ -384,27 +383,29 @@ class MainWindowHelper(object):
                         seis_model.upper(),
                         resp_fpath)
 
-            if success:
-                msg_list = ['Calibration completed successfully. ',
-                            'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
-                            '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
-                            '{}:\n\n{}\n\n'.format('RESPONSE Msg', os.path.basename(ims_resp_txt_fn)),
-                            '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
-                            '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
-                logging.info('CALIBRATE_RESULT Msg in file: ' + os.path.basename(ims_calres_txt_fn))
-                logging.info('RESPONSE Msg in file: ' + os.path.basename(ims_resp_txt_fn))
-                logging.info('Amplitude Response Plots in file: ' + os.path.basename(cal_amp_plot_fn))
-                logging.info('Phase Response Plots in file: ' + os.path.basename(cal_pha_plot_fn))
-                res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
-                                                          'Calibration Completed!\n\n' + ''.join(msg_list),
-                                                          QtWidgets.QMessageBox().Close,
-                                                          QtWidgets.QMessageBox().Close)
+                    msg_list = ['Calibration completed successfully. ',
+                                'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
+                                '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
+                                '{}:\n\n{}\n\n'.format('RESPONSE Msg', os.path.basename(ims_resp_txt_fn)),
+                                '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
+                                '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
 
-                call(['open', output_dir])
-                call(['open', ims_calres_txt_fn])
-                call(['open', ims_resp_txt_fn])
-                call(['open', cal_amp_plot_fn])
-                call(['open', cal_pha_plot_fn])
+                    logging.info('The following files have been saved in directory: ' + output_dir)
+                    logging.info('  {:<32} {}'.format('CALIBRATE_RESULT Msg: ', os.path.basename(ims_calres_txt_fn)))
+                    logging.info('  {:<32} {}'.format('RESPONSE Msg: ', os.path.basename(ims_resp_txt_fn)))
+                    logging.info('  {:<32} {}'.format('Amplitude Response Plots: ', os.path.basename(cal_amp_plot_fn)))
+                    logging.info('  {:<32} {}'.format('Phase Response Plots: ', os.path.basename(cal_pha_plot_fn)))
+
+                    res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
+                                                              'Calibration Completed!\n\n' + ''.join(msg_list),
+                                                              QtWidgets.QMessageBox().Close,
+                                                              QtWidgets.QMessageBox().Close)
+
+                    call(['open', output_dir])
+                    call(['open', ims_calres_txt_fn])
+                    call(['open', ims_resp_txt_fn])
+                    call(['open', cal_amp_plot_fn])
+                    call(['open', cal_pha_plot_fn])
 
 
     def run_cal_A(self):
@@ -446,6 +447,7 @@ class MainWindowHelper(object):
 
     def qVerify_query_result_slot(self, host, port, ret_status, results):
 
+        logging.debug('QVerify retcode: ' + str(ret_status))
         if ret_status == 0:
             act_ports = results.split()[7:]
             if port in act_ports:

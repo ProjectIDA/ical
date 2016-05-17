@@ -296,7 +296,7 @@ class MainWindowHelper(object):
             elif sensor == 'B':
                 seis_model = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]
                 sensor_descr = wcfg.data[WrapperCfg.WRAPPER_KEY_SENS_DESCR_B]
-                chancodes = wcfg.data[WrapperCfg.WRAPPER_KEY_CHANNELS_A]
+                chancodes = wcfg.data[WrapperCfg.WRAPPER_KEY_CHANNELS_B]
                 loc = wcfg.data[WrapperCfg.WRAPPER_KEY_LOCATION_B]
 
             lf_calib = self.cfg.find_calib(seis_model + '|' + 'rblf')
@@ -353,7 +353,7 @@ class MainWindowHelper(object):
                 success, hf_msfn = self.run_sensor_cal_type(sensor, 'rbhf', cal_info)
                 if success:
                     chancodeslst = chancodes.split(',')
-                    channel_codes = ida.seismometers.ChanCodesTpl(north=chancodeslst[0], east=chancodeslst[1], vertical=chancodeslst[2])
+                    channel_codes = ida.seismometers.ChanCodesTpl(vertical=chancodeslst[0], north=chancodeslst[1], east=chancodeslst[2])
 
                     hf_logfn = os.path.splitext(hf_msfn)[0] + '.log'
                     logging.info('QCal RBHF Miniseed file saved: ' + os.path.join(output_dir, hf_msfn))

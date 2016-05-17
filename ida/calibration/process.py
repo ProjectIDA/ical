@@ -3,7 +3,7 @@ import os.path
 from numpy import pi, ceil, sin, cos, angle, abs, linspace, multiply, logical_and, \
     divide, sqrt, power, subtract
 from numpy.fft import rfft, irfft
-import scipy.signal
+from scipy.signal import tukey
 from scipy.optimize import least_squares
 import ida.calibration.qcal_utils
 import ida.calibration.plots
@@ -362,9 +362,9 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
 
     fraction = 0.1  # each side
     logging.debug('Creating tapers...')
-    taper_lf = scipy.signal.tukey(npts_lf, alpha=fraction * 2, sym=True)
+    taper_lf = tukey(npts_lf, alpha=fraction * 2, sym=True)
     taper_bin_cnt_lf = int(ceil(npts_lf * fraction))
-    taper_hf = scipy.signal.tukey(npts_hf, alpha=fraction * 2, sym=True)
+    taper_hf = tukey(npts_hf, alpha=fraction * 2, sym=True)
     taper_bin_cnt_hf = int(ceil(npts_hf * fraction))
     logging.debug('Creating tapers complete.')
 

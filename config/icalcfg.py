@@ -49,7 +49,7 @@ class Icalcfg(IcalConfigItemReader):
     ICALCFG_MONPORT_A_VALID_REGEX = '[4-6]'
     ICALCFG_MONPORT_B_VALID_REGEX = '[1-3]'
     ICALCFG_LOCATION_VALID_REGEX = '[0-9]{2}'
-    ICALCFG_CHANNELS_VALID_REGEX = '[A-Za-z]{2}[N1],[A-Za-z]{2}[E2]{1},[A-Za-z]{2}Z{1}'
+    ICALCFG_CHANNELS_VALID_REGEX = '[A-Za-z]{2}[Zz]{1},[A-Za-z]{2}[Nn1],[A-Za-z]{2}[Ee2]{1}'
 
 
 

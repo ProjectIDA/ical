@@ -93,6 +93,8 @@ class EditDlgHelper(object):
 
 
     def save(self):
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A].upper()
+        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] = self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B].upper()
         logging.debug('User saving configuration edit.')
         self.qtDlg.accept()
 

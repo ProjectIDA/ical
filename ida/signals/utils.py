@@ -1,9 +1,9 @@
 import logging
 import copy
 from ida.signals.trace import IDATrace
-# from ida.signals.stream import IDAStream
-import scipy.signal
-import numpy as np
+from scipy.signal import freqs
+from scipy.signal.ltisys import zpk2tf
+from numpy import array, ndarray, isclose, abs, divide, multiply, pi
 import ida.calibration.qcal_utils
 import ida.seismometers
 import ida.signals.paz
@@ -83,29 +83,29 @@ def ntrim_stream(traces, left=0, right=0):
         trace.trim(left, right)
 
 
-def compute_response(freqs, paz, mode='vel'):
+def compute_response(freqlist, paz, mode='vel'):
 
-    b, a = scipy.signal.ltisys.zpk2tf(paz.zeros(units='rad', mode=mode),
+    b, a = zpk2tf(paz.zeros(units='rad', mode=mode),
                                       paz.poles(units='rad', mode=mode),
                                       paz.h0)
     # a has to be a list for the scipy.signal.freqs() call later but zpk2tf()
     # strangely returns it as an integer.
-    if not isinstance(a, np.ndarray) and a == 1.0:
+    if not isinstance(a, ndarray) and a == 1.0:
         a = [1.0]
 
-    _, h = scipy.signal.freqs(b, a, freqs * 2 * np.pi)
+    _, h = freqs(b, a, freqlist * 2 * pi)
 
     return h
 
 
-def normalize(freq_resp, freqs, norm_freq):
+def normalize(freq_resp, freqlist, norm_freq):
 
     normed = None
     # find the index in freqs of the first freq >= nom_freq
-    ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= norm_freq])
+    ndx = min([freq[0] for freq in enumerate(freqlist) if freq[1] >= norm_freq])
     if not (ndx is None):
-        scale = np.abs(freq_resp[ndx])
-        normed = np.divide(freq_resp, scale)
+        scale = abs(freq_resp[ndx])
+        normed = divide(freq_resp, scale)
     else:
         scale = 1.0
 
@@ -117,21 +117,21 @@ def channel_xform(trace_tpl, xfrm):
     #  traces and xfrms assumed to be ENZ (aka 21Z and XYZ for triaxial seis output) order
     header = trace_tpl[0].header
 
-    tr_E = IDATrace(copy.deepcopy(header), data=(np.multiply(trace_tpl[0].data, xfrm[0][0]) +
-                                                 np.multiply(trace_tpl[1].data, xfrm[0][1]) +
-                                                 np.multiply(trace_tpl[2].data, xfrm[0][2]))
+    tr_E = IDATrace(copy.deepcopy(header), data=(multiply(trace_tpl[0].data, xfrm[0][0]) +
+                                                 multiply(trace_tpl[1].data, xfrm[0][1]) +
+                                                 multiply(trace_tpl[2].data, xfrm[0][2]))
     )
     tr_E.channel = header['channel'][0:2] + '2'
 
-    tr_N = IDATrace(copy.deepcopy(header), data=(np.multiply(trace_tpl[0].data, xfrm[1][0]) +
-                                                 np.multiply(trace_tpl[1].data, xfrm[1][1]) +
-                                                 np.multiply(trace_tpl[2].data, xfrm[1][2]))
+    tr_N = IDATrace(copy.deepcopy(header), data=(multiply(trace_tpl[0].data, xfrm[1][0]) +
+                                                 multiply(trace_tpl[1].data, xfrm[1][1]) +
+                                                 multiply(trace_tpl[2].data, xfrm[1][2]))
     )
     tr_N.channel = header['channel'][0:2] + '1'
 
-    tr_Z = IDATrace(copy.deepcopy(header), data=(np.multiply(trace_tpl[0].data, xfrm[2][0]) +
-                                                 np.multiply(trace_tpl[1].data, xfrm[2][1]) +
-                                                 np.multiply(trace_tpl[2].data, xfrm[2][2]))
+    tr_Z = IDATrace(copy.deepcopy(header), data=(multiply(trace_tpl[0].data, xfrm[2][0]) +
+                                                 multiply(trace_tpl[1].data, xfrm[2][1]) +
+                                                 multiply(trace_tpl[2].data, xfrm[2][2]))
     )
     tr_Z.channel = header['channel'][0:2] + 'Z'
 
@@ -157,11 +157,11 @@ def unpack_paz(paz, paz_map):
     prev = ''
     cur = ''
     for ndx in range(0, nump):
-        if np.isclose(abs(poles[ndx]), 0):  # check for 0+0j
+        if isclose(abs(poles[ndx]), 0):  # check for 0+0j
             cur = 'zero'
-        elif not np.isclose(poles[ndx].imag, 0):  # check for complex value
+        elif not isclose(poles[ndx].imag, 0):  # check for complex value
             if (prev == 'complex'):
-                if np.isclose(poles[ndx].imag, -poles[ndx-1].imag):
+                if isclose(poles[ndx].imag, -poles[ndx-1].imag):
                     cur = 'conjugate'
                 else:
                     cur = 'complex'
@@ -170,7 +170,7 @@ def unpack_paz(paz, paz_map):
                 cur = 'complex'
                 data.extend([poles[ndx].real, poles[ndx].imag])
         else:
-            if (prev == 'real') and np.isclose(poles[ndx].real, poles[ndx-1].real):
+            if (prev == 'real') and isclose(poles[ndx].real, poles[ndx-1].real):
                 cur = 'real-double'   # if not zer and not complex must be real
             else:
                 data.append(poles[ndx].real)
@@ -182,11 +182,11 @@ def unpack_paz(paz, paz_map):
     prev = ''
     cur = ''
     for ndx in range(0, numz):
-        if np.isclose(abs(zeros[ndx]), 0):  # check for 0+0j
+        if isclose(abs(zeros[ndx]), 0):  # check for 0+0j
             cur = 'zero'
-        elif not np.isclose(zeros[ndx].imag, 0):  # check for complex value
+        elif not isclose(zeros[ndx].imag, 0):  # check for complex value
             if (prev == 'complex'):
-                if np.isclose(zeros[ndx].imag, zeros[ndx-1].imag):
+                if isclose(zeros[ndx].imag, zeros[ndx-1].imag):
                     cur = 'conjugate'
                 else:
                     cur = 'complex'
@@ -195,7 +195,7 @@ def unpack_paz(paz, paz_map):
                 cur = 'complex'
                 data.extend([zeros[ndx].real, zeros[ndx].imag])
         else:
-            if (prev == 'real') and np.isclose(zeros[ndx].real, zeros[ndx-1].real):
+            if (prev == 'real') and isclose(zeros[ndx].real, zeros[ndx-1].real):
                 cur = 'real-double'   # if not zer and not complex must be real
             else:
                 data.append(zeros[ndx].real)
@@ -205,7 +205,7 @@ def unpack_paz(paz, paz_map):
         prev = cur
 
     data.append(1.0)
-    return np.array(data), flags
+    return array(data), flags
 
 
 def pack_paz(data, flags):

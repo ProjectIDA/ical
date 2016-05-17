@@ -13,7 +13,8 @@ import warnings
 from struct import pack
 import sys
 
-import numpy as np
+# import numpy as np
+from numpy import empty, array, fromfile, fromstring, int8
 
 # from obspy import Stream, Trace
 from ida.obspy.core.utcdatetime import UTCDateTime
@@ -256,9 +257,9 @@ def _read_mseed(mseed_object, starttime=None, endtime=None, headonly=False,
     # If it's a file name just read it.
     if isinstance(mseed_object, (str, native_str)):
         # Read to NumPy array which is used as a buffer.
-        bfr_np = np.fromfile(mseed_object, dtype=np.int8)
+        bfr_np = fromfile(mseed_object, dtype=int8)
     elif hasattr(mseed_object, 'read'):
-        bfr_np = np.fromstring(mseed_object.read(), dtype=np.int8)
+        bfr_np = fromstring(mseed_object.read(), dtype=int8)
 
     # Get the record length
     try:
@@ -334,9 +335,9 @@ def _read_mseed(mseed_object, starttime=None, endtime=None, headonly=False,
         # Enhanced sanity checking for libmseed 2.10 can result in the
         # sampletype not being set. Just return an empty array in this case.
         if sampletype == b"\x00":
-            data = np.empty(0)
+            data = empty(0)
         else:
-            data = np.empty(samplecount, dtype=DATATYPES[sampletype])
+            data = empty(samplecount, dtype=DATATYPES[sampletype])
         all_data.append(data)
         return data.ctypes.data
     # XXX: Do this properly!
@@ -430,7 +431,7 @@ def _read_mseed(mseed_object, starttime=None, endtime=None, headonly=False,
                 data = all_data.pop(0)
                 header['npts'] = len(data)
             else:
-                data = np.array([])
+                data = array([])
                 header['npts'] = current_segment.samplecnt
             # Make sure to init the number of samples.
             # Py3k: convert to unicode

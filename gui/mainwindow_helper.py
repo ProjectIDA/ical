@@ -192,8 +192,6 @@ class MainWindowHelper(object):
             # bundle_dir = os.path.dirname(os.path.abspath(__file__))
             resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
 
-        print(resp_fpath)
-
         ims_calres_txt_fn, ims_resp_txt_fn, \
         cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
                                                                                      channel_codes,

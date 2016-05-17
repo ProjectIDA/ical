@@ -1,4 +1,6 @@
-import numpy as np
+from numpy import zeros as npzeros
+from numpy import array, pi, complex128, concatenate
+
 import os.path
 import logging
 import ida.signals.utils
@@ -28,8 +30,8 @@ class PAZ(object):
         self._mode = mode
         self._units = units
         self._h0 = 1
-        self._poles = np.zeros(0, dtype=np.complex128)
-        self._zeros = np.zeros(0, dtype=np.complex128)
+        self._poles = npzeros(0, dtype=complex128)
+        self._zeros = npzeros(0, dtype=complex128)
 
         if mode not in PAZ.MODE_ZEROS.keys():
             raise ValueError("Invalid MODE requested: '{}'. Valid values: {}".format(mode, PAZ.MODE_ZEROS.keys()))
@@ -151,18 +153,18 @@ class PAZ(object):
     def add_pole(self, pole):
         ndx = len(self._poles)
         self._poles.resize((ndx + 1,))
-        self._poles[ndx] = np.complex128(pole)
+        self._poles[ndx] = complex128(pole)
 
     def add_zero(self, zero):
         ndx = len(self._zeros)
         self._zeros.resize((ndx + 1,))
-        self._zeros[ndx] = np.complex128(zero)
+        self._zeros[ndx] = complex128(zero)
 
     def zeros(self, mode=None, units=None):
         if mode:
             zero_cnt_dif = PAZ.MODE_ZEROS[mode] - PAZ.MODE_ZEROS[self.mode]
             if zero_cnt_dif > 0:
-                zeros = np.concatenate((np.zeros(zero_cnt_dif, dtype=np.complex128), self._zeros))
+                zeros = concatenate((npzeros(zero_cnt_dif, dtype=complex128), self._zeros))
             elif zero_cnt_dif < 0:
                 if self._zeros.size >= abs(zero_cnt_dif):
                     zeros = self._zeros[abs(zero_cnt_dif):self._zeros.size].copy()
@@ -174,18 +176,18 @@ class PAZ(object):
             zeros = self._zeros.copy()
 
         if (units == 'hz') and (self.units == 'rad'):
-            zeros /= 2 * np.pi
+            zeros /= 2 * pi
         elif (units == 'rad') and (self.units == 'hz'):
-            zeros *= 2 * np.pi
+            zeros *= 2 * pi
 
         return zeros
 
     def poles(self, mode=None, units=None):
         poles = self._poles.copy()
         if (units == 'hz') and (self.units == 'rad'):
-            poles /= 2 * np.pi
+            poles /= 2 * pi
         elif (units == 'rad') and (self.units == 'hz'):
-            poles *= 2 * np.pi
+            poles *= 2 * pi
 
         return poles
 
@@ -198,7 +200,7 @@ class PAZ(object):
         if len(paz_map[1]) > 0:
             self._zeros[paz_map[1]] = paz_partial._zeros
 
-        resp = ida.signals.utils.compute_response(np.array([norm_freq]), self, mode=self.mode)
+        resp = ida.signals.utils.compute_response(array([norm_freq]), self, mode=self.mode)
         self.h0 = 1.0 / abs(resp)
 
 
@@ -209,7 +211,7 @@ class PAZ(object):
         newpaz._poles = self._poles[paz_map[0]]
         newpaz._zeros = self._zeros[paz_map[1]]
 
-        resp = ida.signals.utils.compute_response(np.array([norm_freq]), newpaz, mode=self.mode)
+        resp = ida.signals.utils.compute_response(array([norm_freq]), newpaz, mode=self.mode)
         newpaz.h0 = 1.0 / abs(resp)
 
         return newpaz

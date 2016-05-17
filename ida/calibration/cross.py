@@ -1,13 +1,14 @@
 from math import floor, atan2, sqrt
 import logging
-import numpy as np
+from numpy import ndarray, pi, sqrt, array, zeros, float64, concatenate
+from numpy.fft import fft
 
 
 def cross_correlate(sampling_rate, ts1, ts2):
 
-    deg_per_rad = 180.0 / np.pi
+    deg_per_rad = 180.0 / pi
 
-    if (type(ts1) != np.ndarray) or (type(ts2) != np.ndarray):
+    if (type(ts1) != ndarray) or (type(ts2) != ndarray):
         msg = 'ERROR: Timeseries need to be of type list or numpy.ndarray.'
         raise TypeError(msg)
 
@@ -28,7 +29,7 @@ def cross_correlate(sampling_rate, ts1, ts2):
     smoothing_factor = 2.0
     # calculate number of tapers
     # NOTE: inner floor probably not ideal
-    taper_cnt = floor(floor((3.0 + 0.3 * np.sqrt(ts1_data.size))) * np.sqrt(smoothing_factor))
+    taper_cnt = floor(floor((3.0 + 0.3 * sqrt(ts1_data.size))) * sqrt(smoothing_factor))
 
     # with open('py-cross-pre-fft.txt', 'wt') as ofl:
     #     for r in range(ts_info['ts1']['data'].size):
@@ -66,10 +67,10 @@ def cross_correlate(sampling_rate, ts1, ts2):
 
     freq_bin_size = (sampling_rate / 2.0) / (fft_usable_len - 1)
 
-    freqs = np.array([freq_bin_size * ndx for ndx in range(fft_usable_len)], dtype=np.float64)
-    gain = np.zeros(fft_usable_len, dtype=np.float64)
-    coh = np.zeros(fft_usable_len, dtype=np.float64)
-    phase = np.zeros(fft_usable_len, dtype=np.float64)
+    freqs = array([freq_bin_size * ndx for ndx in range(fft_usable_len)], dtype=float64)
+    gain = zeros(fft_usable_len, dtype=float64)
+    coh = zeros(fft_usable_len, dtype=float64)
+    phase = zeros(fft_usable_len, dtype=float64)
 
     logging.debug('Writing results for file system...')
     for freqndx in range(fft_usable_len):
@@ -170,10 +171,10 @@ def spcmat(ts1, ts2, taper_cnt):
     # ts_info['fft_usable_len'] = opt_len // 2
     fft_usable_len = opt_len // 2
 
-    padded = np.concatenate([ts1[0:opt_len], np.zeros(opt_len)])
-    ts1_fft = np.fft.fft(padded).conjugate()
-    padded = np.concatenate([ts2[0:opt_len], np.zeros(opt_len)])
-    ts2_fft = np.fft.fft(padded).conjugate()
+    padded = concatenate([ts1[0:opt_len], zeros(opt_len)])
+    ts1_fft = fft(padded).conjugate()
+    padded = concatenate([ts2[0:opt_len], zeros(opt_len)])
+    ts2_fft = fft(padded).conjugate()
 
     # print('ts1 fft input len:', ts1_fft.size)
     # print('ts2 fft input len:', ts2_fft.size)
@@ -185,7 +186,7 @@ def spcmat(ts1, ts2, taper_cnt):
     #             ts2_fft[ndx].real, ts2_fft[ndx].imag))
 
     # ojzfl = open('py-cross-jz.txt', 'wt')
-    sxy = np.zeros([fft_usable_len, 4], dtype=np.float64)
+    sxy = zeros([fft_usable_len, 4], dtype=float64)
     klim = taper_cnt
     ck = 1.0 / klim ** 2
     wt = 6.0 * klim / (4 * klim ** 2 + 3 * klim - 1)

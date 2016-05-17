@@ -23,7 +23,8 @@ import unittest
 import warnings
 import zipfile
 
-import numpy as np
+# import numpy as np
+from numpy import ndarray, ma
 from decorator import decorator
 
 from ida.obspy.core.util.base import get_example_file
@@ -211,10 +212,10 @@ def raise_if_masked(func, *args, **kwargs):
     if hasattr(args[0], "traces"):
         arrays = [tr.data for tr in args[0]]
     # first arg seems to be a Trace
-    if hasattr(args[0], "data") and isinstance(args[0].data, np.ndarray):
+    if hasattr(args[0], "data") and isinstance(args[0].data, ndarray):
         arrays = [args[0].data]
     for arr in arrays:
-        if np.ma.is_masked(arr):
+        if ma.is_masked(arr):
             msg = "Trace with masked values found. This is not " + \
                   "supported for this operation. Try the split() " + \
                   "method on Trace/Stream to produce a Stream with " + \

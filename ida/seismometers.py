@@ -1,5 +1,5 @@
 from collections import namedtuple
-import numpy as np
+from numpy import sqrt
 
 SEISMOMETER_MODELS = [
     'STS1',
@@ -26,15 +26,15 @@ SEIS_INVERT_NORTH_CHAN = ['STS1']
 SEIS_INVERT_EAST_CHAN = ['STS1']
 
 STS2_5_XYZ2UVW = [
-    [0,             -np.sqrt(6)/6,  np.sqrt(3)/6],
-    [-np.sqrt(2)/4,  np.sqrt(6)/12, np.sqrt(3)/6],
-    [ np.sqrt(2)/4,  np.sqrt(6)/12, np.sqrt(3)/6]
+    [0,             -sqrt(6)/6,  sqrt(3)/6],
+    [-sqrt(2)/4,  sqrt(6)/12, sqrt(3)/6],
+    [ sqrt(2)/4,  sqrt(6)/12, sqrt(3)/6]
 ]
 
 STS2_5_UVW2ENZ_ABS = [
-    [0,            np.sqrt(2)/2, np.sqrt(2)/2],
-    [np.sqrt(6)/3, np.sqrt(6)/6, np.sqrt(6)/6],
-    [np.sqrt(3)/3, np.sqrt(3)/3, np.sqrt(3)/3]
+    [0,            sqrt(2)/2, sqrt(2)/2],
+    [sqrt(6)/3, sqrt(6)/6, sqrt(6)/6],
+    [sqrt(3)/3, sqrt(3)/3, sqrt(3)/3]
 ]
 
 ChanCodesTpl = namedtuple('ChanCodes', ['north', 'east', 'vertical'])

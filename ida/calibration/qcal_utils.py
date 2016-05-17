@@ -1,7 +1,7 @@
 from collections import namedtuple
 import logging
 import os.path
-import numpy as np
+from numpy import float64
 # from obspy.io.mseed.core import _read_mseed
 # from obspy.core.stream import read
 from ida.ida_obspy import read_mseed
@@ -46,7 +46,7 @@ def read_qcal_files(qcal_ms_filename, qcal_log_filename):
         raise Exception(msg)
 
     # cal_strm = read(qcal_ms_filename, dtype=np.float64)
-    cal_strm = read_mseed(qcal_ms_filename, dtype=np.float64)
+    cal_strm = read_mseed(qcal_ms_filename, dtype=float64)
 
     if len(cal_strm) < 4:
         msg = "Fewer than 4 traces found in qcal miniseed file '{}'".format(qcal_ms_filename)

@@ -1,5 +1,8 @@
 import os.path
-import numpy as np
+# import numpy as np
+from numpy import pi, ceil, sin, cos, angle, abs, linspace, multiply, logical_and, \
+    divide, sqrt, power, subtract
+from numpy.fft import rfft, irfft
 import scipy.signal
 from scipy.optimize import least_squares
 import ida.calibration.qcal_utils
@@ -47,7 +50,7 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
 
     # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate. So 0.05 and 1 hz in freqs exactly.
     resp_len = ((hfinput.size * 2) // (20 * samp_rate_hf)) * (20 * samp_rate_hf)
-    freqs = np.linspace(1e-3, samp_rate_hf/2, resp_len)
+    freqs = linspace(1e-3, samp_rate_hf/2, resp_len)
 
     logging.debug('Comparing NORTH response with Nominal...')
 
@@ -72,9 +75,9 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     v_sys_sens = system_sensitivity_at_1hz(freqs, v_resp, seis_model)
 
     # convert cts/(m/s) to cts/m to nm/ct
-    n_sys_sens = 1 / (n_sys_sens * (2 * np.pi * 1) / 1e9)
-    e_sys_sens = 1 / (e_sys_sens * (2 * np.pi * 1) / 1e9)
-    v_sys_sens = 1 / (v_sys_sens * (2 * np.pi * 1) / 1e9)
+    n_sys_sens = 1 / (n_sys_sens * (2 * pi * 1) / 1e9)
+    e_sys_sens = 1 / (e_sys_sens * (2 * pi * 1) / 1e9)
+    v_sys_sens = 1 / (v_sys_sens * (2 * pi * 1) / 1e9)
     logging.debug('Finding sensitivities @ 1hz... complete.')
 
     logging.debug('Computing IN_SPEC status...')
@@ -132,7 +135,7 @@ def system_sensitivity_at_1hz(freqs, resp, seis_model):
 
     Q330_40HZ_NOMINAL_FIR_GAIN_1HZ = 1.00666915769  # from q330.40 fir filter used by IDA. Normed at freq = 0
 
-    bin_ndx_1hz = int(np.ceil(1.0 / freqs[1])) # assumes [0] is 0
+    bin_ndx_1hz = int(ceil(1.0 / freqs[1])) # assumes [0] is 0
     resp_gain_1hz = abs(resp[bin_ndx_1hz])
     seis_nom_gain = ida.seismometers.INSTRUMENT_NOMINAL_GAINS[seis_model.upper()]
     q330_nom_gain_1hz = ida.seismometers.INSTRUMENT_NOMINAL_GAINS['Q330'] * Q330_40HZ_NOMINAL_FIR_GAIN_1HZ
@@ -155,12 +158,12 @@ def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfm
     hfmeas_f, hfmeas_amp, hfmeas_pha, hfmeas_coh     = ida.calibration.cross.cross_correlate(hf_sr, hfinput, hfmeas)
     logging.debug('Compute coherence for HF time series... complete.')
 
-    lfmeas_pha_rad = lfmeas_pha * np.pi / 180
-    hfmeas_pha_rad = hfmeas_pha * np.pi / 180
+    lfmeas_pha_rad = lfmeas_pha * pi / 180
+    hfmeas_pha_rad = hfmeas_pha * pi / 180
 
     # create complex TF
-    hfmeas_tf = np.multiply(hfmeas_amp, (np.cos(hfmeas_pha_rad) + 1j * np.sin(hfmeas_pha_rad)))
-    lfmeas_tf = np.multiply(lfmeas_amp, (np.cos(lfmeas_pha_rad) + 1j * np.sin(lfmeas_pha_rad)))
+    hfmeas_tf = multiply(hfmeas_amp, (cos(hfmeas_pha_rad) + 1j * sin(hfmeas_pha_rad)))
+    lfmeas_tf = multiply(lfmeas_amp, (cos(lfmeas_pha_rad) + 1j * sin(lfmeas_pha_rad)))
 
     # trim freqs and norm freqs
     lflo = 1e-04
@@ -170,8 +173,8 @@ def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfm
     lf_norm_freq = 0.05
     hf_norm_freq = 1.0
 
-    lf_range = np.logical_and(lfmeas_f <= lfhi, lfmeas_f > lflo)
-    hf_range = np.logical_and(hfmeas_f <= hfhi, hfmeas_f > hflo)
+    lf_range = logical_and(lfmeas_f <= lfhi, lfmeas_f > lflo)
+    hf_range = logical_and(hfmeas_f <= hfhi, hfmeas_f > hflo)
     lfmeas_f_t = lfmeas_f[lf_range]
     hfmeas_f_t = hfmeas_f[hf_range]
     lfmeas_tf = lfmeas_tf[lf_range]
@@ -197,10 +200,10 @@ def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfm
                                                                        (list(range(0, lf_paz_pert.num_poles)),
                                                                         list(range(0, lf_paz_pert.num_zeros))))
 
-    hf_pazpert_lb = hf_paz_pert_flat - 0.5 * np.abs(hf_paz_pert_flat)
-    hf_pazpert_ub = hf_paz_pert_flat + 0.5 * np.abs(hf_paz_pert_flat)
-    lf_pazpert_lb = lf_paz_pert_flat - 0.5 * np.abs(lf_paz_pert_flat)
-    lf_pazpert_ub = lf_paz_pert_flat + 0.5 * np.abs(lf_paz_pert_flat)
+    hf_pazpert_lb = hf_paz_pert_flat - 0.5 * abs(hf_paz_pert_flat)
+    hf_pazpert_ub = hf_paz_pert_flat + 0.5 * abs(hf_paz_pert_flat)
+    lf_pazpert_lb = lf_paz_pert_flat - 0.5 * abs(lf_paz_pert_flat)
+    lf_pazpert_ub = lf_paz_pert_flat + 0.5 * abs(lf_paz_pert_flat)
     logging.debug('Setting paz perturbation map and splitting... complete.')
 
     logging.debug('Computing response of perturbed paz...')
@@ -219,11 +222,11 @@ def analyze_cal_component(data_dir, nom_paz, lf_sr, hf_sr, lfinput, hfinput, lfm
         resp_norm, scale, ndx = ida.signals.utils.normalize(resp, freqs, normfreq)
 
         # calc new TF
-        new_tf = np.divide(resp_norm, resp_pert0)
+        new_tf = divide(resp_norm, resp_pert0)
 
         # compare new_tf with old TF, real to real and imag to imag
-        resid = np.sqrt(np.power(new_tf.real - tf_target.real, 2) +
-                        np.power(new_tf.imag - tf_target.imag, 2))
+        resid = sqrt(power(new_tf.real - tf_target.real, 2) +
+                        power(new_tf.imag - tf_target.imag, 2))
         return resid
 
     logging.info('Fitting new HF response...')
@@ -299,8 +302,8 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=1.0, mode='vel'):
     resp2_norm, resp2_inv_a0, _ = ida.signals.utils.normalize(resp2, freqs, norm_freq)
 
     # calcualte percentage deviations
-    resp2_a_dev = (np.divide(abs(resp2_norm[1:]), abs(resp1_norm[1:])) - 1.0) * 100.0
-    resp2_p_dev = np.subtract(np.angle(resp2_norm[1:])*180/np.pi, np.angle(resp2_norm[1:])*180/np.pi)
+    resp2_a_dev = (divide(abs(resp2_norm[1:]), abs(resp1_norm[1:])) - 1.0) * 100.0
+    resp2_p_dev = subtract(angle(resp2_norm[1:])*180/pi, angle(resp2_norm[1:])*180/pi)
 
     resp2_a_dev_max = abs(resp2_a_dev).max()
     resp2_p_dev_max = abs(resp2_p_dev).max()
@@ -360,19 +363,19 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
     fraction = 0.1  # each side
     logging.debug('Creating tapers...')
     taper_lf = scipy.signal.tukey(npts_lf, alpha=fraction * 2, sym=True)
-    taper_bin_cnt_lf = int(np.ceil(npts_lf * fraction))
+    taper_bin_cnt_lf = int(ceil(npts_lf * fraction))
     taper_hf = scipy.signal.tukey(npts_hf, alpha=fraction * 2, sym=True)
-    taper_bin_cnt_hf = int(np.ceil(npts_hf * fraction))
+    taper_bin_cnt_hf = int(ceil(npts_hf * fraction))
     logging.debug('Creating tapers complete.')
 
     logging.debug('Generating nominal  LF (acc) response...')
-    freqs_lf = np.linspace(1e-3, samp_rate_lf/2, npts_lf//2 + 1)  # count is to match behavior of np.fft.rfft below
+    freqs_lf = linspace(1e-3, samp_rate_lf/2, npts_lf//2 + 1)  # count is to match behavior of np.fft.rfft below
     resp_tmp_lf = ida.signals.utils.compute_response(freqs_lf, paz, mode='acc')
 
     resp_lf, scale, ndx = ida.signals.utils.normalize(resp_tmp_lf, freqs_lf, 0.05)
 
     logging.debug('Generating nominal  HF (acc) response...')
-    freqs_hf = np.linspace(1e-3, samp_rate_hf/2, npts_hf//2 + 1)  # count is to match behavior of np.fft.rfft below
+    freqs_hf = linspace(1e-3, samp_rate_hf/2, npts_hf//2 + 1)  # count is to match behavior of np.fft.rfft below
     resp_tmp_hf = ida.signals.utils.compute_response(freqs_hf, paz, mode='acc')
 
 
@@ -381,9 +384,9 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
 
     # prep input signal: taper, fft, conv resp, ifft
     logging.debug('Convolving LF input with nominal response...')
-    input_fft           = np.fft.rfft(np.multiply(trs_lf_xfrm.input.data, taper_lf))
-    inp_freqs_cnv_resp  = np.multiply(input_fft, resp_lf)
-    lf_inp_wth_resp     = np.fft.irfft(inp_freqs_cnv_resp, npts_lf)
+    input_fft           = rfft(multiply(trs_lf_xfrm.input.data, taper_lf))
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_lf)
+    lf_inp_wth_resp     = irfft(inp_freqs_cnv_resp, npts_lf)
     lf_inp_wth_resp     = lf_inp_wth_resp[taper_bin_cnt_lf:-taper_bin_cnt_lf]
     stddev = lf_inp_wth_resp.std()
     lf_inp_wth_resp.__itruediv__(stddev)
@@ -392,9 +395,9 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
     logging.debug('Convolving LF input with nominal response complete')
 
     logging.debug('Convolving HF input with nominal response...')
-    input_fft           = np.fft.rfft(np.multiply(trs_hf_xfrm.input.data, taper_hf))
-    inp_freqs_cnv_resp  = np.multiply(input_fft, resp_hf)
-    hf_inp_wth_resp     = np.fft.irfft(inp_freqs_cnv_resp, npts_hf)
+    input_fft           = rfft(multiply(trs_hf_xfrm.input.data, taper_hf))
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_hf)
+    hf_inp_wth_resp     = irfft(inp_freqs_cnv_resp, npts_hf)
     hf_inp_wth_resp     = hf_inp_wth_resp[taper_bin_cnt_hf:-taper_bin_cnt_hf]
     stddev = hf_inp_wth_resp.std()
     hf_inp_wth_resp.__itruediv__(hf_inp_wth_resp.std())

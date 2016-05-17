@@ -16,7 +16,8 @@ import warnings
 from datetime import datetime
 from struct import pack, unpack
 
-import numpy as np
+# import numpy as np
+from numpy import empty, fromfile, array, int32, uint8, uint16
 
 from ida.obspy.core.utcdatetime import UTCDateTime
 from ida.obspy.core.util.misc import score_at_percentile
@@ -522,7 +523,7 @@ def _ctypes_array_2_numpy_array(buffer_, buffer_elements, sampletype):
     :param sampletype: type of sample, on of "a", "i", "f", "d"
     """
     # Allocate NumPy array to move memory to
-    numpy_array = np.empty(buffer_elements, dtype=sampletype)
+    numpy_array = empty(buffer_elements, dtype=sampletype)
     datptr = numpy_array.ctypes.get_data()
     # Manually copy the contents of the C allocated memory area to
     # the address of the previously created NumPy array
@@ -575,8 +576,8 @@ def _unpack_steim_1(data_string, npts, swapflag=0, verbose=0):
     dbuf = data_string
     datasize = len(dbuf)
     samplecnt = npts
-    datasamples = np.empty(npts, dtype=np.int32)
-    diffbuff = np.empty(npts, dtype=np.int32)
+    datasamples = empty(npts, dtype=int32)
+    diffbuff = empty(npts, dtype=int32)
     x0 = C.c_int32()
     xn = C.c_int32()
     nsamples = clibmseed.msr_unpack_steim1(
@@ -600,8 +601,8 @@ def _unpack_steim_2(data_string, npts, swapflag=0, verbose=0):
     dbuf = data_string
     datasize = len(dbuf)
     samplecnt = npts
-    datasamples = np.empty(npts, dtype=np.int32)
-    diffbuff = np.empty(npts, dtype=np.int32)
+    datasamples = empty(npts, dtype=int32)
+    diffbuff = empty(npts, dtype=int32)
     x0 = C.c_int32()
     xn = C.c_int32()
     nsamples = clibmseed.msr_unpack_steim2(
@@ -1273,7 +1274,7 @@ def shift_time_of_file(input_file, output_file, timeshift):
 
     # This is in this scenario somewhat easier to use than BytesIO because one
     # can directly modify the data array.
-    data = np.fromfile(input_file, dtype=np.uint8)
+    data = fromfile(input_file, dtype=uint8)
     array_length = len(data)
     record_offset = 0
     # Loop over every record.
@@ -1293,7 +1294,7 @@ def shift_time_of_file(input_file, output_file, timeshift):
         is_time_correction_applied = bool(activity_flags & 2)
 
         current_time_shift = current_record[40:44]
-        current_time_shift.dtype = np.int32
+        current_time_shift.dtype = int32
         if do_swap:
             current_time_shift = current_time_shift.byteswap(False)
         current_time_shift = current_time_shift[0]
@@ -1325,9 +1326,9 @@ def shift_time_of_file(input_file, output_file, timeshift):
             second = time[6:7]
             msecs = time[8:10]
             # Change dtype of multibyte values.
-            year.dtype = np.uint16
-            julday.dtype = np.uint16
-            msecs.dtype = np.uint16
+            year.dtype = uint16
+            julday.dtype = uint16
+            msecs.dtype = uint16
             if do_swap:
                 year = year.byteswap(False)
                 julday = julday.byteswap(False)
@@ -1348,9 +1349,9 @@ def shift_time_of_file(input_file, output_file, timeshift):
                 julday = julday.byteswap(False)
                 msecs = msecs.byteswap(False)
             # Change dtypes back.
-            year.dtype = np.uint8
-            julday.dtype = np.uint8
-            msecs.dtype = np.uint8
+            year.dtype = uint8
+            julday.dtype = uint8
+            msecs.dtype = uint8
             # Write to current record.
             time[0:2] = year[:]
             time[2:4] = julday[:]
@@ -1362,10 +1363,10 @@ def shift_time_of_file(input_file, output_file, timeshift):
 
         # Now modify the time correction flag.
         current_time_shift += timeshift
-        current_time_shift = np.array([current_time_shift], np.int32)
+        current_time_shift = array([current_time_shift], int32)
         if do_swap:
             current_time_shift = current_time_shift.byteswap(False)
-        current_time_shift.dtype = np.uint8
+        current_time_shift.dtype = uint8
         current_record[40:44] = current_time_shift[:]
 
     # Write to the output file.

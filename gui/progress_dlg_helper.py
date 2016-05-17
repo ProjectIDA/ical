@@ -12,7 +12,7 @@ class ProgressDlgHelper(object):
     def __init__(self, qtdlg, descr, total_time_mins, progdlg, qcal_thread):
         # self.cmdline = cmdline
         self.caldescr = descr
-        self.total_time_mins = total_time_mins + 0.25  # threading/processing overhead fudge factor
+        self.total_time_mins = total_time_mins + 0.3  # threading/processing overhead fudge factor
         self.progdlg = progdlg
         self.elapsed = 0
         self.qtdlg = qtdlg
@@ -55,7 +55,6 @@ class ProgressDlgHelper(object):
 
     def tick(self):
         self.elapsed += self.UPDATE_PERIOD
-        logging.debug('Progress tick at : {}'.format(time.time()))
         self.progdlg.progPB.setValue(self.elapsed)
         self.progdlg.valLbl.setText(str(int((self.elapsed * 100) / (self.total_time_mins * 60))) + '%')
 

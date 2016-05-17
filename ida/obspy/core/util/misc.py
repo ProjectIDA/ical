@@ -24,8 +24,8 @@ import warnings
 from contextlib import contextmanager
 from subprocess import STDOUT, CalledProcessError, check_output
 
-import numpy as np
-
+# import numpy as np
+from numpy import ma, loadtxt, array, atleast_1d, arange, float64
 
 # The following dictionary maps the first character of the channel_id to the
 # lowest sampling rate this so called Band Code should be used for according
@@ -142,9 +142,9 @@ def flat_not_masked_contiguous(a):
 
     Copyright (c) Pierre Gerard-Marchant
     """
-    np.ma.extras.flatnotmasked_contiguous
-    m = np.ma.getmask(a)
-    if m is np.ma.nomask:
+    ma.extras.flatnotmasked_contiguous
+    m = ma.getmask(a)
+    if m is ma.nomask:
         return slice(0, a.size, None)
     i = 0
     result = []
@@ -201,7 +201,7 @@ def to_int_or_zero(value):
 # import numpy loadtxt and check if ndmin parameter is available
 try:
     from numpy import loadtxt
-    loadtxt(np.array([0]), ndmin=1)
+    loadtxt(array([0]), ndmin=1)
 except TypeError:
     # otherwise redefine loadtxt
     def loadtxt(*args, **kwargs):
@@ -210,7 +210,7 @@ except TypeError:
         parameter.
         """
         if 'ndmin' not in kwargs:
-            return np.loadtxt(*args, **kwargs)
+            return loadtxt(*args, **kwargs)
         # ok we got a ndmin param
         if kwargs['ndmin'] != 1:
             # for now we support only one dimensional arrays
@@ -219,16 +219,16 @@ except TypeError:
         dtype = kwargs.get('dtype', None)
         # lets get the data
         try:
-            data = np.loadtxt(*args, **kwargs)
+            data = loadtxt(*args, **kwargs)
         except IOError as e:
             # raises in older versions if no data could be read
             if 'reached before encountering data' in str(e):
                 # return empty array
-                return np.array([], dtype=dtype)
+                return array([], dtype=dtype)
             # otherwise just raise
             raise
         # ensures that an array is returned
-        return np.atleast_1d(data)
+        return atleast_1d(data)
 
 
 def get_untracked_files_from_git():
@@ -403,8 +403,8 @@ def get_window_times(starttime, endtime, window_length, step, offset,
         # are calculate later on.
         end = starttime.timestamp - 0.001 * abs(step)
     # Left sides of each window.
-    indices = np.arange(start=starttime.timestamp + offset,
-                        stop=end, step=step, dtype=np.float64)
+    indices = arange(start=starttime.timestamp + offset,
+                        stop=end, step=step, dtype=float64)
     if step > 0:
         # Generate all possible windows.
         windows = [(_i, min(_i + window_length, endtime.timestamp))

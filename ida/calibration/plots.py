@@ -1,5 +1,5 @@
 from os.path import join
-import numpy as np
+from numpy import subtract, angle, pi, abs
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -61,10 +61,10 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     plt.ylabel('Phase (deg)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     plt.grid(which='both')
-    bh1, = plt.semilogx(freqs, np.angle(n_resp) * 180 / np.pi, 'g', linewidth=0.5)
-    bh2, = plt.semilogx(freqs, np.angle(e_resp) * 180 / np.pi, 'y', linewidth=0.75)
-    bhz, = plt.semilogx(freqs, np.angle(v_resp) * 180 / np.pi, 'r', linewidth=0.5)
-    nom, = plt.semilogx(freqs, np.angle(nom_resp) * 180 / np.pi, 'k', linewidth=0.5)
+    bh1, = plt.semilogx(freqs, angle(n_resp) * 180 / pi, 'g', linewidth=0.5)
+    bh2, = plt.semilogx(freqs, angle(e_resp) * 180 / pi, 'y', linewidth=0.75)
+    bhz, = plt.semilogx(freqs, angle(v_resp) * 180 / pi, 'r', linewidth=0.5)
+    nom, = plt.semilogx(freqs, angle(nom_resp) * 180 / pi, 'k', linewidth=0.5)
     plt.legend((bh1, bh2, bhz, nom), (chancodes.north, chancodes.east, chancodes.vertical, 'Nominal'), loc=0, handlelength=5, fontsize=12)
     ax = plt.axis()
     plt.axis([1e-3, 20, ax[2], ax[3]])
@@ -112,7 +112,7 @@ def apc_plot(sampling_freq, freqs, amp, pha, coh):
 
 def plot_cal_output_with_residual(calout, calinp):
 
-    resid = np.subtract(calout, calinp)
+    resid = subtract(calout, calinp)
     snr = 1 / resid.std()
 
     plt.figure(1, figsize=(10,10))

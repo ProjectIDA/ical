@@ -6,10 +6,20 @@ PyCal is a self contained Python application being developed for to be used on A
 
 
 ## Build Dependencies
-* Python 3.5
-* Qt Libraries (5.5.1)
-* Qt Creator 3.5.1 (Used for form building, but not technically necessary)
-* PyQt5 (w/ pyuic5)
-* PyInstaller (3.0)
+* Python 3.4.4
+* Qt Libraries (v5.6; custom built form source)
+  * qt-everywhere-opensource-src-5.6.0.tar.gz
+* Qt Creator 3.6.1 (Used for form building, but not technically necessary)
+* PyQt5 (v5.6) (w/ pyuic5)
+  * PyQt5_gpl-5.6.tar.gz
+* sip (v4.18; built from source)
+  * sip-4.18.tar.gz
+* matplotlib (v1.5.1; custom built from source)
+  * matplotlib-1.5.1-cp34-cp34m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl.tar.gz
+* PyInstaller (3.2, develop branch)
+  * pyinstaller-pyinstaller-v3.2-47-g8c6332e.zip
 * python-dateutil (2.4.2)
 * pytz (2015.7)
+* numpy
+* scipy
+* setuptools (v19.2; **must be v19.2**)

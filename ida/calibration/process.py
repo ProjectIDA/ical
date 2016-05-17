@@ -17,6 +17,12 @@ import logging
 
 def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_model, resp_fpath):
 
+    """
+    :type sta: str
+    :type chancodes: str
+    :param chancodes:
+
+    """
     logging.debug('Reading nominal response file: ' + resp_fpath)
 
     paz = ida.signals.paz.PAZ('vel', 'hz', pzfilename=resp_fpath, fileformat='ida')

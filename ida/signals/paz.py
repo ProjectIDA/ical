@@ -7,23 +7,13 @@ import ida.signals.utils
 
 
 class PAZ(object):
+
     FILE_FORMATS = ['ida']
-    MODE_ZEROS = {
-        'acc': 0,
-        'vel': 1,
-        'disp': 2
-    }
+    MODE_ZEROS = dict(acc=0, vel=1, disp=2)
     UNITS = ['hz', 'rad']
     PAZ_HEADER_IDA = '0x8001  # type 0x8001 = analog'
 
     def __init__(self, mode, units, pzfilename=None, fileformat=None):
-
-        """
-        :type pzfilename: str
-        :type fileformat: str
-        :type mode: str
-        :type units: object
-        """
 
         self._filename = pzfilename
         self.fileformat = fileformat

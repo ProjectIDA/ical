@@ -7,6 +7,8 @@ import ida.signals.utils
 
 
 class PAZ(object):
+    """ Generic object represnting frequency response in
+    Poles and Zeros format"""
 
     FILE_FORMATS = ['ida']
     MODE_ZEROS = dict(acc=0, vel=1, disp=2)
@@ -14,7 +16,17 @@ class PAZ(object):
     PAZ_HEADER_IDA = '0x8001  # type 0x8001 = analog'
 
     def __init__(self, mode, units, pzfilename=None, fileformat=None):
+        """
 
+        :param mode:
+        :type mode:
+        :param units:
+        :type units:
+        :param pzfilename:
+        :type pzfilename:
+        :param fileformat:
+        :type fileformat:
+        """
         self._filename = pzfilename
         self.fileformat = fileformat
         self._mode = mode

@@ -34,7 +34,18 @@ class MainWindowHelper(object):
         self.last_click = datetime.min
         self.main_win.q330Info.setText("")
         self.app_root_dir = app_root_dir
+        self.test_set = dict()
 
+        self.test_set_action_group = QtWidgets.QActionGroup(app_win)
+        self.test_set_action_group.addAction(self.main_win.actionUOSS_2016)
+        self.test_set_action_group.addAction(self.main_win.actionAAK_2015)
+        self.test_set_action_group.addAction(self.main_win.actionXPFO_2016)
+        self.test_set_action_group.addAction(self.main_win.actionALE)
+        self.test_set_action_group.addAction(self.main_win.actionERM)
+        self.test_set_action_group.addAction(self.main_win.actionRPN)
+        self.test_set_action_group.addAction(self.main_win.actionTAU)
+        self.test_set_action_group.addAction(self.main_win.actionBORG)
+        self.test_set_action_group.addAction(self.main_win.actionPFO_CTBTO)
 
     def setup_main_window(self):
         self.setup_actions()
@@ -49,10 +60,122 @@ class MainWindowHelper(object):
 
         self.main_win.addBtn.clicked.connect(self.AddCfg)
         self.main_win.editBtn.clicked.connect(self.EditCfg)
+        self.main_win.actionQuit.triggered.connect(self.close)
 
         self.main_win.testAnalysisBtn.clicked.connect(self.run_test_analysis)
+        self.test_set_action_group.triggered.connect(self.set_test_set)
 
-        self.main_win.actionQuit.triggered.connect(self.close)
+
+    def set_test_set(self, action):
+
+        if action == self.main_win.actionUOSS_2016:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'UOSS',
+                'loc' : 'TT',
+                'ip' : 'uoss10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-uoss10-sts2-rbhf-2016-0204-0612.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-uoss10-sts2-rbhf-2016-0204-0612.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-uoss10-sts2-rblf-2016-0204-0651.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-uoss10-sts2-rblf-2016-0204-0651.log'
+            }
+
+        elif  action == self.main_win.actionAAK_2015:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'AAK',
+                'loc' : 'TT',
+                'ip' : 'aak10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-aak10-sts2.5-rbhf-2015-0605-0610.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-aak10-sts2.5-rbhf-2015-0605-0610.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-aak10-sts2.5-rblf-2015-0605-0648.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-aak10-sts2.5-rblf-2015-0605-0648.log'
+            }
+
+        elif  action == self.main_win.actionXPFO_2016:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'XPFO',
+                'loc' : '50',
+                'ip' : '172.23.34.108',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rbhf-2016-0331-0946.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rbhf-2016-0331-0946.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rblf-2016-0328-1055.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rblf-2016-0328-1055.log'
+            }
+
+        elif  action == self.main_win.actionPFO_CTBTO:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'PFO',
+                'loc' : 'TT',
+                'ip' : '198.202.124.228',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rbhf-2016-0509-1353.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rbhf-2016-0509-1353.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rblf-2016-0509-1438.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rblf-2016-0509-1438.log'
+            }
+
+        elif  action == self.main_win.actionALE:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'ALE',
+                'loc' : 'TT',
+                'ip' : 'ale10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-ale10-sts2-rbhf-2015-0903-1826.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-ale10-sts2-rbhf-2015-0903-1826.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-ale10-sts2-rblf-2015-0903-1859.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-ale10-sts2-rblf-2015-0903-1859.log'
+            }
+
+        elif  action == self.main_win.actionBORG:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'BORG',
+                'loc' : 'TT',
+                'ip' : 'borg10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-borg10-sts2-rbhf-2015-1020-2358.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-borg10-sts2-rbhf-2015-1020-2358.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-borg10-sts2-rblf-2015-1021-0037.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-borg10-sts2-rblf-2015-1021-0037.log'
+            }
+
+        elif  action == self.main_win.actionERM:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'ERM',
+                'loc' : 'TT',
+                'ip' : 'erm10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-erm10-sts2-rbhf-2015-0819-0609.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-erm10-sts2-rbhf-2015-0819-0609.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-erm10-sts2-rblf-2015-0819-0647.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-erm10-sts2-rblf-2015-0819-0647.log'
+            }
+
+        elif  action == self.main_win.actionRPN:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'RPN',
+                'loc' : 'TT',
+                'ip' : 'rpn10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-rpn10-sts2.5-rbhf-2015-0701-0612.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-rpn10-sts2.5-rbhf-2015-0701-0612.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-rpn10-sts2.5-rblf-2015-0701-0650.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-rpn10-sts2.5-rblf-2015-0701-0650.log'
+            }
+
+        elif  action == self.main_win.actionTAU:
+            self.test_set = {
+                'seis_model' : 'STS2.5',
+                'sta' : 'TAU',
+                'loc' : 'TT',
+                'ip' : 'tau10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-tau10-sts2-rbhf-2016-0127-0622.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-tau10-sts2-rbhf-2016-0127-0622.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-tau10-sts2-rblf-2016-0127-0700.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-tau10-sts2-rblf-2016-0127-0700.log'
+            }
+
 
 
     def setup_tableview(self): #MainWindow, mw_ui):
@@ -161,22 +284,31 @@ class MainWindowHelper(object):
         sensor = 'A'
         seis_model = 'sts2.5'
 
-        sta = 'AS108'
-        loc = '10'
-        ip = '198.202.124.228'
-        hf_msfn  = 'CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.ms'
-        hf_logfn = 'CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.log'
-        lf_msfn  = 'CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.ms'
-        lf_logfn = 'CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.log'
-
-        # XPFO "Fast" test
-        seis_model = 'sts2.5-F'
-        sta='XPFO'
-        ip = '172.23.34.108'
-        hf_msfn = 'CAL-172.23.34.108-sts2.5-F-rbhf-2016-0511-0838.ms'
-        hf_logfn = 'CAL-172.23.34.108-sts2.5-F-rbhf-2016-0511-0838.log'
-        lf_msfn = 'CAL-172.23.34.108-sts2.5-F-rblf-2016-0511-0836.ms'
-        lf_logfn = 'CAL-172.23.34.108-sts2.5-F-rblf-2016-0511-0836.log'
+        # sta = 'AS108'
+        # loc = '10'
+        # ip = '198.202.124.228'
+        # hf_msfn  = 'CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.ms'
+        # hf_logfn = 'CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.log'
+        # lf_msfn  = 'CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.ms'
+        # lf_logfn = 'CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.log'
+        #
+        # # XPFO "Fast" test
+        # seis_model = 'sts2.5-F'
+        # sta='XPFO'
+        # ip = '172.23.34.108'
+        # hf_msfn = 'CAL-172.23.34.108-sts2.5-F-rbhf-2016-0511-0838.ms'
+        # hf_logfn = 'CAL-172.23.34.108-sts2.5-F-rbhf-2016-0511-0838.log'
+        # lf_msfn = 'CAL-172.23.34.108-sts2.5-F-rblf-2016-0511-0836.ms'
+        # lf_logfn = 'CAL-172.23.34.108-sts2.5-F-rblf-2016-0511-0836.log'
+        #
+        seis_model = self.test_set['seis_model']
+        sta = self.test_set['sta']
+        ip = self.test_set['ip']
+        loc = self.test_set['loc']
+        hf_msfn = self.test_set['hf_msfn']
+        hf_logfn = self.test_set['hf_logfn']
+        lf_msfn = self.test_set['lf_msfn']
+        lf_logfn = self.test_set['lf_logfn']
 
         output_dir = os.path.join(pcgl.get_results_root(), '-'.join([sta, ip.replace('.','_'), sensor, seis_model]))
 
@@ -187,37 +319,40 @@ class MainWindowHelper(object):
         #
         if getattr(sys, 'frozen', False):
             bundle_dir = sys._MEIPASS
-            resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'nom_resp_sts2_5.ida'))
+            start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
+            nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
         else:
             # bundle_dir = os.path.dirname(os.path.abspath(__file__))
-            resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
+            start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
+            nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
 
-        ims_calres_txt_fn, ims_resp_txt_fn, \
-        cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
+        logging.info('Analysis starting...')
+        logging.debug('Fitting Start response: ' + start_paz_fn)
+        logging.debug('Nominal Start response: ' + nom_paz_fn)
+
+        ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
                                                                                      channel_codes,
                                                                                      loc,
                                                                                      output_dir,
                                                                                      (lf_msfn, lf_logfn),
                                                                                      (hf_msfn, hf_logfn),
                                                                                      seis_model.upper(),
-                                                                                     resp_fpath)
+                                                                                     start_paz_fn,
+                                                                                     nom_paz_fn)
 
         call(['open', output_dir])
         call(['open', ims_calres_txt_fn])
-        call(['open', ims_resp_txt_fn])
         call(['open', cal_amp_plot_fn])
         call(['open', cal_pha_plot_fn])
 
         msg_list = ['Calibration completed successfully. ',
                     'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
                     '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
-                    '{}:\n\n{}\n\n'.format('RESPONSE Msg', os.path.basename(ims_resp_txt_fn)),
                     '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
                     '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
 
         logging.info('The following files have been saved in directory: ' + output_dir)
         logging.info('   CALIBRATE_RESULT Msg: ' + os.path.basename(ims_calres_txt_fn))
-        logging.info('   RESPONSE Msg' + os.path.basename(ims_resp_txt_fn))
         logging.info('   Amplitude Response Plots: ' + os.path.basename(cal_amp_plot_fn))
         logging.info('   Phase Response Plots: ' + os.path.basename(cal_pha_plot_fn))
 
@@ -361,15 +496,17 @@ class MainWindowHelper(object):
 
                     if getattr(sys, 'frozen', False):
                         bundle_dir = sys._MEIPASS
-                        resp_fpath = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'nom_resp_sts2_5.ida'))
+                        start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
+                        nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
                     else:
-                        resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
+                        start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
+                        nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
 
                     logging.info('Analysis starting...')
-                    logging.info('resp_fpath: ' + resp_fpath)
+                    logging.debug('Fitting Start response: ' + start_paz_fn)
+                    logging.debug('Nominal Start response: ' + nom_paz_fn)
 
                     ims_calres_txt_fn, \
-                    ims_resp_txt_fn, \
                     cal_amp_plot_fn, \
                     cal_pha_plot_fn = process_qcal_data(
                         sta,
@@ -379,18 +516,16 @@ class MainWindowHelper(object):
                         (lf_msfn, lf_logfn),
                         (hf_msfn, hf_logfn),
                         seis_model.upper(),
-                        resp_fpath)
+                        start_paz_fn, nom_paz_fn)
 
                     msg_list = ['Calibration completed successfully. ',
                                 'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
                                 '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
-                                '{}:\n\n{}\n\n'.format('RESPONSE Msg', os.path.basename(ims_resp_txt_fn)),
                                 '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
                                 '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
 
                     logging.info('The following files have been saved in directory: ' + output_dir)
                     logging.info('  {:<32} {}'.format('CALIBRATE_RESULT Msg: ', os.path.basename(ims_calres_txt_fn)))
-                    logging.info('  {:<32} {}'.format('RESPONSE Msg: ', os.path.basename(ims_resp_txt_fn)))
                     logging.info('  {:<32} {}'.format('Amplitude Response Plots: ', os.path.basename(cal_amp_plot_fn)))
                     logging.info('  {:<32} {}'.format('Phase Response Plots: ', os.path.basename(cal_pha_plot_fn)))
 
@@ -401,7 +536,6 @@ class MainWindowHelper(object):
 
                     call(['open', output_dir])
                     call(['open', ims_calres_txt_fn])
-                    call(['open', ims_resp_txt_fn])
                     call(['open', cal_amp_plot_fn])
                     call(['open', cal_pha_plot_fn])
 

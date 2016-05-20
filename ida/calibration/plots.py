@@ -26,12 +26,12 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     bhz, = plt.loglog(freqs, abs(v_resp), 'r', linewidth=0.5)
     nom, = plt.loglog(freqs, abs(nom_resp), 'k', linewidth=0.5)
     plt.legend((bh1, bh2, bhz, nom), (chancodes.north, chancodes.east, chancodes.vertical, 'Nominal'), loc=0, handlelength=5, fontsize=12)
-
+    #
     ax = plt.axis()
-    # ax[0] = 1e-3
-    # ax[1] = 18
+    # # ax[0] = 1e-3
+    # # ax[1] = 18
     plt.axis([1e-3, 20, ax[2], ax[3]])
-
+    #
     ax = plt.subplot(212)
     plt.tick_params(labelsize=13)
     plt.title('Amplitude Deviations from Nominal - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
@@ -41,7 +41,7 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     bh1, = plt.semilogx(freqs[1:], n_adev, 'g', linewidth=0.75)
     bh2, = plt.semilogx(freqs[1:], e_adev, 'y', linewidth=0.75)
     bhz, = plt.semilogx(freqs[1:], v_adev, 'r', linewidth=0.75)
-    plt.legend((bh1, bh2, bhz, nom), (chancodes.north, chancodes.east, chancodes.vertical, 'Nominal'), loc=0, handlelength=5, fontsize=12)
+    plt.legend((bh1, bh2, bhz), (chancodes.north, chancodes.east, chancodes.vertical), loc=0, handlelength=5, fontsize=12)
     amp_toler_pcnt = 5.0
     plt.axis([1e-3, 20, -amp_toler_pcnt * 2, amp_toler_pcnt * 2])
     ax_lims = plt.axis()
@@ -51,8 +51,8 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
                               (ax_lims[1], -amp_toler_pcnt)]
     poly = Polygon(within_tolerance_verts, facecolor='#D8FFD8', edgecolor='0.9', label='Acceptable Tolerance Band')
     ax.add_patch(poly)
-
     f100.savefig(amp_fn, dpi=400)
+    plt.clf()
 
     f101 = plt.figure(101, figsize=(15, 20))
     plt.subplot(211)
@@ -78,13 +78,15 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     bh1, = plt.semilogx(freqs[1:], n_pdev, 'g', linewidth=0.75)
     bh2, = plt.semilogx(freqs[1:], e_pdev, 'y', linewidth=0.75)
     bhz, = plt.semilogx(freqs[1:], v_pdev, 'r', linewidth=0.75)
-    plt.legend((bh1, bh2, bhz, nom), (chancodes.north, chancodes.east, chancodes.vertical, 'Nominal'), loc=0, handlelength=5, fontsize=12)
+    plt.legend((bh1, bh2, bhz), (chancodes.north, chancodes.east, chancodes.vertical), loc=0, handlelength=5, fontsize=12)
     pha_toler_degs = 5.0
     plt.axis([1e-3, 20, -pha_toler_degs * 2, pha_toler_degs * 2])
     poly = Polygon(within_tolerance_verts, facecolor='#D8FFD8', edgecolor='0.9', label='Acceptable Tolerance Band')
     ax.add_patch(poly)
-
+    #
+    # plt.show()
     f101.savefig(pha_fn, dpi=400)
+    plt.clf()
 
 
 def apc_plot(sampling_freq, freqs, amp, pha, coh):

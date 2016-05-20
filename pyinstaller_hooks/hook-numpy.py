@@ -12,7 +12,7 @@ from os import listdir
 try:
     libdir = compat.base_prefix + "/lib"
     mkllib = [x for x in listdir(libdir) if x.startswith('libmkl_')]
-    mkllib = ['libmkl_avx2.dylib']  # Just need this one for now, so leaving other bloatware out
+    mkllib = ['libmkl_avx2.dylib','libmkl_avx.dylib','libmkl_mc.dylib']  # Just need this one for now, so leaving other bloatware out
     if mkllib != []:
         logger = logging.getLogger(__name__)
         logger.info("MKL installed as part of numpy, importing that!")

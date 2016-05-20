@@ -1,5 +1,6 @@
 from math import floor, atan2, sqrt
 import logging
+import sys
 from numpy import ndarray, pi, sqrt, array, zeros, float64, concatenate
 from numpy.fft import fft
 
@@ -30,6 +31,7 @@ def cross_correlate(sampling_rate, ts1, ts2):
     # calculate number of tapers
     # NOTE: inner floor probably not ideal
     taper_cnt = floor(floor((3.0 + 0.3 * sqrt(ts1_data.size))) * sqrt(smoothing_factor))
+    logging.debug('Cross taper cnt: ' + str(taper_cnt))
 
     # with open('py-cross-pre-fft.txt', 'wt') as ofl:
     #     for r in range(ts_info['ts1']['data'].size):
@@ -72,7 +74,6 @@ def cross_correlate(sampling_rate, ts1, ts2):
     coh = zeros(fft_usable_len, dtype=float64)
     phase = zeros(fft_usable_len, dtype=float64)
 
-    logging.debug('Writing results for file system...')
     for freqndx in range(fft_usable_len):
         coh[freqndx] = (sxy[freqndx, 2] ** 2 + sxy[freqndx, 3] ** 2) / (sxy[freqndx, 0] * sxy[freqndx, 1])
         gain[freqndx] = sqrt(coh[freqndx] * sxy[freqndx, 1] / sxy[freqndx, 0])
@@ -88,7 +89,15 @@ def cross_correlate(sampling_rate, ts1, ts2):
 
         # lag(ts_info, freqndx, phase, gamsq)
 
-    logging.debug('Writing results for file system... complete')
+    if not getattr(sys, 'frozen', False):
+        logging.debug('Writing cross results for file system...')
+        with open('pycross-output-' + str(sampling_rate) + 'hz.txt', 'wt') as cfl:
+            for freqndx in range(fft_usable_len):
+                cfl.write('{:12.4e} {:12.4e} {:12.4e} {:12.4e}\n'.format(freqs[freqndx],
+                                                                         gain[freqndx],
+                                                                         phase[freqndx],
+                                                                         coh[freqndx]))
+        logging.debug('Writing cross results for file system... complete')
     # kmin=nf
     #     kmax=0
     #     kbar=0
@@ -162,7 +171,7 @@ def cross_correlate(sampling_rate, ts1, ts2):
 
 
 def spcmat(ts1, ts2, taper_cnt):
-    """Python implementation of the cross spcmat() routine with IDA fixed parameters"""
+    """Python implementation of the cross.f spcmat() routine with IDA fixed parameters"""
 
     opt_len = int((ts1.size // 2) * 2)
     # opt_len = 139968  # just for testing aginst cross.f
@@ -170,6 +179,8 @@ def spcmat(ts1, ts2, taper_cnt):
 
     # ts_info['fft_usable_len'] = opt_len // 2
     fft_usable_len = opt_len // 2
+
+    logging.debug('cross.spcmat() fft_usable_len: ' + str(fft_usable_len))
 
     padded = concatenate([ts1[0:opt_len], zeros(opt_len)])
     ts1_fft = fft(padded).conjugate()

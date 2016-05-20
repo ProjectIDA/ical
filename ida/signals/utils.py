@@ -102,8 +102,10 @@ def normalize(freq_resp, freqlist, norm_freq):
 
     normed = None
     # find the index in freqs of the first freq >= nom_freq
+
     ndx = min([freq[0] for freq in enumerate(freqlist) if freq[1] >= norm_freq])
     if not (ndx is None):
+
         scale = abs(freq_resp[ndx])
         normed = divide(freq_resp, scale)
     else:

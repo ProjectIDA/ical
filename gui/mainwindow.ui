@@ -1401,8 +1401,23 @@
     </property>
     <addaction name="acViewLogMessages"/>
    </widget>
+   <widget class="QMenu" name="menuTest_Sets">
+    <property name="title">
+     <string>Test Sets</string>
+    </property>
+    <addaction name="actionAAK_2015"/>
+    <addaction name="actionALE"/>
+    <addaction name="actionBORG"/>
+    <addaction name="actionERM"/>
+    <addaction name="actionPFO_CTBTO"/>
+    <addaction name="actionRPN"/>
+    <addaction name="actionTAU"/>
+    <addaction name="actionUOSS_2016"/>
+    <addaction name="actionXPFO_2016"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuTest_Sets"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionQuit">
@@ -1456,6 +1471,78 @@
    </property>
    <property name="toolTip">
     <string>View Log Messages</string>
+   </property>
+  </action>
+  <action name="actionUOSS_2016">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>UOSS</string>
+   </property>
+  </action>
+  <action name="actionAAK_2015">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>AAK</string>
+   </property>
+  </action>
+  <action name="actionXPFO_2016">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>XPFO</string>
+   </property>
+  </action>
+  <action name="actionRPN">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>RPN</string>
+   </property>
+  </action>
+  <action name="actionTAU">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>TAU</string>
+   </property>
+  </action>
+  <action name="actionBORG">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>BORG</string>
+   </property>
+  </action>
+  <action name="actionPFO_CTBTO">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>PFO-CTBTO</string>
+   </property>
+  </action>
+  <action name="actionERM">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>ERM</string>
+   </property>
+  </action>
+  <action name="actionALE">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>ALE</string>
    </property>
   </action>
  </widget>

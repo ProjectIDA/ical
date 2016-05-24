@@ -23,7 +23,7 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     paz_bl = ida.signals.paz.PAZ('vel', 'hz', pzfilename=bl_paz_fn, fileformat='ida')
 
     start_paz = paz_start
-    bl_paz = paz_bl
+    bl_paz = paz_start # comparing with 'ida adjusted-nominal response
 
 
     logging.debug('Reading responses complete.')
@@ -55,7 +55,7 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
 
     # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate. So 0.05 and 1 hz in freqs exactly.
     resp_len = ((hfinput.size * 2) // (20 * samp_rate_hf)) * (20 * samp_rate_hf)
-    freqs = linspace(0, samp_rate_hf/2, resp_len)
+    freqs = linspace(0, samp_rate_hf/2, resp_len)  # must start with 0hz
 
     logging.debug('Comparing NORTH response with Nominal...')
 
@@ -88,9 +88,9 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
 
     logging.debug('Finding sensitivities @ 1hz...')
 
-    n_sys_sens = system_sensitivity_at_1hz(freqs, n_resp, seis_model)
-    e_sys_sens = system_sensitivity_at_1hz(freqs, e_resp, seis_model)
-    v_sys_sens = system_sensitivity_at_1hz(freqs, v_resp, seis_model)
+    n_sys_sens = nominal_sys_sens_at_1hz(freqs, n_resp, seis_model, 'Q330')
+    e_sys_sens = nominal_sys_sens_at_1hz(freqs, e_resp, seis_model, 'Q330')
+    v_sys_sens = nominal_sys_sens_at_1hz(freqs, v_resp, seis_model, 'Q330')
 
     # convert cts/(m/s) to cts/m to nm/ct
     n_sys_sens = 1 / (n_sys_sens * (2 * pi * 1) / 1e9)
@@ -158,7 +158,7 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     return ims_calres_txt_fn, amp_fn, pha_fn
 
 
-def system_sensitivity_at_1hz(freqs, resp, seis_model):
+def nominal_sys_sens_at_1hz(freqs, resp, seis_model, digi_model):
 
     # resp in velocity
     # freqs linear (maybe not necessary)
@@ -169,11 +169,10 @@ def system_sensitivity_at_1hz(freqs, resp, seis_model):
     bin_ndx_1hz = int(ceil(1.0 / freqs[1])) # assumes [0] is 0
     resp_gain_1hz = abs(resp[bin_ndx_1hz])
     seis_nom_gain = ida.seismometers.INSTRUMENT_NOMINAL_GAINS[seis_model.upper()]
-    q330_nom_gain_1hz = ida.seismometers.INSTRUMENT_NOMINAL_GAINS['Q330'] * Q330_40HZ_NOMINAL_FIR_GAIN_1HZ
+    q330_nom_gain_1hz = ida.seismometers.INSTRUMENT_NOMINAL_GAINS[digi_model.upper()] * Q330_40HZ_NOMINAL_FIR_GAIN_1HZ
 
     sys_sens = resp_gain_1hz * seis_nom_gain * q330_nom_gain_1hz
 
-    # print('bin_ndx_1hz:{};  freq:{};   sens:{}'.format(bin_ndx_1hz, freqs[bin_ndx_1hz], abs(resp[bin_ndx_1hz])))
     return sys_sens
 
 
@@ -476,15 +475,16 @@ def triaxial_horizontal_magnitudes(cal_tpl, seis_model):
 
     seis_model = seis_model.upper()
     if seis_model in ida.seismometers.TRIAXIAL_SEISMOMETER_MODELS:
-        if seis_model == 'STS2.5':
+        if seis_model in ['STS2.5', 'STS2.5-F']:
             uvw = ida.signals.utils.channel_xform((cal_tpl.east, cal_tpl.north, cal_tpl.vertical), ida.seismometers.STS2_5_XYZ2UVW)
             enz = ida.signals.utils.channel_xform(uvw, ida.seismometers.STS2_5_UVW2ENZ_ABS)
             new_cal_tpl = ida.calibration.qcal_utils.QCalData(east=enz[0], north=enz[1], vertical=enz[2], input=cal_tpl.input)
             success = True
         else:
-            msg = 'The Triaxial seismomemter model {} is not supported at this time.'.format(seis_model)
-            logging.error(msg)
-            raise Exception(msg)
+            msg = 'The Triaxial seismomemter model {} is not supported at this time.\n' \
+                  'No transformation has been performed.'.format(seis_model)
+            logging.warning(msg)
+            new_cal_tpl = cal_tpl
     else:
         msg = 'The seismomemter model {} is not a triaxial instrument.'.format(seis_model)
         logging.error(msg)

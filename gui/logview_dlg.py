@@ -11,7 +11,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_LogviewDlg(object):
     def setupUi(self, LogviewDlg):
         LogviewDlg.setObjectName("LogviewDlg")
-        LogviewDlg.resize(701, 790)
+        LogviewDlg.resize(703, 689)
+        LogviewDlg.setMinimumSize(QtCore.QSize(703, 689))
+        LogviewDlg.setMaximumSize(QtCore.QSize(703, 68915))
         LogviewDlg.setSizeGripEnabled(False)
         self.groupBox = QtWidgets.QGroupBox(LogviewDlg)
         self.groupBox.setGeometry(QtCore.QRect(10, 10, 681, 631))
@@ -44,8 +46,8 @@ class Ui_LogviewDlg(object):
 
     def retranslateUi(self, LogviewDlg):
         _translate = QtCore.QCoreApplication.translate
-        LogviewDlg.setWindowTitle(_translate("LogviewDlg", "ICAL Log Viewer"))
-        self.groupBox.setTitle(_translate("LogviewDlg", "ICAL Log File"))
+        LogviewDlg.setWindowTitle(_translate("LogviewDlg", "PyCal Log Viewer"))
+        self.groupBox.setTitle(_translate("LogviewDlg", "PyCal Log"))
         self.closeBtn.setText(_translate("LogviewDlg", "Close"))
         self.clearBtn.setText(_translate("LogviewDlg", "Clear Log File"))
 

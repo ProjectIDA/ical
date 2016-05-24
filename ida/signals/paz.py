@@ -60,6 +60,12 @@ class PAZ(object):
 
 
     def _load_paz_file(self):
+        """
+        Load me a file...
+
+        :return: none
+        :rtype: none
+        """
 
         with open(self._filename, 'rt') as pzfl:
             pzlines = pzfl.readlines()
@@ -67,6 +73,13 @@ class PAZ(object):
                 self._parse_ida_paz(pzlines)
 
     def _parse_ida_paz(self, pzlines):
+        """
+
+        :param pzlines:
+        :type pzlines:
+        :return:
+        :rtype:
+        """
 
         if ' # type ' in pzlines[0]:
 
@@ -105,6 +118,12 @@ class PAZ(object):
 
 
     def save(self, filename):
+        """
+        Save me a pizza!
+
+        :param filename: fully qualified location of file in which to save PAZ
+        :type filename: str
+        """
 
         with open(filename, 'wt') as ofl:
             ofl.write(self.PAZ_HEADER_IDA + '\n')
@@ -118,6 +137,8 @@ class PAZ(object):
             ofl.write('# poles\n')
             for pole in self._poles:
                 ofl.write('{:>12.5E}, {:>12.5E}\n'.format(pole.real, pole.imag))
+
+        return
 
 
     @property

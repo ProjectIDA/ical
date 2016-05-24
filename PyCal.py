@@ -70,6 +70,7 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%d %I:%M:%S %Z')
     logging.info('*--------------------------------------------------------------------------------*')
     logging.info('PyCal Starting...')
+    logging.disable(logging.DEBUG)
 
     load_ok, cfg = initialize_app()
 

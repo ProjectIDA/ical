@@ -13,6 +13,9 @@ from gui.progress_dlg import Ui_ProgressDlg
 from gui.progress_dlg_helper import ProgressDlgHelper
 from gui.edit_dlg import Ui_EditDlg
 from gui.edit_dlg_helper import EditDlgHelper
+from gui.analysis_progress_window import Ui_AnalysisProgressFrm
+from gui.analysis_progress_dlg_helper import AnalysisProgressDlgHelper
+from gui.analysis_progress_dialog import ProgressDlg
 from gui.logview_dlg import Ui_LogviewDlg
 from gui.logview_dlg_helper import LogviewDlgHelper
 from config.ical_config import IcalConfig
@@ -35,6 +38,10 @@ class MainWindowHelper(object):
         self.main_win.q330Info.setText("")
         self.app_root_dir = app_root_dir
         self.test_set = dict()
+        self.verbose_log = False
+        self.qVerifyThread = None
+
+        self.log_dlgHlpr = None
 
         self.test_set_action_group = QtWidgets.QActionGroup(app_win)
         self.test_set_action_group.addAction(self.main_win.actionUOSS_2016)
@@ -52,18 +59,36 @@ class MainWindowHelper(object):
         self.setup_tableview()
 
     def setup_actions(self):
+        logging.debug('Setting up QActions')
+
         self.main_win.acViewLogMessages.triggered.connect(self.view_log_messages)
+
         self.main_win.quitBtn.clicked.connect(self.main_win.actionQuit.trigger)
 
         self.main_win.sensARunBtn.clicked.connect(self.run_cal_A)
         self.main_win.sensBRunBtn.clicked.connect(self.run_cal_B)
 
-        self.main_win.addBtn.clicked.connect(self.AddCfg)
-        self.main_win.editBtn.clicked.connect(self.EditCfg)
+        self.main_win.addBtn.clicked.connect(self.main_win.actionNew.trigger)
+        self.main_win.editBtn.addAction(self.main_win.actionEdit)
+
+        self.main_win.actionNew.triggered.connect(self.AddCfg)
+        self.main_win.actionEdit.triggered.connect(self.EditCfg)
+        self.main_win.actionDelete.triggered.connect(self.delete_cfg)
         self.main_win.actionQuit.triggered.connect(self.close)
+        self.main_win.actionVerbose_Log.triggered.connect(self.toggle_verbose)
 
         self.main_win.testAnalysisBtn.clicked.connect(self.run_test_analysis)
         self.test_set_action_group.triggered.connect(self.set_test_set)
+
+
+    def toggle_verbose(self):
+
+        self.verbose_log = not self.verbose_log
+
+        if self.verbose_log:
+            lvl = logging.disable(logging.NOTSET)
+        else:
+            lvl = logging.disable(logging.DEBUG)
 
 
     def set_test_set(self, action):
@@ -179,6 +204,7 @@ class MainWindowHelper(object):
 
 
     def setup_tableview(self): #MainWindow, mw_ui):
+        logging.debug('Setting up QTableview')
         self.main_win.cfgListTV.setModel(self.cdm)
         hdrvw = self.main_win.cfgListTV.horizontalHeader()
         hdrvw.setStretchLastSection(True)
@@ -187,18 +213,29 @@ class MainWindowHelper(object):
         self.main_win.cfgListTV.clicked.connect(self.record_click)
         self.main_win.cfgListTV.selectionModel().selectionChanged.connect(self.MWSelectionChanged)
 
+        self.update_details(-1)
+
 
     def close(self):
         self.app_win.close()
 
 
     def view_log_messages(self):
-        dlg = QtWidgets.QDialog()
-        dlgUI = Ui_LogviewDlg()
-        dlgUI.setupUi(dlg)
-        dlgHlpr = LogviewDlgHelper(pcgl.get_log_filename(), dlg, dlgUI)
 
-        dlg.exec()
+        if self.log_dlgHlpr:
+            dlg = self.log_dlgHlpr.qtDlg
+            dlgUI = self.log_dlgHlpr.dlgUI
+        else:
+            dlg = QtWidgets.QDialog(self.app_win)
+            dlg.setModal(False)
+            dlgUI = Ui_LogviewDlg()
+            dlgUI.setupUi(dlg)
+            dlg.setWindowTitle('PyCal - Log Viewer')
+            dlgHlpr = LogviewDlgHelper(pcgl.get_log_filename(), dlg, dlgUI)
+
+            self.log_dlgHlpr = dlgHlpr
+
+        dlg.show()
 
 
     def MWSelectionChanged(self, seldelta, deseldelta):
@@ -206,10 +243,11 @@ class MainWindowHelper(object):
 
         if len(sel_ndxs) >= 1:
             self.cur_row = sel_ndxs[0].row()
-            self.update_details(self.cur_row)
+
         else:
             self.cur_row = -1
 
+        self.update_details(self.cur_row)
 
     def record_click(self):
         gap = datetime.now() - self.last_click
@@ -237,11 +275,12 @@ class MainWindowHelper(object):
 
 
     def EditCfg(self):
+
         if self.cur_row >= 0:
             # get tagno and then wcfg...
             mdlNdx = QtCore.QAbstractItemModel.createIndex(self.cdm, self.cur_row, CfgDataModel.TAGNO_COL)
             tagno = self.cdm.data(mdlNdx, QtCore.Qt.DisplayRole)
-            logging.info('Editing configuration for q330 tagno=' + str(tagno))
+            logging.info('Editing configuration for Q330 with Tag # {}'.format(tagno))
             wcfg = self.cfg.find(tagno)
             if wcfg:
 
@@ -257,12 +296,38 @@ class MainWindowHelper(object):
                         QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
 
                     self.main_win.cfgListTV.resizeColumnsToContents()
+                else:
+                    logging.info('Editing cancelled by user.')
 
                 dlg, dlgUI, dlgUIHlpr = None, None, None
 
 
+    def delete_cfg(self):
+        if self.cur_row >= 0:
+            # get tagno and delete
+            mdlNdx = QtCore.QAbstractItemModel.createIndex(self.cdm, self.cur_row, CfgDataModel.TAGNO_COL)
+            tagno = self.cdm.data(mdlNdx, QtCore.Qt.DisplayRole)
+            print(type(tagno), tagno)
+            # wcfg = self.cfg.find(tagno)
+            if tagno:
+                msg_box = QtWidgets.QMessageBox()
+                msg_box.setIcon(QtWidgets.QMessageBox.Warning)
+                msg_box.setText('DELETE config for Q330 with Tag # {}?'.format(tagno))
+                msg_box.setInformativeText('This is permanent!')
+                msg_box.setDefaultButton(QtWidgets.QMessageBox.Cancel)
+                del_btn = msg_box.addButton("DELETE", QtWidgets.QMessageBox.DestructiveRole);
+                cancel_btn = msg_box.addButton(QtWidgets.QMessageBox.Cancel);
+
+                msg_box.exec()
+
+                if msg_box.clickedButton() == del_btn:
+                    logging.info('Deleting configuration for Q330 with Tag # {}'.format(tagno))
+                    self.cfg.remove(tagno)
+                    self.cdm.endResetModel()
+
+
     def AddCfg(self):
-        logging.info('Editing new q330 configuration')
+        logging.info('Adding new q330 configuration')
 
         dlg, dlgUI, dlgUIHlpr = self.setup_edit_dialog(EditDlgHelper.ADD_MODE, WrapperCfg.new_dict())
         # need to keep dlgUIHlpr in scope for GUI callbacks
@@ -273,11 +338,37 @@ class MainWindowHelper(object):
             except Exception as e:
                 logging.error('Error saving new PyCal Q330 config record. ' + str(e))
                 QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
+        else:
+            logging.info('Add new configuration cancelled by user.')
 
             self.main_win.cfgListTV.resizeColumnsToContents()
 
 
+    def run_analysis(self, method, *args):
+
+        dlg = ProgressDlg()
+        dlgUI = Ui_AnalysisProgressFrm()
+        dlgUI.setupUi(dlg)
+        dlg.setWindowTitle('PyCal - Data Analysis')
+        dlgHlpr = AnalysisProgressDlgHelper(dlg, dlgUI)
+
+        res, msg_fn, amppltfn, phapltfn = dlgHlpr.run_analysis(method, *args)
+        if res == -1:
+            logging.warning('Analysis canceled by user.')
+        elif res == 0:
+            logging.info('Analysis completed.')
+
+        return res, msg_fn, amppltfn, phapltfn
+
+
     def run_test_analysis(self):
+
+        QtWidgets.QMessageBox().information(self.app_win, 'PyCal Analysis',
+                                                  'Calibration data acquired successfully.\n\n'
+                                                  'The data will now be analyzed.\n'
+                                                  'This could take approximately 5 minutes.',
+                                                  QtWidgets.QMessageBox().Close,
+                                                  QtWidgets.QMessageBox().Close)
 
         channel_codes = ida.seismometers.ChanCodesTpl(north='BHN', east='BHE',
                                                       vertical='BHZ')
@@ -330,7 +421,20 @@ class MainWindowHelper(object):
         logging.debug('Fitting Start response: ' + start_paz_fn)
         logging.debug('Nominal Start response: ' + nom_paz_fn)
 
-        ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
+        # ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
+        #                                                                              channel_codes,
+        #                                                                              loc,
+        #                                                                              output_dir,
+        #                                                                              (lf_msfn, lf_logfn),
+        #                                                                              (hf_msfn, hf_logfn),
+        #                                                                              seis_model.upper(),
+        #                                                                              start_paz_fn,
+        #                                                                              nom_paz_fn)
+        retcode, \
+        ims_calres_txt_fn, \
+        cal_amp_plot_fn, \
+        cal_pha_plot_fn = self.run_analysis(ida.calibration.process.process_qcal_data,
+                                                                                     sta,
                                                                                      channel_codes,
                                                                                      loc,
                                                                                      output_dir,
@@ -340,26 +444,27 @@ class MainWindowHelper(object):
                                                                                      start_paz_fn,
                                                                                      nom_paz_fn)
 
-        call(['open', output_dir])
-        call(['open', ims_calres_txt_fn])
-        call(['open', cal_amp_plot_fn])
-        call(['open', cal_pha_plot_fn])
+        if retcode == 0:
+            call(['open', output_dir])
+            call(['open', ims_calres_txt_fn])
+            call(['open', cal_amp_plot_fn])
+            call(['open', cal_pha_plot_fn])
 
-        msg_list = ['Calibration completed successfully. ',
-                    'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
-                    '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
-                    '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
-                    '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
+            msg_list = ['Calibration completed successfully. ',
+                        'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
+                        '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
+                        '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
+                        '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
 
-        logging.info('The following files have been saved in directory: ' + output_dir)
-        logging.info('   CALIBRATE_RESULT Msg: ' + os.path.basename(ims_calres_txt_fn))
-        logging.info('   Amplitude Response Plots: ' + os.path.basename(cal_amp_plot_fn))
-        logging.info('   Phase Response Plots: ' + os.path.basename(cal_pha_plot_fn))
+            logging.info('The following files have been saved in directory: ' + output_dir)
+            logging.info('   CALIBRATE_RESULT Msg: ' + os.path.basename(ims_calres_txt_fn))
+            logging.info('   Amplitude Response Plots: ' + os.path.basename(cal_amp_plot_fn))
+            logging.info('   Phase Response Plots: ' + os.path.basename(cal_pha_plot_fn))
 
-        res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
-                                                  'Calibration Completed!\n\n' + ''.join(msg_list),
-                                                  QtWidgets.QMessageBox().Close,
-                                                  QtWidgets.QMessageBox().Close)
+            res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
+                                                      'Calibration Completed!\n\n' + ''.join(msg_list),
+                                                      QtWidgets.QMessageBox().Close,
+                                                      QtWidgets.QMessageBox().Close)
 
     def run_sensor_cal_type(self, sensor, caltype, cal_info):
 
@@ -373,9 +478,9 @@ class MainWindowHelper(object):
                                  cal_info['output_dir'])
 
         dlg = QtWidgets.QDialog(self.app_win)
-        dlg.setWindowTitle('PyCal - Calibration Running')
         progdlg = Ui_ProgressDlg()
         progdlg.setupUi(dlg)
+        dlg.setWindowTitle('PyCal - Data Acquisition')
 
         if caltype == 'rblf':
             cal_descr = 'Calibration Signal: LOW Frequency Random Binary\n\n' + cal_info['cal_descr']
@@ -494,6 +599,13 @@ class MainWindowHelper(object):
                     logging.info('QCal RBHF Miniseed file saved: ' + os.path.join(output_dir, hf_msfn))
                     logging.info('QCal RBHF Log file saved: ' + os.path.join(output_dir, hf_logfn))
 
+                    QtWidgets.QMessageBox().information(self.app_win, 'PyCal Analysis Phase Starting',
+                                                        'Calibration data acquired successfully.\n\n'
+                                                        'The data will now be analyzed.\n'
+                                                        'This could take approximately 5 minutes.',
+                                                        QtWidgets.QMessageBox().Close,
+                                                        QtWidgets.QMessageBox().Close)
+
                     if getattr(sys, 'frozen', False):
                         bundle_dir = sys._MEIPASS
                         start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
@@ -506,39 +618,44 @@ class MainWindowHelper(object):
                     logging.debug('Fitting Start response: ' + start_paz_fn)
                     logging.debug('Nominal Start response: ' + nom_paz_fn)
 
+                    retcode, \
                     ims_calres_txt_fn, \
                     cal_amp_plot_fn, \
-                    cal_pha_plot_fn = process_qcal_data(
-                        sta,
-                        channel_codes,
-                        loc,
-                        output_dir,
-                        (lf_msfn, lf_logfn),
-                        (hf_msfn, hf_logfn),
-                        seis_model.upper(),
-                        start_paz_fn, nom_paz_fn)
+                    cal_pha_plot_fn = self.run_analysis(ida.calibration.process.process_qcal_data,
+                                                        sta,
+                                                        channel_codes,
+                                                        loc,
+                                                        output_dir,
+                                                        (lf_msfn, lf_logfn),
+                                                        (hf_msfn, hf_logfn),
+                                                        seis_model.upper(),
+                                                        start_paz_fn,
+                                                        nom_paz_fn)
 
-                    msg_list = ['Calibration completed successfully. ',
+                    if retcode == 0:
+                        msg_list = ['Calibration completed successfully. ',
                                 'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
                                 '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
                                 '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
                                 '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
 
-                    logging.info('The following files have been saved in directory: ' + output_dir)
-                    logging.info('  {:<32} {}'.format('CALIBRATE_RESULT Msg: ', os.path.basename(ims_calres_txt_fn)))
-                    logging.info('  {:<32} {}'.format('Amplitude Response Plots: ', os.path.basename(cal_amp_plot_fn)))
-                    logging.info('  {:<32} {}'.format('Phase Response Plots: ', os.path.basename(cal_pha_plot_fn)))
+                        logging.info('Analysis phase completed with return code: {}'.format(retcode))
+                        logging.info('The following files have been saved in directory: ' + output_dir)
+                        logging.info('  {} {}'.format('CALIBRATE_RESULT Msg: ', os.path.basename(ims_calres_txt_fn)))
+                        logging.info('  {} {}'.format('Amplitude Response Plots: ', os.path.basename(cal_amp_plot_fn)))
+                        logging.info('  {} {}'.format('Phase Response Plots: ', os.path.basename(cal_pha_plot_fn)))
 
-                    res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
-                                                              'Calibration Completed!\n\n' + ''.join(msg_list),
-                                                              QtWidgets.QMessageBox().Close,
-                                                              QtWidgets.QMessageBox().Close)
+                        res = QtWidgets.QMessageBox().information(self.app_win, 'PyCal',
+                                                                  'Calibration Completed!\n\n' + ''.join(msg_list),
+                                                                  QtWidgets.QMessageBox().Close,
+                                                                  QtWidgets.QMessageBox().Close)
 
-                    call(['open', output_dir])
-                    call(['open', ims_calres_txt_fn])
-                    call(['open', cal_amp_plot_fn])
-                    call(['open', cal_pha_plot_fn])
-
+                        call(['open', output_dir])
+                        call(['open', ims_calres_txt_fn])
+                        call(['open', cal_amp_plot_fn])
+                        call(['open', cal_pha_plot_fn])
+                    else:
+                        logging.warning('Analysis phase completed with return code: {}'.format(retcode))
 
     def run_cal_A(self):
         self.run_sensor_cal('A')
@@ -551,15 +668,20 @@ class MainWindowHelper(object):
     def update_details(self, row):
 
         self.main_win.editBtn.setEnabled(row != -1)
+        self.main_win.actionEdit.setEnabled(row != -1)
+        self.main_win.actionDelete.setEnabled(row != -1)
+
         self.set_run_btns_enabled(row)
 
         if row == -1:
             self.clear_details()
+            if self.qVerifyThread:
+                self.qVerifyThread.qVerifyQueryResult.disconnect(self.qVerify_query_result_slot)
+                self.qVerifyThread.exit(-1)
         else:
             self.set_details(row)
-
-        if self.qVerifyThread:
-            self.qVerifyThread.start()
+            if self.qVerifyThread:
+                self.qVerifyThread.start()
 
 
     def set_run_btns_enabled(self, row):
@@ -585,7 +707,9 @@ class MainWindowHelper(object):
             if port in act_ports:
                 self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(0, 102, 0);}")
                 self.main_win.q330Info.setStyleSheet("QLabel{color:rgb(0, 102, 0);}")
-                self.main_win.q330Info.setText('Q330 is reachable and ready to rumble. (Q330 Firmware versions: ' + '/'.join(results.split()[3:5])+')')
+                self.main_win.q330Info.setText('Q330 (Tag #: {}) is reachable and ready to rumble. '
+                                               '(Q330 firmware versions: {})'.format(self.main_win.tagnoLE.text(),
+                                                                                     '/'.join(results.split()[3:5])))
             else:
                 self.main_win.sensARunBtn.setEnabled(False)
                 self.main_win.sensARunBtn.setEnabled(False)
@@ -594,7 +718,9 @@ class MainWindowHelper(object):
                 self.main_win.ipLE.setStyleSheet("QLineEdit{color:rgb(179, 0, 0);}")
                 self.main_win.q330Info.setStyleSheet("QLabel{color:rgb(179, 0, 0);}")
                 self.main_win.q330Info.setText(
-                    'Q330 is reachable but the configured [{}] Data Port is not in the list of Active Channels: [{}].'.format(
+                    'Q330 (Tag #: {}) is reachable but the configured [{}] Data Port is not '
+                    'in the list of Active Channels: [{}].'.format(
+                        self.main_win.tagnoLE.text(),
                         port,
                         ', '.join(act_ports)
                     )

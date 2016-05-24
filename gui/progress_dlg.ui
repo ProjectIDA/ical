@@ -67,7 +67,7 @@
     </property>
     <property name="font">
      <font>
-      <family>Consolas</family>
+      <family>PT Mono</family>
       <weight>75</weight>
       <bold>true</bold>
      </font>

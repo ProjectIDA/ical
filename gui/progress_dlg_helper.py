@@ -1,19 +1,15 @@
-import time
+from time import time
 import logging
 from PyQt5.QtCore import QTimer
 
 
 class ProgressDlgHelper(object):
 
-    UPDATE_PERIOD = 1  # seconds
-
-
-    # def __init__(self, cmdline, descr, total_time_mins, progdlg):
     def __init__(self, qtdlg, descr, total_time_mins, progdlg, qcal_thread):
         # self.cmdline = cmdline
         self.caldescr = descr
         self.total_time_mins = total_time_mins + 0.3  # threading/processing overhead fudge factor
-        self.progdlg = progdlg
+        self.update_interval = (self.total_time_mins * 60.0) / 100.0 # 1% of total time in secs
         self.elapsed = 0
         self.qtdlg = qtdlg
         self.timer = QTimer(self.qtdlg)
@@ -21,14 +17,20 @@ class ProgressDlgHelper(object):
         self.retcode = -1
         self.msg = ''
         self.calmsfn = ''
+        self.start_time = None
+        self.progdlg = progdlg
         self.progdlg.calWarningLbl.setText('Do NOT disconnect from the network and\n'
                                            'Do NOT allow the computer to sleep\n ' +
                                            'while the calibration is running.')
+        self.progdlg.valLbl.setText('0%')
 
 
     def start(self):
 
-        self.progdlg.cancelBtn.clicked.connect(self.cancelled)
+        self.start_time = time()
+        self.end_time = self.start_time + self.total_time_mins * 60.0
+
+        self.progdlg.cancelBtn.clicked.connect(self.canceled)
 
         self.progdlg.calDescrLbl.setText(self.caldescr)
 
@@ -50,13 +52,16 @@ class ProgressDlgHelper(object):
 
         # noinspection PyUnresolvedReferences
         self.timer.timeout.connect(self.tick)
-        self.timer.start(self.UPDATE_PERIOD * 1000)
+        self.timer.start(self.update_interval * 1000)
 
 
     def tick(self):
-        self.elapsed += self.UPDATE_PERIOD
+
+        pcnt_time = ((time() - self.start_time) / (self.total_time_mins * 60.0)) * 100.0
+
+        self.elapsed += self.update_interval
         self.progdlg.progPB.setValue(self.elapsed)
-        self.progdlg.valLbl.setText(str(int((self.elapsed * 100) / (self.total_time_mins * 60))) + '%')
+        self.progdlg.valLbl.setText(str(int(round(pcnt_time, 0))) + '%')
 
 
     def completed(self, retcode, msg, calmsfn):
@@ -70,8 +75,8 @@ class ProgressDlgHelper(object):
         self.qtdlg.accept()
 
 
-    def cancelled(self):
-        logging.debug('Starting qcal thread... killed by user')
+    def canceled(self):
+
         logging.info('Calibration canceled by user.')
         self.retcode = 1
         self.msg = 'Calibration canceled by user.'

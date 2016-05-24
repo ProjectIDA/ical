@@ -287,33 +287,47 @@ class IcalConfig(object):
 
 
     def append(self, new_cfg):
-        logging.info('Adding configuration for q330 tagno=' + new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO])
+
         try:
             wcfg = WrapperCfg(new_cfg)
             self.merged_cfg.append(wcfg)
             self.merged_cfg.sort()
 
             self.save()
+            logging.info('Added configuration for Q330 Tag # {}'.format(new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]))
 
         except Exception as e:
-            logging.error('Error saving new configuration:', str(e))
+            logging.error('Error adding configuration for Q330 Tag # {}: {}'.format(new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO], str(e)))
             return False
 
         return True
 
 
+    def remove(self, tagno):
+        logging.info('Deleting configuration for Q330 Tag # {}'.format(tagno))
+
+        wcfg = self.find(tagno)
+        if wcfg != None:
+            self.merged_cfg.remove(wcfg)
+            self.save()
+            logging.info('Deleted configuration for Q330 Tag # {}'.format(tagno))
+
+        else:
+            logging.error('Error deleting configuration. Tag # {} not found.'.format(tagno))
+
+
     def update(self, orig_tagno, new_cfg):
-        logging.info('Updating configuration for q330 tagno=' + new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO])
         origwcfg = self.find(orig_tagno)
         if origwcfg != None:
             origwcfg.update(new_cfg)
             self.merged_cfg.sort()
 
             self.save()
+            logging.info('Updated configuration for Q330 Tag #: {}'.format(new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]))
 
             return True
         else:
-            logging.error('Could not update configuration for q330 tagno=' + new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO])
+            logging.error('Error updating configuration for Q330 Tag #: {}'.format(new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]))
             return False
 
     def sensor_list(self):

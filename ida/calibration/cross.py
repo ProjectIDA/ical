@@ -89,32 +89,34 @@ def cross_correlate(sampling_rate, ts1, ts2):
 
         # lag(ts_info, freqndx, phase, gamsq)
 
-    if not getattr(sys, 'frozen', False):
-        logging.debug('Writing cross results for file system...')
-        with open('pycross-output-' + str(sampling_rate) + 'hz.txt', 'wt') as cfl:
-            for freqndx in range(fft_usable_len):
-                cfl.write('{:12.4e} {:12.4e} {:12.4e} {:12.4e}\n'.format(freqs[freqndx],
-                                                                         gain[freqndx],
-                                                                         phase[freqndx],
-                                                                         coh[freqndx]))
-        logging.debug('Writing cross results for file system... complete')
-    # kmin=nf
-    #     kmax=0
-    #     kbar=0
-    #     do 2000 j=1, nf
-    #       gamsq=(sxy(j,3)**2 + sxy(j,4)**2)/(sxy(j,1)*sxy(j,2))
-    #       gain=sqrt(gamsq*sxy(j,2)/sxy(j,1))
-    #       phase=deg* atan2( sxy(j,4),  sxy(j,3))
-    #       if (named.ge. 0)
-    #    $    write(1,'(1p,e11.5,2e11.4,3e12.4,0p,f8.5,f8.2,i5)')
-    #    $    (j-1)*df,(sxy(j,k),k=1,4),gain,gamsq,phase,kopt(j)
-    #       kmin=min(kopt(j), kmin)
-    #       kmax=max(kopt(j), kmax)
-    #       kbar=kbar + kopt(j)
-    #       call lag(j, phase, gamsq)
-    # SKIPPING LAG SINCE WE KNOW TIME SERIES ARE IN SYNC wrt TIME
-    # 2000 continue
-    #     kbar=kbar/nf
+    # if not getattr(sys, 'frozen', False):
+    #     logging.debug('Writing cross results for file system...')
+    #     with open('pycross-output-' + str(sampling_rate) + 'hz.txt', 'wt') as cfl:
+    #         for freqndx in range(fft_usable_len):
+    #             cfl.write('{:12.4e} {:12.4e} {:12.4e} {:12.4e}\n'.format(freqs[freqndx],
+    #                                                                      gain[freqndx],
+    #                                                                      phase[freqndx],
+    #                                                                      coh[freqndx]))
+    #     logging.debug('Writing cross results for file system... complete')
+
+
+    # # kmin=nf
+    # #     kmax=0
+    # #     kbar=0
+    # #     do 2000 j=1, nf
+    # #       gamsq=(sxy(j,3)**2 + sxy(j,4)**2)/(sxy(j,1)*sxy(j,2))
+    # #       gain=sqrt(gamsq*sxy(j,2)/sxy(j,1))
+    # #       phase=deg* atan2( sxy(j,4),  sxy(j,3))
+    # #       if (named.ge. 0)
+    # #    $    write(1,'(1p,e11.5,2e11.4,3e12.4,0p,f8.5,f8.2,i5)')
+    # #    $    (j-1)*df,(sxy(j,k),k=1,4),gain,gamsq,phase,kopt(j)
+    # #       kmin=min(kopt(j), kmin)
+    # #       kmax=max(kopt(j), kmax)
+    # #       kbar=kbar + kopt(j)
+    # #       call lag(j, phase, gamsq)
+    # # SKIPPING LAG SINCE WE KNOW TIME SERIES ARE IN SYNC wrt TIME
+    # # 2000 continue
+    # #     kbar=kbar/nf
 
     del sxy
     del ts1_data

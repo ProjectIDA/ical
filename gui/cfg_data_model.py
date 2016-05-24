@@ -31,7 +31,7 @@ class CfgDataModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, parent):
         if self.cfg:
-            return CfgDataModel.COL_COUNT # just for testing
+            return CfgDataModel.COL_COUNT
         else:
             return 0
 
@@ -49,6 +49,18 @@ class CfgDataModel(QtCore.QAbstractTableModel):
         tagno = new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]
         if not self.cfg.find(tagno):
             if self.cfg.append(new_cfg):
+                self.endResetModel()
+            else:
+                raise Exception('Error saving configuartion for Q330 with TAG NUM: ' + tagno)
+        else:
+            raise Exception('Error saving configuration. Config with TAG NUM: ' + tagno + ' already exists')
+
+
+    def delete_cfg(self, cfg):
+
+        tagno = cfg[WrapperCfg.WRAPPER_KEY_TAGNO]
+        if self.cfg.find(tagno):
+            if self.cfg.append(cfg):
                 self.endResetModel()
             else:
                 raise Exception('Error saving configuartion for Q330 with TAG NUM: ' + tagno)

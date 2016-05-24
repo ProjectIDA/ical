@@ -32,7 +32,7 @@ class Ui_ProgressDlg(object):
         self.calDescrLbl = QtWidgets.QLabel(self.groupBox)
         self.calDescrLbl.setGeometry(QtCore.QRect(20, 50, 611, 121))
         font = QtGui.QFont()
-        font.setFamily("Consolas")
+        font.setFamily("PT Mono")
         font.setBold(True)
         font.setWeight(75)
         self.calDescrLbl.setFont(font)

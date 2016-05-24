@@ -89,13 +89,38 @@ class EditDlgHelper(object):
             if senkey == self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B]:
                 self.dlgUI.sensBCB.setCurrentText(sendesc)
 
+        if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_A] == WrapperCfg.WRAPPER_KEY_NONE:
+            self.dlgUI.sensAMonPortLE.setEnabled(False)
+            self.dlgUI.sensALocLE.setEnabled(False)
+            self.dlgUI.sensAPriChnsLE.setEnabled(False)
+        else:
+            self.dlgUI.sensAMonPortLE.setEnabled(True)
+            self.dlgUI.sensALocLE.setEnabled(True)
+            self.dlgUI.sensAPriChnsLE.setEnabled(True)
+
+        if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_SENS_COMPNAME_B] == WrapperCfg.WRAPPER_KEY_NONE:
+            self.dlgUI.sensBMonPortLE.setEnabled(False)
+            self.dlgUI.sensBLocLE.setEnabled(False)
+            self.dlgUI.sensBPriChnsLE.setEnabled(False)
+        else:
+            self.dlgUI.sensBMonPortLE.setEnabled(True)
+            self.dlgUI.sensBLocLE.setEnabled(True)
+            self.dlgUI.sensBPriChnsLE.setEnabled(True)
+
         self.validate()
 
 
     def save(self):
-        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A].upper()
-        self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] = self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B].upper()
-        logging.debug('User saving configuration edit.')
+
+        if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] != WrapperCfg.WRAPPER_KEY_NONE:
+            self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = \
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_A].upper().replace(' ', '')
+
+        if self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] != WrapperCfg.WRAPPER_KEY_NONE:
+            self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B] = \
+                self.dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_CHANNELS_B].upper().replace(' ', '')
+
+        logging.debug('User saving edited configuration.')
         self.qtDlg.accept()
 
 

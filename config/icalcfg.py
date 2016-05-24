@@ -49,7 +49,7 @@ class Icalcfg(IcalConfigItemReader):
     ICALCFG_MONPORT_A_VALID_REGEX = '[4-6]'
     ICALCFG_MONPORT_B_VALID_REGEX = '[1-3]'
     ICALCFG_LOCATION_VALID_REGEX = '[0-9]{2}'
-    ICALCFG_CHANNELS_VALID_REGEX = '[A-Za-z]{2}[Zz]{1},[A-Za-z]{2}[Nn1],[A-Za-z]{2}[Ee2]{1}'
+    ICALCFG_CHANNELS_VALID_REGEX = '[A-Za-z]{2}[Zz]{1} *, *[A-Za-z]{2}[Nn1] *, *[A-Za-z]{2}[Ee2]{1} *'
 
 
 
@@ -71,13 +71,13 @@ class Icalcfg(IcalConfigItemReader):
                         (tokens[self.ICALCFG_NDX_MONPORT_B] == self.ICALCFG_KEY_NONE)) and
 
                     ((re.fullmatch(self.ICALCFG_LOCATION_VALID_REGEX, tokens[self.ICALCFG_NDX_LOCATION_A]) != None) or
-                        (tokens[self.ICALCFG_NDX_LOCATION_B] == self.ICALCFG_KEY_NONE)) and
+                        (tokens[self.ICALCFG_NDX_LOCATION_A] == self.ICALCFG_KEY_NONE)) and
 
                     ((re.fullmatch(self.ICALCFG_LOCATION_VALID_REGEX, tokens[self.ICALCFG_NDX_LOCATION_B]) != None) or
                         (tokens[self.ICALCFG_NDX_LOCATION_B] == self.ICALCFG_KEY_NONE)) and
 
                     ((re.fullmatch(self.ICALCFG_CHANNELS_VALID_REGEX, tokens[self.ICALCFG_NDX_CHANNELS_A]) != None) or
-                        (tokens[self.ICALCFG_NDX_CHANNELS_B] == self.ICALCFG_KEY_NONE)) and
+                        (tokens[self.ICALCFG_NDX_CHANNELS_A] == self.ICALCFG_KEY_NONE)) and
 
                     ((re.fullmatch(self.ICALCFG_CHANNELS_VALID_REGEX, tokens[self.ICALCFG_NDX_CHANNELS_B]) != None) or
                         (tokens[self.ICALCFG_NDX_CHANNELS_B] == self.ICALCFG_KEY_NONE))):

@@ -30,35 +30,22 @@ class PingThread(QtCore.QThread):
         return (host, proc.returncode == 0, ping_time)
 
 
-class Q330Thread(QtCore.QThread):
+class AnalysisThread(QtCore.QThread):
 
-    q330QueryResult = QtCore.pyqtSignal(str, bool, str)
+    completed = QtCore.pyqtSignal(str, str, str)
 
-    def __init__(self, host, cmd, bin_root_path, cfg_root_path):
+    def __init__(self, run_method, *args):
         super().__init__()
-        self.bin_path = os.path.join(bin_root_path, 'q330')
-        self.host = host
-        self.cmd = cmd
-        self.cfg_path = cfg_root_path
+        self.run_method = run_method
+        self.args = args
 
     def run(self):
-        result = self.q330_query(self.host, self.cmd)
-        self.q330QueryResult.emit(*result)
+        ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn = self.run_method(*self.args)
+        self.completed.emit(ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn)
 
-    def q330_query(self, host, cmd):
-        proc = subprocess.Popen(
-            [self.bin_path, 'root='+self.cfg_path, host, cmd],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True)
-        stdout, stderr = proc.communicate()
-        ret_code = proc.returncode
-        if ret_code == 0:
-            infomsg = '\n'.join(str(stdout).splitlines())
-        else:
-            lines = str(stderr).splitlines()
-            infomsg = ' '.join(lines)
-        return (host, proc.returncode, infomsg)
+    def cancel(self):
+        self.terminate()
+        self.wait(2000)
 
 
 class QVerifyThread(QtCore.QThread):

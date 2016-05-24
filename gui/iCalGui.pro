@@ -21,4 +21,5 @@ FORMS    += mainwindow.ui \
     run_dlg.ui \
     edit_dlg.ui \
     progress_dlg.ui \
-    logview_dlg.ui
+    logview_dlg.ui \
+    analysis_progress_window.ui

@@ -22,4 +22,5 @@ FORMS    += mainwindow.ui \
     edit_dlg.ui \
     progress_dlg.ui \
     logview_dlg.ui \
-    analysis_progress_window.ui
+    analysis_progress_window.ui \
+    about.ui

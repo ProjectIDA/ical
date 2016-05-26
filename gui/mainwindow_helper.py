@@ -10,6 +10,7 @@ import config.pycal_globals as pcgl
 from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
 import gui.mainwindow
+from gui.about import Ui_AboutDlg
 from gui.progress_dlg import Ui_ProgressDlg
 from gui.progress_dlg_helper import ProgressDlgHelper
 from gui.edit_dlg import Ui_EditDlg
@@ -63,6 +64,8 @@ class MainWindowHelper(object):
     def setup_actions(self):
         logging.debug('Setting up QActions')
 
+        self.main_win.actionAbout_PyCal.triggered.connect(self.show_about)
+
         self.main_win.acViewLogMessages.triggered.connect(self.view_log_messages)
 
         self.main_win.quitBtn.clicked.connect(self.main_win.actionQuit.trigger)
@@ -81,6 +84,19 @@ class MainWindowHelper(object):
 
         self.main_win.testAnalysisBtn.clicked.connect(self.run_test_analysis)
         self.test_set_action_group.triggered.connect(self.set_test_set)
+
+
+    def show_about(self):
+        dlg = QtWidgets.QDialog(self.app_win)
+        dlg.setModal(False)
+        dlgUI = Ui_AboutDlg()
+        dlgUI.setupUi(dlg)
+        # dlg.setWindowTitle('PyCal - Log Viewer')
+        # dlgHlpr = LogviewDlgHelper(pcgl.get_log_filename(), dlg, dlgUI)
+
+        # self.log_dlgHlpr = dlgHlpr
+
+        dlg.show()
 
 
     def toggle_verbose(self):

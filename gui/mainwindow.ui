@@ -1394,7 +1394,7 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionAbout_ICAL"/>
+    <addaction name="actionAbout_PyCal"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -1447,12 +1447,15 @@
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionAbout_ICAL">
+  <action name="actionAbout_PyCal">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>About ICAL...</string>
+    <string>About PyCal...</string>
+   </property>
+   <property name="toolTip">
+    <string>About PyCal</string>
    </property>
   </action>
   <action name="acViewLogMessages">

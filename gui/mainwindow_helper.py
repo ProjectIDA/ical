@@ -7,7 +7,8 @@ from datetime import datetime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 import config.pycal_globals as pcgl
-from comms.ical_threads import QCalThread, QVerifyThread
+from config.ical_config import IcalConfig
+from config.wrapper_cfg import WrapperCfg
 import gui.mainwindow
 from gui.progress_dlg import Ui_ProgressDlg
 from gui.progress_dlg_helper import ProgressDlgHelper
@@ -18,11 +19,11 @@ from gui.analysis_progress_dlg_helper import AnalysisProgressDlgHelper
 from gui.analysis_progress_dialog import ProgressDlg
 from gui.logview_dlg import Ui_LogviewDlg
 from gui.logview_dlg_helper import LogviewDlgHelper
-from config.ical_config import IcalConfig
-from config.wrapper_cfg import WrapperCfg
 from gui.cfg_data_model import CfgDataModel
-from ida.calibration.process import process_qcal_data
-import ida.seismometers
+
+from comms.ical_threads import QCalThread, QVerifyThread
+from ida.ctbto.process import process_qcal_data
+from ida.instruments import *
 
 
 class MainWindowHelper(object):
@@ -53,6 +54,7 @@ class MainWindowHelper(object):
         self.test_set_action_group.addAction(self.main_win.actionTAU)
         self.test_set_action_group.addAction(self.main_win.actionBORG)
         self.test_set_action_group.addAction(self.main_win.actionPFO_CTBTO)
+        self.test_set_action_group.addAction(self.main_win.actionSHEMLYA)
 
     def setup_main_window(self):
         self.setup_actions()
@@ -95,7 +97,7 @@ class MainWindowHelper(object):
 
         if action == self.main_win.actionUOSS_2016:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'UOSS',
                 'loc' : 'TT',
                 'ip' : 'uoss10',
@@ -104,10 +106,9 @@ class MainWindowHelper(object):
                 'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-uoss10-sts2-rblf-2016-0204-0651.ms',
                 'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-uoss10-sts2-rblf-2016-0204-0651.log'
             }
-
         elif  action == self.main_win.actionAAK_2015:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'AAK',
                 'loc' : 'TT',
                 'ip' : 'aak10',
@@ -119,7 +120,7 @@ class MainWindowHelper(object):
 
         elif  action == self.main_win.actionXPFO_2016:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'XPFO',
                 'loc' : '50',
                 'ip' : '172.23.34.108',
@@ -131,7 +132,7 @@ class MainWindowHelper(object):
 
         elif  action == self.main_win.actionPFO_CTBTO:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'PFO',
                 'loc' : 'TT',
                 'ip' : '198.202.124.228',
@@ -143,7 +144,7 @@ class MainWindowHelper(object):
 
         elif  action == self.main_win.actionALE:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'ALE',
                 'loc' : 'TT',
                 'ip' : 'ale10',
@@ -155,7 +156,7 @@ class MainWindowHelper(object):
 
         elif  action == self.main_win.actionBORG:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'BORG',
                 'loc' : 'TT',
                 'ip' : 'borg10',
@@ -167,7 +168,7 @@ class MainWindowHelper(object):
 
         elif  action == self.main_win.actionERM:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'ERM',
                 'loc' : 'TT',
                 'ip' : 'erm10',
@@ -179,7 +180,7 @@ class MainWindowHelper(object):
 
         elif  action == self.main_win.actionRPN:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'RPN',
                 'loc' : 'TT',
                 'ip' : 'rpn10',
@@ -191,7 +192,7 @@ class MainWindowHelper(object):
 
         elif  action == self.main_win.actionTAU:
             self.test_set = {
-                'seis_model' : 'STS2.5',
+                'seis_model' : SEISTYPE_STS25,
                 'sta' : 'TAU',
                 'loc' : 'TT',
                 'ip' : 'tau10',
@@ -200,6 +201,20 @@ class MainWindowHelper(object):
                 'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-tau10-sts2-rblf-2016-0127-0700.ms',
                 'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-tau10-sts2-rblf-2016-0127-0700.log'
             }
+
+        elif  action == self.main_win.actionSHEMLYA:
+            self.test_set = {
+                'seis_model' : SEISTYPE_STS25,
+                'sta' : 'SHEM',
+                'loc' : '',
+                'ip' : 'shem10',
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-SHEMLYA-STS25_2016-05-25-HF.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-SHEMLYA-STS25_2016-05-25-HF.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-SHEMLYA-STS25_2016-05-25-LF.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-SHEMLYA-STS25_2016-05-25-LF.log'
+            }
+
+    # CAL-SHEMLYA-STS25_2016-05-25-
 
 
 
@@ -370,10 +385,10 @@ class MainWindowHelper(object):
                                                   QtWidgets.QMessageBox().Close,
                                                   QtWidgets.QMessageBox().Close)
 
-        channel_codes = ida.seismometers.ChanCodesTpl(north='BHN', east='BHE',
-                                                      vertical='BHZ')
+        channel_codes = ComponentsTpl(north='BHN', east='BHE', vertical='BHZ')
+
         sensor = 'A'
-        seis_model = 'sts2.5'
+        seis_model = SEISTYPE_STS25
 
         # sta = 'AS108'
         # loc = '10'
@@ -403,25 +418,29 @@ class MainWindowHelper(object):
 
         output_dir = os.path.join(pcgl.get_results_root(), '-'.join([sta, ip.replace('.','_'), sensor, seis_model]))
 
-        # if 'MacOS' in getcwd():
-        #     resp_fpath = os.path.abspath(os.path.join('.', 'IDA', 'data', 'nom_resp_sts2_5.ida'))
-        # else:  # DEBUG...
-        #     resp_fpath = os.path.abspath(os.path.join('.', 'data', 'nom_resp_sts2_5.ida'))
-        #
-        if getattr(sys, 'frozen', False):
-            bundle_dir = sys._MEIPASS
-            start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
-            nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
+        if seis_model in [SEISTYPE_STS25, SEISTYPE_STS25F]:
+            if getattr(sys, 'frozen', False):
+                bundle_dir = sys._MEIPASS
+                start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
+                nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
+            else:
+                start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
+                nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
         else:
-            # bundle_dir = os.path.dirname(os.path.abspath(__file__))
-            start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
-            nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
+            msg1 = 'PyCal does not have response information for SENSOR MODEL: ' + seis_model
+            msg2 = 'Analysis can not be performed.'
+            logging.error(msg1)
+            logging.error(msg2)
+            QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg1 + '\n' + msg2,
+                                             QtWidgets.QMessageBox().Close,
+                                             QtWidgets.QMessageBox().Close)
+            return
 
         logging.info('Analysis starting...')
         logging.debug('Fitting Start response: ' + start_paz_fn)
         logging.debug('Nominal Start response: ' + nom_paz_fn)
 
-        # ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.calibration.process.process_qcal_data(sta,
+        # ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.ctbto.process.process_qcal_data(sta,
         #                                                                              channel_codes,
         #                                                                              loc,
         #                                                                              output_dir,
@@ -433,16 +452,16 @@ class MainWindowHelper(object):
         retcode, \
         ims_calres_txt_fn, \
         cal_amp_plot_fn, \
-        cal_pha_plot_fn = self.run_analysis(ida.calibration.process.process_qcal_data,
-                                                                                     sta,
-                                                                                     channel_codes,
-                                                                                     loc,
-                                                                                     output_dir,
-                                                                                     (lf_msfn, lf_logfn),
-                                                                                     (hf_msfn, hf_logfn),
-                                                                                     seis_model.upper(),
-                                                                                     start_paz_fn,
-                                                                                     nom_paz_fn)
+        cal_pha_plot_fn = self.run_analysis(process_qcal_data,
+                                            sta,
+                                            channel_codes,
+                                            loc,
+                                            output_dir,
+                                            (lf_msfn, lf_logfn),
+                                            (hf_msfn, hf_logfn),
+                                            seis_model,
+                                            start_paz_fn,
+                                            nom_paz_fn)
 
         if retcode == 0:
             call(['open', output_dir])
@@ -482,10 +501,17 @@ class MainWindowHelper(object):
         progdlg.setupUi(dlg)
         dlg.setWindowTitle('PyCal - Data Acquisition')
 
-        if caltype == 'rblf':
+        if caltype == CALTYPE_RBLF:
             cal_descr = 'Calibration Signal: LOW Frequency Random Binary\n\n' + cal_info['cal_descr']
-        else:
+        elif caltype == CALTYPE_RBHF:
             cal_descr = 'Calibration Signal: HIGH Frequency Random Binary\n\n' + cal_info['cal_descr']
+        else:
+            msg = 'Invalid CALIBRATION TYPE:' + caltype
+            logging.error(msg)
+            QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg,
+                                             QtWidgets.QMessageBox().Close,
+                                             QtWidgets.QMessageBox().Close)
+            return False, None
 
         progdlgHlpr = ProgressDlgHelper(dlg, cal_descr, cal_info['cal_time'][caltype], progdlg, qcal_thread)
         progdlgHlpr.start()
@@ -539,8 +565,18 @@ class MainWindowHelper(object):
                 chancodes = wcfg.data[WrapperCfg.WRAPPER_KEY_CHANNELS_B]
                 loc = wcfg.data[WrapperCfg.WRAPPER_KEY_LOCATION_B]
 
-            lf_calib = self.cfg.find_calib(seis_model + '|' + 'rblf')
-            hf_calib = self.cfg.find_calib(seis_model + '|' + 'rbhf')
+            # lets just make sure sensor in CTBTO supported list
+            # should never get here is cfg files deployed correctly
+            if seis_model not in CTBTO_SEIS_MODELS:
+                msg = 'PyCal UNSUPPORTED SENSOR MODEL: ' + seis_model
+                logging.error(msg)
+                QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg,
+                                             QtWidgets.QMessageBox().Close,
+                                             QtWidgets.QMessageBox().Close)
+                return
+
+            lf_calib = self.cfg.find_calib(seis_model + '|' + CALTYPE_RBHF)
+            hf_calib = self.cfg.find_calib(seis_model + '|' + CALTYPE_RBLF)
 
             if (not lf_calib) or (not hf_calib):
                 msg = 'Calib Record missing for sensor [{}].'.format(seis_model)
@@ -548,7 +584,7 @@ class MainWindowHelper(object):
                 QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg,
                                                  QtWidgets.QMessageBox().Close,
                                                  QtWidgets.QMessageBox().Close)
-                raise Exception(msg)
+                return
 
             sta = wcfg.data[WrapperCfg.WRAPPER_KEY_STA]
             ip = wcfg.data[WrapperCfg.WRAPPER_KEY_IP]
@@ -574,26 +610,26 @@ class MainWindowHelper(object):
                 'cal_descr': cal_descr,
                 'cal_tot_time_mins': tot_cal_time,
                 'cal_time' : {
-                    'rblf' : lf_calib.cal_time_min(),
-                    'rbhf' : hf_calib.cal_time_min(),
+                    CALTYPE_RBLF : lf_calib.cal_time_min(),
+                    CALTYPE_RBHF : hf_calib.cal_time_min(),
                 },
                 'cmd_line' : {
-                    'rbhf' : wcfg.gen_qcal_cmdline(sensor, 'rbhf') + ' root=' + self.cfg.root_dir,
-                    'rblf' : wcfg.gen_qcal_cmdline(sensor, 'rblf') + ' root=' + self.cfg.root_dir
+                    CALTYPE_RBHF : wcfg.gen_qcal_cmdline(sensor, CALTYPE_RBHF) + ' root=' + self.cfg.root_dir,
+                    CALTYPE_RBLF : wcfg.gen_qcal_cmdline(sensor, CALTYPE_RBLF) + ' root=' + self.cfg.root_dir
                 },
                 'output_dir': output_dir
             }
 
-            success, lf_msfn = self.run_sensor_cal_type(sensor, 'rblf', cal_info)
+            success, lf_msfn = self.run_sensor_cal_type(sensor, CALTYPE_RBLF, cal_info)
             if success:
                 lf_logfn = os.path.splitext(lf_msfn)[0] + '.log'
                 logging.info('QCal RBLF Miniseed file saved: ' + os.path.join(output_dir, lf_msfn))
                 logging.info('QCal RBLF Log file saved: ' + os.path.join(output_dir, lf_logfn))
 
-                success, hf_msfn = self.run_sensor_cal_type(sensor, 'rbhf', cal_info)
+                success, hf_msfn = self.run_sensor_cal_type(sensor, CALTYPE_RBHF, cal_info)
                 if success:
                     chancodeslst = chancodes.split(',')
-                    channel_codes = ida.seismometers.ChanCodesTpl(vertical=chancodeslst[0], north=chancodeslst[1], east=chancodeslst[2])
+                    channel_codes = ComponentsTpl(vertical=chancodeslst[0], north=chancodeslst[1], east=chancodeslst[2])
 
                     hf_logfn = os.path.splitext(hf_msfn)[0] + '.log'
                     logging.info('QCal RBHF Miniseed file saved: ' + os.path.join(output_dir, hf_msfn))
@@ -606,13 +642,23 @@ class MainWindowHelper(object):
                                                         QtWidgets.QMessageBox().Close,
                                                         QtWidgets.QMessageBox().Close)
 
-                    if getattr(sys, 'frozen', False):
-                        bundle_dir = sys._MEIPASS
-                        start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
-                        nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
+                    if seis_model in [SEISTYPE_STS25, SEISTYPE_STS25F]:
+                        if getattr(sys, 'frozen', False):
+                            bundle_dir = sys._MEIPASS
+                            start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
+                            nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
+                        else:
+                            start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
+                            nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
                     else:
-                        start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
-                        nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
+                        msg1 = 'PyCal has response information for SENSOR MODEL: ' + seis_model
+                        msg2 = 'Analysis can not be performed.'
+                        logging.error(msg1)
+                        logging.error(msg2)
+                        QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', msg1 + '\n' + msg2,
+                                                         QtWidgets.QMessageBox().Close,
+                                                         QtWidgets.QMessageBox().Close)
+                        return
 
                     logging.info('Analysis starting...')
                     logging.debug('Fitting Start response: ' + start_paz_fn)
@@ -621,14 +667,14 @@ class MainWindowHelper(object):
                     retcode, \
                     ims_calres_txt_fn, \
                     cal_amp_plot_fn, \
-                    cal_pha_plot_fn = self.run_analysis(ida.calibration.process.process_qcal_data,
+                    cal_pha_plot_fn = self.run_analysis(process_qcal_data,
                                                         sta,
                                                         channel_codes,
                                                         loc,
                                                         output_dir,
                                                         (lf_msfn, lf_logfn),
                                                         (hf_msfn, hf_logfn),
-                                                        seis_model.upper(),
+                                                        seis_model,
                                                         start_paz_fn,
                                                         nom_paz_fn)
 
@@ -656,6 +702,9 @@ class MainWindowHelper(object):
                         call(['open', cal_pha_plot_fn])
                     else:
                         logging.warning('Analysis phase completed with return code: {}'.format(retcode))
+            else:
+                logging.error("Unable to complete calibration")
+
 
     def run_cal_A(self):
         self.run_sensor_cal('A')

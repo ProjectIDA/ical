@@ -616,6 +616,9 @@ class Ui_MainWindow(object):
         self.actionDelete.setObjectName("actionDelete")
         self.actionProg_test = QtWidgets.QAction(MainWindow)
         self.actionProg_test.setObjectName("actionProg_test")
+        self.actionSHEMLYA = QtWidgets.QAction(MainWindow)
+        self.actionSHEMLYA.setCheckable(True)
+        self.actionSHEMLYA.setObjectName("actionSHEMLYA")
         self.menuFile.addAction(self.actionAbout_ICAL)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionQuit)
@@ -630,6 +633,7 @@ class Ui_MainWindow(object):
         self.menuTest_Sets.addAction(self.actionTAU)
         self.menuTest_Sets.addAction(self.actionUOSS_2016)
         self.menuTest_Sets.addAction(self.actionXPFO_2016)
+        self.menuTest_Sets.addAction(self.actionSHEMLYA)
         self.menuOptions.addAction(self.actionVerbose_Log)
         self.menuEdit.addAction(self.actionNew)
         self.menuEdit.addAction(self.actionEdit)
@@ -732,4 +736,5 @@ class Ui_MainWindow(object):
         self.actionDelete.setText(_translate("MainWindow", "Delete..."))
         self.actionProg_test.setText(_translate("MainWindow", "prog test"))
         self.actionProg_test.setShortcut(_translate("MainWindow", "Ctrl+T"))
+        self.actionSHEMLYA.setText(_translate("MainWindow", "SHEMLYA"))
 

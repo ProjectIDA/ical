@@ -4,20 +4,32 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
+from numpy import linspace, ceil
 
 
-def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_model, timestamp, freqs, nom_resp,
+def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_model, timestamp,
+                                   operating_sample_rate, num_freqs, nom_resp,
                                    n_resp, n_adev, n_pdev,
                                    e_resp, e_adev, e_pdev,
                                    v_resp, v_adev, v_pdev):
-    # pass
-    # lets construct output filenames
+
+    freqs = linspace(0, operating_sample_rate/2, num_freqs)  # must start with 0hz
+    nyquist = operating_sample_rate / 2.0
+    nyq_90pct_freqndx = int(ceil(0.9 * len(freqs)))
+
+
     datestr = timestamp.strftime('%Y-%m-%d %H:%M UTC')
 
     f100 = plt.figure(100, figsize=(15, 20))
     plt.subplot(211)
     plt.tick_params(labelsize=13)
-    plt.title('Amplitude Responses - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
+    plt.title('Amplitude Responses - ({:<} - {:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
+                                                                                                     loc,
+                                                                                                     seis_model,
+                                                                                                     datestr,
+                                                                                                     int(round(operating_sample_rate, 0))),
+              fontsize=14,
+              fontweight='bold')
     plt.ylabel('Amplitude (Normalized, V/m/s)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     plt.grid(which='both')
@@ -28,22 +40,20 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     plt.legend((bh1, bh2, bhz, nom), (chancodes.north, chancodes.east, chancodes.vertical, 'Nominal'), loc=0, handlelength=5, fontsize=12)
     #
     ax = plt.axis()
-    # # ax[0] = 1e-3
-    # # ax[1] = 18
-    plt.axis([1e-3, 20, ax[2], ax[3]])
+    plt.axis([1e-3, nyquist, ax[2], ax[3]])
     #
     ax = plt.subplot(212)
     plt.tick_params(labelsize=13)
     plt.title('Amplitude Deviations from Nominal - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
-    plt.ylabel('Amplitude Deviation (%)', fontsize=12, fontweight='bold')
+    plt.ylabel('Amplitude Deviation (%)\n(up to 90% of Nyquist)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     plt.grid(which='both')
-    bh1, = plt.semilogx(freqs[1:], n_adev, 'g', linewidth=0.75)
-    bh2, = plt.semilogx(freqs[1:], e_adev, 'y', linewidth=0.75)
-    bhz, = plt.semilogx(freqs[1:], v_adev, 'r', linewidth=0.75)
+    bh1, = plt.semilogx(freqs[1:nyq_90pct_freqndx], n_adev[:nyq_90pct_freqndx-1], 'g', linewidth=0.75)
+    bh2, = plt.semilogx(freqs[1:nyq_90pct_freqndx], e_adev[:nyq_90pct_freqndx-1], 'y', linewidth=0.75)
+    bhz, = plt.semilogx(freqs[1:nyq_90pct_freqndx], v_adev[:nyq_90pct_freqndx-1], 'r', linewidth=0.75)
     plt.legend((bh1, bh2, bhz), (chancodes.north, chancodes.east, chancodes.vertical), loc=0, handlelength=5, fontsize=12)
     amp_toler_pcnt = 5.0
-    plt.axis([1e-3, 20, -amp_toler_pcnt * 2, amp_toler_pcnt * 2])
+    plt.axis([1e-3, nyquist, -amp_toler_pcnt * 2, amp_toler_pcnt * 2])
     ax_lims = plt.axis()
     within_tolerance_verts = [(ax_lims[0], -amp_toler_pcnt),
                               (ax_lims[0], amp_toler_pcnt),
@@ -57,7 +67,14 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     f101 = plt.figure(101, figsize=(15, 20))
     plt.subplot(211)
     plt.tick_params(labelsize=13)
-    plt.title('Phase Responses - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
+    plt.title('Phase Responses - ({:<} - {:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
+                                                                                                 loc,
+                                                                                                 seis_model,
+                                                                                                 datestr,
+                                                                                                 int(round(operating_sample_rate, 0))),
+              fontsize=14,
+              fontweight='bold')
+
     plt.ylabel('Phase (deg)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     plt.grid(which='both')
@@ -67,20 +84,20 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     nom, = plt.semilogx(freqs, angle(nom_resp) * 180 / pi, 'k', linewidth=0.5)
     plt.legend((bh1, bh2, bhz, nom), (chancodes.north, chancodes.east, chancodes.vertical, 'Nominal'), loc=0, handlelength=5, fontsize=12)
     ax = plt.axis()
-    plt.axis([1e-3, 20, ax[2], ax[3]])
+    plt.axis([1e-3, nyquist, ax[2], ax[3]])
 
     ax = plt.subplot(212)
     plt.tick_params(labelsize=13)
     plt.title('Phase Deviations from Nominal - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
-    plt.ylabel('Phase Deviation (deg)', fontsize=12, fontweight='bold')
+    plt.ylabel('Phase Deviation (deg)\n(up to 90% of Nyquist)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     plt.grid(which='both')
-    bh1, = plt.semilogx(freqs[1:], n_pdev, 'g', linewidth=0.75)
-    bh2, = plt.semilogx(freqs[1:], e_pdev, 'y', linewidth=0.75)
-    bhz, = plt.semilogx(freqs[1:], v_pdev, 'r', linewidth=0.75)
+    bh1, = plt.semilogx(freqs[1:nyq_90pct_freqndx], n_pdev[:nyq_90pct_freqndx-1], 'g', linewidth=0.75)
+    bh2, = plt.semilogx(freqs[1:nyq_90pct_freqndx], e_pdev[:nyq_90pct_freqndx-1], 'y', linewidth=0.75)
+    bhz, = plt.semilogx(freqs[1:nyq_90pct_freqndx], v_pdev[:nyq_90pct_freqndx-1], 'r', linewidth=0.75)
     plt.legend((bh1, bh2, bhz), (chancodes.north, chancodes.east, chancodes.vertical), loc=0, handlelength=5, fontsize=12)
     pha_toler_degs = 5.0
-    plt.axis([1e-3, 20, -pha_toler_degs * 2, pha_toler_degs * 2])
+    plt.axis([1e-3, nyquist, -pha_toler_degs * 2, pha_toler_degs * 2])
     poly = Polygon(within_tolerance_verts, facecolor='#D8FFD8', edgecolor='0.9', label='Acceptable Tolerance Band')
     ax.add_patch(poly)
     #

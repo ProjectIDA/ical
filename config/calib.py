@@ -1,6 +1,5 @@
 import re
-import functools
-
+from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF
 from config.ical_config_item_reader import IcalConfigItemReader
 
 
@@ -29,8 +28,8 @@ class Calib(IcalConfigItemReader):
     CALIB_KEY_SET = 'set'
     CALIB_KEY_TRL = 'trl'
     CALIB_KEY_DIV = 'div'
-    CALIB_CALTYPE_1 = 'rblf'
-    CALIB_CALTYPE_2 = 'rbhf'
+    CALIB_CALTYPE_1 = CALTYPE_RBLF
+    CALIB_CALTYPE_2 = CALTYPE_RBHF
     CALIB_VALUES_CALTYPE = [CALIB_CALTYPE_1, CALIB_CALTYPE_2]
     CALIB_DESCRIPTIONS = {
         CALIB_CALTYPE_1: "Low Freq; Random Binary",

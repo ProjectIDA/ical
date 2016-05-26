@@ -26,8 +26,3 @@ def get_results_root():
 def get_log_filename():
     return join(get_root(), 'pycal.log')
 
-# def get_nom_resp_filename(seismometer_model='sts2.5'):
-#     if (seismometer_model == 'sts2.5'):
-#         return 'nom_resp_sts2_5.ida'
-#     else:
-#         return ''

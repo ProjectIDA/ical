@@ -1,17 +1,5 @@
-from collections import namedtuple
-import datetime
-import logging
+from ida.instruments import *
 
-import ida.seismometers
-
-# CTBTSensorResult = namedtuple('CTBTSensorResult', [
-#     'station',
-#     'location',
-#     'cal_timestamp',
-#     'seis_model',
-#     'north_res',
-#     'east_res',
-#     'vertical_res'])
 CTBTChannelResult = namedtuple('CTBTChannelResult', [
     'channel',
     'calib',
@@ -93,10 +81,10 @@ def _sensor_response_msg(sta, loc, seis_model, cal_timestamp, chn_res):
         1,
         'V',
         chn_res.A0 * \
-        ida.seismometers.INSTRUMENT_NOMINAL_GAINS[
-         seis_model.upper()] * \
-        ida.seismometers.INSTRUMENT_NOMINAL_GAINS[
-         'Q330'],
+        INSTRUMENT_NOMINAL_GAINS[
+         seis_model] * \
+        INSTRUMENT_NOMINAL_GAINS[
+         DIGITYPE_Q330],
         '',
         0,
         chn_res.paz.num_poles,

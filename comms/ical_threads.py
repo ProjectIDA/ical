@@ -4,32 +4,6 @@ import subprocess
 import os.path
 from os import getcwd, chdir
 
-class PingThread(QtCore.QThread):
-
-    pingResult = QtCore.pyqtSignal(str, bool, str)
-
-    def __init__(self, host):
-        super().__init__()
-        self.host = host
-
-    def run(self):
-        result = self.ping_host(self.host)
-        self.pingResult.emit(*result)
-
-    def ping_host(self, host):
-        proc = subprocess.Popen(
-            ['ping', '-c', '1', '-t', '1', host],
-            stdout=subprocess.PIPE)
-        stdout, stderr = proc.communicate()
-        ret_code = proc.returncode
-        ping_time = ''
-        if ret_code == 0:
-            lines = str(stdout, 'utf-8').splitlines()
-            time_line = lines[1]
-            ping_time = time_line.split()[6].split('=')[1] + time_line.split()[7]
-        return (host, proc.returncode == 0, ping_time)
-
-
 class AnalysisThread(QtCore.QThread):
 
     completed = QtCore.pyqtSignal(str, str, str)

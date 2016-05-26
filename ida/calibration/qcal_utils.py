@@ -10,8 +10,8 @@ from ida.ida_obspy import read_mseed
 INPUT_CHANNELS = ['CCF', 'CCS']
 INPUT_CHANNEL_WILDCARD = 'CC[FS]'
 
-QCalData = namedtuple('QCalData', ['north', 'east', 'vertical', 'input'])
-QCalFiles = namedtuple('QCalFiles', ['ms_filename', 'log_filename'])
+QCalData = namedtuple('CalComponentsTpl', ['north', 'east', 'vertical', 'input'])
+QCalFiles = namedtuple('QCalFilesTpl', ['ms_filename', 'log_filename'])
 
 
 class QCalLog(object):

@@ -4,17 +4,15 @@ from ida.signals.trace import IDATrace
 from scipy.signal import freqs
 from scipy.signal.ltisys import zpk2tf
 from numpy import array, ndarray, isclose, abs, divide, multiply, pi
+from numpy.fft import rfft
 import ida.calibration.qcal_utils
-import ida.seismometers
+from ida.instruments import SEIS_INVERT_CAL_CHAN, SEIS_INVERT_NORTH_CHAN, SEIS_INVERT_EAST_CHAN
 import ida.signals.paz
+
 
 TAPER_TYPES = [
     'tukey'
 ]
-
-Q330_FIR_RESPONSE_AT_1HZ = 1.01
-
-# def system
 
 def check_and_fix_polarities(strm, seis_model):
 
@@ -33,9 +31,9 @@ def invert_signal(channel, seis_model):
     seis_model = seis_model.upper()
     component = channel[2].upper()
 
-    invert = ((component in ['S', 'F']) and (seis_model in ida.seismometers.SEIS_INVERT_CAL_CHAN)) or \
-             ((component in ['1', 'N']) and (seis_model in ida.seismometers.SEIS_INVERT_NORTH_CHAN)) or \
-             ((component in ['2', 'E']) and (seis_model in ida.seismometers.SEIS_INVERT_EAST_CHAN))
+    invert = ((component in ['S', 'F']) and (seis_model in SEIS_INVERT_CAL_CHAN)) or \
+             ((component in ['1', 'N']) and (seis_model in SEIS_INVERT_NORTH_CHAN)) or \
+             ((component in ['2', 'E']) and (seis_model in SEIS_INVERT_EAST_CHAN))
 
     return invert
 
@@ -98,7 +96,14 @@ def compute_response(freqlist, paz, mode='vel'):
     return h
 
 
-def normalize(freq_resp, freqlist, norm_freq):
+def compute_response_fir(fir_coeffs, fft_len):
+
+    fir_fft = rfft(fir_coeffs, fft_len)
+
+    return fir_fft
+
+
+def normalize_response(freq_resp, freqlist, norm_freq):
 
     normed = None
     # find the index in freqs of the first freq >= nom_freq

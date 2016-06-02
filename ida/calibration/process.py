@@ -49,7 +49,7 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
     resp2 = ida.signals.utils.compute_response(freqs, paz2, mode=mode)
     resp2_norm, resp2_inv_a0, _ = ida.signals.utils.normalize_response(resp2, freqs, norm_freq)
 
-    # calcualte percentage deviations
+    # calculate percentage deviations
     resp2_a_dev = (divide(abs(resp2_norm[1:]), abs(resp1_norm[1:])) - 1.0) * 100.0
     resp2_p_dev = subtract(angle(resp2_norm[1:])*180/pi, angle(resp1_norm[1:])*180/pi)
 
@@ -168,6 +168,7 @@ def analyze_cal_component(data_dir, start_paz, lf_sr, hf_sr, lfinput, hfinput, l
                                  ),
                            verbose=0)
     logging.info('HF fitting termination: ' + hf_res.message)
+    logging.debug('HF fitting paz results: ' + str(hf_res.x))
 
     logging.info('Fitting new LF response...')
     lf_res = least_squares(resp_cost,  # cost function
@@ -190,6 +191,7 @@ def analyze_cal_component(data_dir, start_paz, lf_sr, hf_sr, lfinput, hfinput, l
                                   ),
                            verbose=0)
     logging.info('LF fitting termination: ' + lf_res.message)
+    logging.debug('LF fitting paz results: ' + str(lf_res.x))
 
     new_hf_paz_pert = ida.signals.utils.pack_paz(hf_res.x, hf_paz_pert_flags)
     new_lf_paz_pert = ida.signals.utils.pack_paz(lf_res.x, lf_paz_pert_flags)

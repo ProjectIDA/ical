@@ -6,12 +6,54 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from numpy import linspace, ceil
 
+"""Convenience methods for plotting response and calibration results."""
 
 def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_model, timestamp,
                                    operating_sample_rate, num_freqs, nom_resp,
                                    n_resp, n_adev, n_pdev,
                                    e_resp, e_adev, e_pdev,
                                    v_resp, v_adev, v_pdev):
+    """Generate plots of measured response deviations of three component channels from a nominal response.
+
+    :param sta: Station code
+    :type sta: str
+    :param chancodes: Channle codes for all three components
+    :type chancodes: ComponentsTpl
+    :param loc: Location code
+    :type loc: str
+    :param amp_fn: Fully qualified pathname for file name in which to save Amplitude plots
+    :type amp_fn: str
+    :param pha_fn: Fully qualified pathname for file name in which to save Phase plots
+    :type pha_fn: str
+    :param seis_model: Seismometer model code. Must be one of instruments.SEISMOMETER_MODELS
+    :type seis_model: str
+    :param timestamp: Timestamp to use on plot title. Typically time of data acquisition
+    :type timestamp: datetime
+    :param operating_sample_rate: Sample rates for channels being plotted. Assumed to all be the same rate.
+    :type operating_sample_rate: float
+    :param num_freqs: How many frequencies to plot. Frequency bins will be linearly spaced from 0 to nyquist.
+    :type num_freqs: int
+    :param nom_resp: Nominal/baseline frequency response being copmared to
+    :type nom_resp: ndarray
+    :param n_resp: North/south channel measured frequency response
+    :type n_resp: ndarray
+    :param n_adev: North/south channel response amplitude deviation from nominal response
+    :type n_adev: ndarray
+    :param n_pdev: North/south channel response phase deviation from nominal response
+    :type n_pdev: ndarray
+    :param e_resp: North/south channel measured frequency response
+    :type e_resp: ndarray
+    :param e_adev: East/west channel response amplitude deviation from nominal response
+    :type e_adev: ndarray
+    :param e_pdev: East/West channel response phase deviation from nominal response
+    :type e_pdev: ndarray
+    :param v_resp: Vertical channel measured frequency response
+    :type v_resp: ndarray
+    :param v_adev: Vertical channel response amplitude deviation from nominal response
+    :type v_adev: ndarray
+    :param v_pdev: Vertical channel response phase deviation from nominal response
+    :type v_pdev: ndarray
+    """
 
     freqs = linspace(0, operating_sample_rate/2, num_freqs)  # must start with 0hz
     nyquist = operating_sample_rate / 2.0
@@ -108,8 +150,9 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
 
 def apc_plot(sampling_freq, freqs, amp, pha, coh):
 
-    freq_max = 0.4 * sampling_freq
+    """Generate simple plot that mirrors Matlab go_parker.m plots"""
 
+    freq_max = 0.4 * sampling_freq
 
     plt.subplot(311)
     plt.semilogx(freqs, amp)
@@ -128,19 +171,4 @@ def apc_plot(sampling_freq, freqs, amp, pha, coh):
     plt.xlim(1e-3, freq_max)
     plt.ylim(0.95, 1.05)
     plt.show()
-
-def plot_cal_output_with_residual(calout, calinp):
-
-    resid = subtract(calout, calinp)
-    snr = 1 / resid.std()
-
-    plt.figure(1, figsize=(10,10))
-    plt.plot(calout.data)
-    # hold on
-    plt.plot(resid.data, 'r')
-    # hold off
-    tstr = 'SNR = {}'.format(snr)
-    plt.title(tstr)
-
-
 

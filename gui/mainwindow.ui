@@ -853,7 +853,7 @@
         <x>5</x>
         <y>17</y>
         <width>295</width>
-        <height>195</height>
+        <height>191</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="formLayout">
@@ -1361,8 +1361,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>588</y>
+      <x>20</x>
+      <y>580</y>
       <width>111</width>
       <height>32</height>
      </rect>
@@ -1406,6 +1406,9 @@
     <addaction name="actionProg_test"/>
    </widget>
    <widget class="QMenu" name="menuTest_Sets">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>Test Sets</string>
     </property>
@@ -1483,6 +1486,9 @@
    </property>
    <property name="text">
     <string>AAK</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionXPFO_2016">

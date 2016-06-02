@@ -1,6 +1,8 @@
 from collections import namedtuple
 from numpy import sqrt
 
+"""Instrument properties and related constants and structures"""
+
 # making these match existing instrument abbreviations in DataScope ABBREV table
 # only include seismometer models deployed by IDA on 2016-05-26, plus TR360
 SEISTYPE_STS1E3 = 'STS1E3'

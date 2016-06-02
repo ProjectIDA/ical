@@ -591,8 +591,8 @@ class MainWindowHelper(object):
                                              QtWidgets.QMessageBox().Close)
                 return
 
-            lf_calib = self.cfg.find_calib(seis_model + '|' + CALTYPE_RBHF)
-            hf_calib = self.cfg.find_calib(seis_model + '|' + CALTYPE_RBLF)
+            lf_calib = self.cfg.find_calib(seis_model + '|' + CALTYPE_RBLF)
+            hf_calib = self.cfg.find_calib(seis_model + '|' + CALTYPE_RBHF)
 
             if (not lf_calib) or (not hf_calib):
                 msg = 'Calib Record missing for sensor [{}].'.format(seis_model)
@@ -635,6 +635,8 @@ class MainWindowHelper(object):
                 },
                 'output_dir': output_dir
             }
+
+            logging.debug('cal_info:' + str(cal_info))
 
             success, lf_msfn = self.run_sensor_cal_type(sensor, CALTYPE_RBLF, cal_info)
             if success:

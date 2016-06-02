@@ -4,8 +4,27 @@ import sys
 from numpy import ndarray, pi, sqrt, array, zeros, float64, concatenate
 from numpy.fft import fft
 
+"""Python port of subst of cross.f Fortran code tailored with IDA-specific
+parameter values.
+"""
 
 def cross_correlate(sampling_rate, ts1, ts2):
+    """
+    Compute coherence of and transfer function between two time series
+
+    :param sampling_rate: Digitizing sampling rate
+    :type sampling_rate: float
+    :param ts1: First time series
+    :type ts1: numpy.ndarry
+    :param ts2: Second time series
+    :type ts2: numpy.ndarray
+    :return: Tuple of
+        freqs: ndarray of frequencies,
+        gain: ndarray of transfer function gain values at freqs frequencies
+        phase: ndarray of transfer function phase values (in degrees) at freqs frequencies
+        coh: ndarray of square of coherence between the two time series at freqs frequencies
+    :rtype: (ndarray, ndarray, ndarray, ndarray)
+    """
 
     deg_per_rad = 180.0 / pi
 

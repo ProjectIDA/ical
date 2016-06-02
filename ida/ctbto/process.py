@@ -19,8 +19,8 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     paz_start = ida.signals.paz.PAZ('vel', 'hz', pzfilename=start_paz_fn, fileformat='ida')
     paz_bl = ida.signals.paz.PAZ('vel', 'hz', pzfilename=bl_paz_fn, fileformat='ida')
 
-    start_paz = paz_start
-    bl_paz = paz_start # comparing with 'ida adjusted-nominal response
+    start_paz = paz_bl.copy()   # start fitting from this model
+    bl_paz = paz_bl.copy()      # comparing fitting results with this model
 
 
     logging.debug('Reading responses complete.')

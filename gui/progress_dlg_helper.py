@@ -9,7 +9,7 @@ class ProgressDlgHelper(object):
         # self.cmdline = cmdline
         self.caldescr = descr
         self.total_time_mins = total_time_mins + 0.3  # threading/processing overhead fudge factor
-        self.update_interval = (self.total_time_mins * 60.0) / 1000.0 # 0.1% of total time in secs (~27 secs for rblf)
+        self.update_interval = (self.total_time_mins * 60.0) / 100.0 # 0.1% of total time in secs (~16 secs for rblf)
         self.elapsed = 0
         self.qtdlg = qtdlg
         self.timer = QTimer(self.qtdlg)
@@ -36,10 +36,10 @@ class ProgressDlgHelper(object):
 
         self.progdlg.maxLbl.setText('~' + str(round(self.total_time_mins,1)) + ' mins')
         self.progdlg.minLbl.setText('0')
-        self.progdlg.valLbl.setText('')
+        self.progdlg.valLbl.setText('0 %')
         self.progdlg.progPB.setMinimum(0)
-        self.progdlg.progPB.setValue(0)
         self.progdlg.progPB.setMaximum(self.total_time_mins * 60)
+        self.progdlg.progPB.setValue(0)
 
         logging.debug('Setting QProgress max to:' + str(self.total_time_mins * 60))
 
@@ -54,9 +54,6 @@ class ProgressDlgHelper(object):
         self.timer.timeout.connect(self.tick)
         self.timer.start(self.update_interval * 1000)  # QTimer works in ms
 
-        # just to set progbar with initial values
-        self.tick()
-
 
     def tick(self):
 
@@ -64,7 +61,7 @@ class ProgressDlgHelper(object):
 
         self.elapsed += self.update_interval
         self.progdlg.progPB.setValue(self.elapsed)
-        self.progdlg.valLbl.setText(str(round(pcnt_time, 1)) + '%')
+        self.progdlg.valLbl.setText(str(int(round(pcnt_time, 0))) + '%')
 
 
     def completed(self, retcode, msg, calmsfn):

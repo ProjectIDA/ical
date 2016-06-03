@@ -1,5 +1,9 @@
 from ida.instruments import *
+from numpy import pi
 
+"""Methods and structures supporting construction of CTBTO IMS 2.0 messages"""
+
+# Structure holding individual channel calibration results needed for CALIBRATE_RESULT message type
 CTBTChannelResult = namedtuple('CTBTChannelResult', [
     'channel',
     'calib',
@@ -11,6 +15,29 @@ CTBTChannelResult = namedtuple('CTBTChannelResult', [
 ])
 
 def calibration_result_msg(sta, loc, seis_model, cal_timestamp, channel_results, dig2_msg_fn=None, fir2_msg_fn=None, msgfn=None):
+    """
+    High level function used to create IMS2.0 calibration result message. This is a CALIBRATE_RESULT message for
+    each channel in the channels_results list with embedded DATA_TYPE RESPONSE information for each channel.
+
+    :param sta: Staiuon code (blank ok for ctbto)
+    :type sta: str
+    :param loc: Location code
+    :type loc: str
+    :param seis_model: Seismometer model key
+    :type seis_model: str
+    :param cal_timestamp: Timestamp of calibration
+    :type cal_timestamp: timestamp
+    :param channel_results: List of CTBTChannelResult tuples
+    :type channel_results: [CTBTOChannelResult...]
+    :param dig2_msg_fn: filename of preformatted IMS2.0 digitizer stage 2 response info
+    :type dig2_msg_fn: str
+    :param fir2_msg_fn: filename of preformatted IMS2.0 digitizer FIR filter stage 3 coefficients
+    :type fir2_msg_fn: str
+    :param msgfn: Filename of option file to write IMS message text to. (Optional)
+    :type msgfn: str
+    :return: IMS 2.0 Message text
+    :rtype: str
+    """
 
     ts_str = cal_timestamp.strftime('%Y/%m/%d %H:%M:%S')
 
@@ -56,6 +83,23 @@ def calibration_result_msg(sta, loc, seis_model, cal_timestamp, channel_results,
 
 
 def _sensor_response_msg(sta, loc, seis_model, cal_timestamp, chn_res):
+    """
+    Creates DATA_TYPE RESPONSE portion channel response for IMS 2.0 messages.
+    Results need to be in radians and diplacement.
+
+    :param sta: Station code
+    :type sta: str
+    :param loc: Location code
+    :type loc: str
+    :param seis_model: Seismometer model key
+    :type seis_model: str
+    :param cal_timestamp: Time of calibration
+    :type cal_timestamp: timestamp
+    :param chn_res: CTBTOChannelResult tuple with cal results info
+    :type chn_res:
+    :return: Message text
+    :rtype: str
+    """
 
     date_str = cal_timestamp.strftime('%Y/%m/%d')
     time_str = cal_timestamp.strftime('%H:%M')
@@ -80,11 +124,7 @@ def _sensor_response_msg(sta, loc, seis_model, cal_timestamp, chn_res):
         'PAZ2',
         1,
         'V',
-        chn_res.A0 * \
-        INSTRUMENT_NOMINAL_GAINS[
-         seis_model] * \
-        INSTRUMENT_NOMINAL_GAINS[
-         DIGITYPE_Q330],
+        chn_res.A0 * INSTRUMENT_NOMINAL_GAINS[seis_model] * 2 * pi/ 1e9,
         '',
         0,
         chn_res.paz.num_poles,

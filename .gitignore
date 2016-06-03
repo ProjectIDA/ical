@@ -74,6 +74,7 @@ CAL-*.log
 CAL-*.png
 CAL-*.pdf
 CAL-*.txt
+CAL-*.msgtxt
 
 # cfg backup
 etc2/

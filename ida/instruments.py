@@ -1,7 +1,7 @@
 from collections import namedtuple
 from numpy import sqrt
 
-"""Instrument properties and related constants and structures"""
+"""Instrument properties and related application constants and structures"""
 
 # making these match existing instrument abbreviations in DataScope ABBREV table
 # only include seismometer models deployed by IDA on 2016-05-26, plus TR360
@@ -135,6 +135,6 @@ Q330_GCALIB_FOR_SENSER = {
 #   2) normalize on bin 0 (0 hz) value
 #   3) Below is response amplitude value at 1Hz
 Q330_40HZ_NOMINAL_FIR_GAIN_1HZ = 1.00666915769
-
+Q330_NOMINAL_GAIN = INSTRUMENT_NOMINAL_GAINS[DIGITYPE_Q330]
 
 ComponentsTpl = namedtuple('Components', ['north', 'east', 'vertical'])

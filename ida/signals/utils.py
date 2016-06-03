@@ -83,6 +83,9 @@ def ntrim_stream(traces, left=0, right=0):
 
 def compute_response(freqlist, paz, mode='vel'):
 
+    if isinstance(freqlist, float) or isinstance(freqlist, int):
+        freqlist = array([freqlist])
+
     b, a = zpk2tf(paz.zeros(units='rad', mode=mode),
                                       paz.poles(units='rad', mode=mode),
                                       paz.h0)

@@ -11,20 +11,26 @@ import ida.signals.paz
 import ida.signals.utils
 from ida.instruments import *
 
+"""utility functions for processing of IDA Random Binary calibration data"""
 
-def nominal_sys_sens_at(nom_freq, freqs, sens_resp, seis_model, digi_model):
+def nominal_sys_sens_1hz(sens_resp_at_1hz, seis_model):
+    """Compute system sensitivity in velocity units at 1hz given sensor response (in vel), sensor model and
+    assuming a Q330 digitizer. This calculation DOES NOT include absolute gcalib adjustment for sensor,
+    but does account for digitizer FIR response at 1hz and sensor specific Q330 gcalib value.
 
-    # resp in velocity
-    # freqs linear (maybe not necessary)
-    # returns cts/(m/s)
+    :param sens_resp_at_1hz: complex sensor response at 1hz (velovity units)
+    :type sens_resp_at_1hz: complex128
+    :param seis_model: seismometer model key
+    :type seis_model: str
+    :return: system sensitivity in cts/(m/s)
+    :rtype: float
+    """
+
     seis_model = seis_model.upper()
-    digi_model = digi_model.upper()
 
-    bin_ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= nom_freq])
-    resp_gain_at_nom_freq = abs(sens_resp[bin_ndx])
-
+    resp_gain_at_nom_freq = abs(sens_resp_at_1hz)
     sens_nom_gain = INSTRUMENT_NOMINAL_GAINS[seis_model]
-    digi_nom_gain_1hz = INSTRUMENT_NOMINAL_GAINS[digi_model] * \
+    digi_nom_gain_1hz = Q330_NOMINAL_GAIN * \
                         Q330_40HZ_NOMINAL_FIR_GAIN_1HZ * \
                         Q330_GCALIB_FOR_SENSER[seis_model]
 
@@ -32,6 +38,26 @@ def nominal_sys_sens_at(nom_freq, freqs, sens_resp, seis_model, digi_model):
 
 
 def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
+    """Compute amp and pha response of paz1 against paz2.
+
+    :param freqs: Frequencies at which to compare responses
+    :type freqs: ndarray of np.float
+    :param paz1: First PAZ repsonse
+    :type paz1: PAZ instance
+    :param paz2: Second PAZ response
+    :type paz2: PAZ instance
+    :param norm_freq: Frequency at which to normalize the two responses
+    :type norm_freq: float
+    :param mode: Units to use when computing responses
+    :type mode: str ['disp', 'vel', 'acc']
+    :return: Normalized responses of paz1,
+         Normalized responses of paz2,
+         Amplitude deviation of paz2 from paz1 in percent,
+         Phase deviation of paz2 from paz1 in degrees,
+         Absolute max Amplitutde deviation,
+         Absolute max Phase deviation,
+    :rtype: ndarray, ndarray, ndarray, ndarray, float, float, float
+    """
 
     if (paz1 == None):
         msg = 'You must supply a nominal PAZ to compare.'
@@ -44,10 +70,10 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
         raise Exception(msg)
 
     resp1 = ida.signals.utils.compute_response(freqs, paz1, mode=mode)
-    resp1_norm, scale, _ = ida.signals.utils.normalize_response(resp1, freqs, norm_freq)
+    resp1_norm, _, _ = ida.signals.utils.normalize_response(resp1, freqs, norm_freq)
 
     resp2 = ida.signals.utils.compute_response(freqs, paz2, mode=mode)
-    resp2_norm, resp2_inv_a0, _ = ida.signals.utils.normalize_response(resp2, freqs, norm_freq)
+    resp2_norm, _, _ = ida.signals.utils.normalize_response(resp2, freqs, norm_freq)
 
     # calculate percentage deviations
     resp2_a_dev = (divide(abs(resp2_norm[1:]), abs(resp1_norm[1:])) - 1.0) * 100.0
@@ -56,10 +82,33 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
     resp2_a_dev_max = abs(resp2_a_dev).max()
     resp2_p_dev_max = abs(resp2_p_dev).max()
 
-    return resp1_norm, resp2_norm, resp2_a_dev, resp2_p_dev, resp2_a_dev_max, resp2_p_dev_max, 1/resp2_inv_a0
+    return resp1_norm, resp2_norm, resp2_a_dev, resp2_p_dev, resp2_a_dev_max, resp2_p_dev_max
 
 
-def analyze_cal_component(data_dir, start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfmeas):
+def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfmeas):
+    """Analyze both high and low frequency calibration component timeseries output with calibration input
+    using starting paz start_paz.
+
+    Find improved PAZ fit to reduce transfer function based on start_paz between input/output time series using a least_squares minimization
+    approach.
+
+    :param start_paz: Starting model response
+    :type start_paz: PAZ
+    :param lf_sr: Low frequency sampling rate
+    :type lf_sr: float
+    :param hf_sr: High frequency sampling erate
+    :type hf_sr: float
+    :param lfinput: Low frequency calibration input signal timeseries
+    :type lfinput: ndarray
+    :param hfinput: High frequency calibration input signal timeseries
+    :type hfinput: ndarray
+    :param lfmeas: Low frequency measured component output timeseries
+    :type lfmeas: ndarray
+    :param hfmeas: High frequency measured component output timeseries
+    :type hfmeas: ndarray
+    :return: New PAZ with improved response fit
+    :rtype: PAZ
+    """
 
     # generate coherence info for each component
     logging.debug('Compute coherence for LF time series...')
@@ -203,6 +252,55 @@ def analyze_cal_component(data_dir, start_paz, lf_sr, hf_sr, lfinput, hfinput, l
 
 
 def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
+    """Prepare low and high frequency miniseed files produced by qcal for analysis.
+    It assumes all three observed Z12 coponents plus input signal will exist in each miniseed file.
+    Each components is:
+        - trimmed to remove settling and trailing portions of time series
+        - corrected for polarity
+        - If triaxial seismometer, UVW components are transformed to get horizontal signals
+        - Input timeseries are:
+            - tapered
+            - xformed to frequency space
+            - convolved with paz response
+            - inverse xformed
+            - taper portions trimmed off
+            - normed and de-meaned
+        - each observed compopnent output time series is then:
+            - trimmed just as input timeseries
+            - normed and de-meaned
+
+    The algorithm follows the Matlab scripts previously used for calibration processing with the following exceptions:
+        1) All 3 components are handled at once
+        2) Components for triaxial seismometer are transformed to UVW and then to abs() values for each XYZ component
+
+    NOTE: This is uses the SAME PAZ response for all 3 components.
+    TODO: This should be generalized for to accommodate different strating paz for each component
+
+    :param data_dir: Directory path where miniseed and qcal log fiels are found
+    :type data_dir:  str
+    :param lf_fnames: Tuple containing low frequency miniseed and log filenames
+    :type lf_fnames:  (str, str)
+    :param hf_fnames: Tuple containing high frequency miniseed and log filenames
+    :type hf_fnames: (str, str)
+    :param seis_model: Seismometermodel key
+    :type seis_model: str
+    :param paz: Starting model with which to convolve the calibration input signal.
+    :type paz: PAZ
+    :return:
+        low freq sampling rate,
+        low freq time series start_time,
+        low freq convolved input timeseries,
+        low freq observed east, north, vertical timeseries,
+        high freq sampling rate,
+        high freq time series start_time,
+        high freq convolved input timeseries,
+        high freq observed east, north, vertical timeseries,
+        complex paz response in low freq band, list of low freq frequencies,
+        complex paz response in high freq band, list of high freq frequencies
+    :rtype: float, timestamp, ndarray, ndarray, ndarray, ndarray,
+            float, timestamp, ndarray, ndarray, ndarray, ndarray,
+            ndarray, ndarray, ndarray, ndarray
+    """
 
     ms_fpath_lf = os.path.join(data_dir, lf_fnames[0])
     log_fpath_lf = os.path.join(data_dir, lf_fnames[1])
@@ -271,6 +369,7 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
     resp_hf, scale, ndx = ida.signals.utils.normalize_response(resp_tmp_hf, freqs_hf, 0.05)
     logging.debug('Generating nominal L/HF responses complete.')
 
+    #TODO: This should be generalized for to accommodate different strating paz for each component
     # prep input signal: taper, fft, conv resp, ifft
     logging.debug('Convolving LF input with nominal response...')
     input_fft           = rfft(multiply(cal_lf_tpl.input.data[:npts_lf], taper_lf))
@@ -330,6 +429,16 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
 
 
 def triaxial_horizontal_magnitudes(cal_tpl, seis_model):
+    """Transform XYZ components to UVW, then to absolute values for ENZ.
+    This obtains the true absolute value time series for each horizontal component
+
+    :param cal_tpl: QCal Tuple with component output teimseries plus input
+    :type cal_tpl: ida.calibration.qcal_utils.QCalData
+    :param seis_model: Seismometer model key
+    :type seis_model: str
+    :return: New, transformed QCal tuple
+    :rtype: ida.calibration.qcal_utils.QCalData
+    """
 
     if seis_model in TRIAXIAL_SEIS_MODELS:
         uvw = ida.signals.utils.channel_xform((cal_tpl.east,

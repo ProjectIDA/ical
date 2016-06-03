@@ -152,10 +152,10 @@ class MainWindowHelper(object):
                 'sta' : 'PFO',
                 'loc' : 'TT',
                 'ip' : '198.202.124.228',
-                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rbhf-2016-0509-1353.ms',
-                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rbhf-2016-0509-1353.log',
-                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rblf-2016-0509-1438.ms',
-                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts5-rblf-2016-0509-1438.log'
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts2.5-rbhf-2016-0511-1213.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-198.202.124.228-sts2.5-rblf-2016-0511-1249.log'
             }
 
         elif  action == self.main_win.actionALE:
@@ -481,7 +481,7 @@ class MainWindowHelper(object):
 
         if retcode == 0:
             call(['open', output_dir])
-            call(['open', ims_calres_txt_fn])
+            call(['open', '-a', 'TextEdit', ims_calres_txt_fn])
             call(['open', cal_amp_plot_fn])
             call(['open', cal_pha_plot_fn])
 

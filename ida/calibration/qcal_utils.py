@@ -2,10 +2,9 @@ from collections import namedtuple
 import logging
 import os.path
 from numpy import float64
-# from obspy.io.mseed.core import _read_mseed
-# from obspy.core.stream import read
 from ida.ida_obspy import read_mseed
-# import ida.response.paz
+
+"""Methods, types and constants specifically for processing data produced by the IDA qcal binary application"""
 
 INPUT_CHANNELS = ['CCF', 'CCS']
 INPUT_CHANNEL_WILDCARD = 'CC[FS]'
@@ -14,24 +13,36 @@ QCalData = namedtuple('CalComponentsTpl', ['north', 'east', 'vertical', 'input']
 QCalFiles = namedtuple('QCalFilesTpl', ['ms_filename', 'log_filename'])
 
 
-class QCalLog(object):
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.start_time = None
-        self.waveform = None
-        self.amplitude = None
-        self.duration = None
-        self.settling_time = None
-        self.trailer_time = None
-        self.calibrate_chans = None
-        self.monitor_chans = None
-        self.frequency_hz = None
-        self.control_bitmap = None
-        self.data_port = None
-
-
+# class QCalLog(object):
+#     """Simple class to hold QCAl log file info"""
+#
+#     def __init__(self, filename):
+#         self.filename = filename
+#         self.start_time = None
+#         self.waveform = None
+#         self.amplitude = None
+#         self.duration = None
+#         self.settling_time = None
+#         self.trailer_time = None
+#         self.calibrate_chans = None
+#         self.monitor_chans = None
+#         self.frequency_hz = None
+#         self.control_bitmap = None
+#         self.data_port = None
+#
+#
 def read_qcal_files(qcal_ms_filename, qcal_log_filename):
+    """Reads QCAl miniseed and log files.
+
+    :param qcal_ms_filename: Miniseed filename (with path)
+    :type qcal_ms_filename: str
+    :param qcal_log_filename: Log filename (with path)
+    :type qcal_log_filename: str
+    :return:
+        (IDAStream object containing teimseries from miniseed file,
+        dictionary with qcal log file information.
+    :rtype: (ida.signals.stream.IDAStream, dict)
+    """
 
     qcal_ms_filename = os.path.abspath(qcal_ms_filename)
     if not os.path.exists(qcal_ms_filename):
@@ -70,8 +81,16 @@ def read_qcal_files(qcal_ms_filename, qcal_log_filename):
 
 
 def read_qcal_log(logfilename):
-    """parse qcal v 2.1 log file"""
+    """parse qcal v 2.1 log file
+    Currently only care about 'settling time' and 'trailing time'
 
+    :param logfilename: Log filename (with path)
+    :type logfilename: str
+    :return: Dictionary containinglog file information
+    :rtype: dict
+    """
+
+    # for now, only
     LOG_KEY_INFO = [
         ('settling time', 'settling_time', 3),
         ('trailer time', 'trailing_time', 3)
@@ -102,6 +121,15 @@ def read_qcal_log(logfilename):
 
 
 def split_qcal_traces(cal_strm):
+    """Split IDAStream into individual component output and input cal signal IDATraces.
+    Input IDAStream MUST contain all 3 components plus and input channel identified as having channel[2] in ['S', 'F']
+    Input channel codes set in the lcq qcal config file.
+
+    :param cal_strm: IDAStream with output and input timeseries
+    :type cal_strm: ida.signals.stream.IDAStream
+    :return: QCal data tuple with individual components and input timeseries
+    :rtype: QCalData
+    """
 
     tr_e, tr_n, tr_z, tr_input = None, None, None, None
 

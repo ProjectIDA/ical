@@ -9,7 +9,7 @@ from numpy import linspace, ceil
 """Convenience methods for plotting response and calibration results."""
 
 def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_model, timestamp,
-                                   operating_sample_rate, num_freqs, nom_resp,
+                                   operating_sample_rate, num_freqs, norm_freq, nom_resp,
                                    n_resp, n_adev, n_pdev,
                                    e_resp, e_adev, e_pdev,
                                    v_resp, v_adev, v_pdev):
@@ -72,7 +72,7 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
                                                                                                      int(round(operating_sample_rate, 0))),
               fontsize=14,
               fontweight='bold')
-    plt.ylabel('Amplitude (Normalized, V/m/s)', fontsize=12, fontweight='bold')
+    plt.ylabel('Amplitude (Normalized @ {} hz, V/m/s)'.format(norm_freq), fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     plt.grid(which='both')
     bh1, = plt.loglog(freqs, abs(n_resp), 'g', linewidth=0.5)

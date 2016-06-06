@@ -62,17 +62,17 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     logging.debug('Preparing cal data for coherence analysis complete.')
     logging.debug('Analyzing cal data and calculating new NORTH response...')
 
-    n_paz = analyze_cal_component(start_paz, samp_rate_lf, samp_rate_hf, lfinput, hfinput, lfnorth, hfnorth)
+    n_paz = analyze_cal_component(start_paz, samp_rate_lf, samp_rate_hf, lfinput, hfinput, lfnorth, hfnorth, 'BH1')
 
     logging.debug('Analyzing cal data and calculating new NORTH response complete.')
     logging.debug('Analyzing cal data and calculating new EAST response...')
 
-    e_paz = analyze_cal_component(start_paz, samp_rate_lf, samp_rate_hf, lfinput, hfinput, lfeast, hfeast)
+    e_paz = analyze_cal_component(start_paz, samp_rate_lf, samp_rate_hf, lfinput, hfinput, lfeast, hfeast, 'BH2')
 
     logging.debug('Analyzing cal data and calculating new EAST response complete.')
     logging.debug('Analyzing cal data and calculating new VERTICAL response...')
 
-    v_paz = analyze_cal_component(start_paz, samp_rate_lf, samp_rate_hf, lfinput, hfinput, lfvert, hfvert)
+    v_paz = analyze_cal_component(start_paz, samp_rate_lf, samp_rate_hf, lfinput, hfinput, lfvert, hfvert, 'BHZ')
 
     logging.debug('Analyzing cal data and calculating new VERTICAL response complete.')
 

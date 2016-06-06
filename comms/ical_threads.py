@@ -32,19 +32,20 @@ class QVerifyThread(QtCore.QThread):
         self.host = host
         self.port = port
         self.cfg_path = cfg_root_path
+        self.proc = None
 
     def run(self):
         result = self.qVerify_query()
         self.qVerifyQueryResult.emit(*result)
 
     def qVerify_query(self):
-        proc = subprocess.Popen(
+        self.proc = subprocess.Popen(
             [self.bin_path, '-v', 'root='+self.cfg_path, self.host, self.port],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True)
-        stdout, stderr = proc.communicate()
-        ret_code = proc.returncode
+        stdout, stderr = self.proc.communicate()
+        ret_code = self.proc.returncode
         if ret_code == 0:
             infomsg = '\n'.join(str(stdout).splitlines())
             # print(infomsg)
@@ -52,7 +53,14 @@ class QVerifyThread(QtCore.QThread):
             lines = str(stderr).splitlines()
             infomsg = ' '.join(lines)
             # print(infomsg)
-        return (self.host, self.port, proc.returncode, infomsg)
+        return (self.host, self.port, ret_code, infomsg)
+
+
+    def cancel(self):
+        if self.proc:
+            self.proc.terminate()
+            self.terminate()
+            self.wait()
 
 
 class QCalThread(QtCore.QThread):
@@ -64,11 +72,13 @@ class QCalThread(QtCore.QThread):
         self.bin_path = os.path.join(bin_root_path, 'qcal')
         self.cmdline = cmdline
         self.output_path = output_path
+        self.proc = None
 
     def cancel(self):
-        self.proc.terminate()
-        self.terminate()
-        self.wait()
+        if self.proc:
+            self.proc.terminate()
+            self.terminate()
+            self.wait()
 
     def run(self):
         result = self.run_qcal()

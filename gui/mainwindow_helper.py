@@ -140,10 +140,10 @@ class MainWindowHelper(object):
                 'sta' : 'XPFO',
                 'loc' : '50',
                 'ip' : '172.23.34.108',
-                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rbhf-2016-0331-0946.ms',
-                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rbhf-2016-0331-0946.log',
-                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rblf-2016-0328-1055.ms',
-                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-sts2.5-rblf-2016-0328-1055.log'
+                'hf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-STS2_5-rbhf-2016-0602-2154.ms',
+                'hf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-STS2_5-rbhf-2016-0602-2154.log',
+                'lf_msfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-STS2_5-rblf-2016-0602-1718.ms',
+                'lf_logfn' : '/Users/dauerbach/dev/ical/src/CAL-172.23.34.108-STS2_5-rblf-2016-0602-1718.log'
             }
 
         elif  action == self.main_win.actionPFO_CTBTO:
@@ -437,11 +437,11 @@ class MainWindowHelper(object):
         if seis_model in [SEISTYPE_STS25, SEISTYPE_STS25F]:
             if getattr(sys, 'frozen', False):
                 bundle_dir = sys._MEIPASS
-                start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
-                nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
+                start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts2_5_for_fitting.ida'))
+                nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts2_5_for_fitting.ida'))
             else:
-                start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
-                nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
+                start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts2_5_for_fitting.ida'))
+                nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts2_5_for_fitting.ida'))
         else:
             msg1 = 'PyCal does not have response information for SENSOR MODEL: ' + seis_model
             msg2 = 'Analysis can not be performed.'
@@ -740,6 +740,10 @@ class MainWindowHelper(object):
 
         self.set_run_btns_enabled(row)
 
+        if self.qVerifyThread:
+            self.qVerifyThread.cancel()
+            self.qVerifyThread = None
+
         if row == -1:
             self.clear_details()
             if self.qVerifyThread:
@@ -802,6 +806,8 @@ class MainWindowHelper(object):
             self.main_win.q330Info.setStyleSheet("QLabel{color:rgb(179, 0, 0);}")
             self.main_win.q330Info.setText("Error: " + results)
 
+        self.qVerifyThread = None
+
 
     def clear_details(self):
 
@@ -831,6 +837,9 @@ class MainWindowHelper(object):
         self.main_win.q330Info.setText("")
 
         # start thread to check IP/HOST availability, staus with qverify
+        if self.qVerifyThread:
+            self.qVerifyThread.cancel()
+
         self.qVerifyThread = QVerifyThread(cfg.data[WrapperCfg.WRAPPER_KEY_IP],
                                      cfg.data[WrapperCfg.WRAPPER_KEY_DATAPORT],
                                      pcgl.get_bin_root(),

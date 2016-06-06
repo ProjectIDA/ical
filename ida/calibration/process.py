@@ -1,7 +1,7 @@
 import logging
 import os.path
 from numpy import pi, ceil, sin, cos, angle, abs, linspace, multiply, logical_and, \
-    divide, power, subtract
+    divide, power, subtract, median, concatenate
 from numpy.fft import rfft, irfft
 from scipy.signal import tukey
 from scipy.optimize import least_squares
@@ -85,7 +85,7 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
     return resp1_norm, resp2_norm, resp2_a_dev, resp2_p_dev, resp2_a_dev_max, resp2_p_dev_max
 
 
-def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfmeas):
+def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfmeas, chncode):
     """Analyze both high and low frequency calibration component timeseries output with calibration input
     using starting paz start_paz.
 
@@ -143,8 +143,29 @@ def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfm
     lfmeas_coh = lfmeas_coh[lf_range]
     hfmeas_coh = hfmeas_coh[hf_range]
 
+    logging.debug('LF TF Amp Max:' + str(abs(lfmeas_tf).max()))
+    logging.debug('LF TF Amp Min:' + str(abs(lfmeas_tf).min()))
+    logging.debug('LF TF Pha Max:' + str(angle(lfmeas_tf).max()))
+    logging.debug('LF TF Pha Min:' + str(angle(lfmeas_tf).min()))
+    logging.debug('HF TF Amp Max:' + str(abs(hfmeas_tf).max()))
+    logging.debug('HF TF Amp Min:' + str(abs(hfmeas_tf).min()))
+    logging.debug('HF TF Pha Max:' + str(angle(hfmeas_tf).max()))
+    logging.debug('HF TF Pha Min:' + str(angle(hfmeas_tf).min()))
+
     hfmeas_tf_norm, _, _ = ida.signals.utils.normalize_response(hfmeas_tf, hfmeas_f_t, hf_norm_freq)
     lfmeas_tf_norm, _, _ = ida.signals.utils.normalize_response(lfmeas_tf, lfmeas_f_t, lf_norm_freq)
+
+    logging.debug('LF TF Amp Max (normed):' + str(abs(lfmeas_tf_norm).max()))
+    logging.debug('LF TF Amp Min (normed):' + str(abs(lfmeas_tf_norm).min()))
+    logging.debug('LF TF Pha Max (normed):' + str(angle(lfmeas_tf_norm).max()))
+    logging.debug('LF TF Pha Min (normed):' + str(angle(lfmeas_tf_norm).min()))
+    logging.debug('HF TF Amp Max (normed):' + str(abs(hfmeas_tf_norm).max()))
+    logging.debug('HF TF Amp Min (normed):' + str(abs(hfmeas_tf_norm).min()))
+    logging.debug('HF TF Pha Max (normed):' + str(angle(hfmeas_tf_norm).max()))
+    logging.debug('HF TF Pha Min (normed):' + str(angle(hfmeas_tf_norm).min()))
+
+    logging.debug('LF Coh2 Median:' + str(median(lfmeas_coh)))
+    logging.debug('HF Coh2 Median:' + str(median(hfmeas_coh)))
 
     #TODO need to move this to be sensor dependent in instruments.py
     # for sts2.5 ONLY
@@ -176,24 +197,23 @@ def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfm
     lf_pazpert_ub = lf_paz_pert_flat + 0.5 * abs(lf_paz_pert_flat)
 
 
-    def resp_cost(p, paz_partial_flags, freqs, normfreq, tf_target, resp_pert0, coh2):
+    def resp_cost(p, paz_partial_flags, freqs, normfreq, tf_target, resp_pert0):
 
         # pack up into PAZ instances
         paz_pert = ida.signals.utils.pack_paz(p, paz_partial_flags)
 
-        # compute response across freqs band and normalize
+        # compute perturbed response andnormalize
         resp = ida.signals.utils.compute_response(freqs, paz_pert)
         resp_norm, scale, ndx = ida.signals.utils.normalize_response(resp, freqs, normfreq)
 
         # calc new TF
-        # compare new_tf with old TF, real to real and imag to imag
-        # new_tf = divide(resp_norm, resp_pert0)
-        # resid = sqrt(power(new_tf.real - tf_target.real, 2) +
-        #                 power(new_tf.imag - tf_target.imag, 2))
-        unit_tf = multiply(divide(resp_norm, resp_pert0), tf_target)
-        resid = multiply(power(unit_tf.real - 1, 2) + power(unit_tf.imag, 2), coh2)
+        new_tf = divide(resp_norm, resp_pert0)
+        # simple dif for residuals array. Assuems tf_target is np.concatenate((tf_target.real, tf_target.imag))
+        new_real_imag_tf = concatenate((new_tf.real, new_tf.imag))
+        resid = subtract(new_real_imag_tf, tf_target)
 
-        return resid.sum()
+        return resid
+
 
     logging.info('Fitting new HF response...')
 
@@ -211,9 +231,8 @@ def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfm
                            args=(hf_paz_pert_flags,
                                  hfmeas_f_t,
                                  hf_norm_freq,
-                                 hfmeas_tf_norm,
-                                 hf_resp0,
-                                 hfmeas_coh
+                                 concatenate((hfmeas_tf_norm.real, hfmeas_tf_norm.imag)),
+                                 hf_resp0
                                  ),
                            verbose=0)
     logging.info('HF fitting termination: ' + hf_res.message)
@@ -234,9 +253,8 @@ def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfm
                             args=(lf_paz_pert_flags,
                                   lfmeas_f_t,
                                   lf_norm_freq,
-                                  lfmeas_tf_norm,
-                                  lf_resp0,
-                                  lfmeas_coh
+                                  concatenate((lfmeas_tf_norm.real, lfmeas_tf_norm.imag)),
+                                  lf_resp0
                                   ),
                            verbose=0)
     logging.info('LF fitting termination: ' + lf_res.message)

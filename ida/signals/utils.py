@@ -240,7 +240,7 @@ def pack_paz(data, flags):
         elif flags[0][ndx] == 'real-double':
             paz_partial.add_pole(complex(data[datandx-1],0))
         else:
-            print('VERYBAD-p')
+            logging.error('Invalid pole type: ' + flags[0][ndx])
 
     for ndx in range(0, numz):
         if flags[1][ndx] == 'zero':
@@ -256,7 +256,7 @@ def pack_paz(data, flags):
         elif flags[1][ndx] == 'real-double':
             paz_partial.add_zero(complex(data[datandx-1],0))
         else:
-            print('VERYBAD-z')
+            logging.error('Invalid zero type: ' + flags[1][ndx])
 
     paz_partial.h0 = data[-1]
 

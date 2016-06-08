@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mainwindow.ui'
+# Form implementation generated from reading ui file 'mainwindow_with_tests.ui'
 #
 # Created by: PyQt5 UI code generator 5.6
 #
@@ -545,6 +545,11 @@ class Ui_MainWindow(object):
         self.quitBtn = QtWidgets.QPushButton(self.centralWidget)
         self.quitBtn.setGeometry(QtCore.QRect(970, 588, 115, 32))
         self.quitBtn.setObjectName("quitBtn")
+        self.testAnalysisBtn = QtWidgets.QPushButton(self.centralWidget)
+        self.testAnalysisBtn.setEnabled(True)
+        self.testAnalysisBtn.setGeometry(QtCore.QRect(20, 580, 111, 32))
+        self.testAnalysisBtn.setStyleSheet("color: red;")
+        self.testAnalysisBtn.setObjectName("testAnalysisBtn")
         MainWindow.setCentralWidget(self.centralWidget)
         self.mainMenu = QtWidgets.QMenuBar(MainWindow)
         self.mainMenu.setGeometry(QtCore.QRect(0, 0, 1090, 22))
@@ -554,6 +559,9 @@ class Ui_MainWindow(object):
         self.menuFile.setObjectName("menuFile")
         self.menuView = QtWidgets.QMenu(self.mainMenu)
         self.menuView.setObjectName("menuView")
+        self.menuTest_Sets = QtWidgets.QMenu(self.mainMenu)
+        self.menuTest_Sets.setEnabled(True)
+        self.menuTest_Sets.setObjectName("menuTest_Sets")
         self.menuOptions = QtWidgets.QMenu(self.mainMenu)
         self.menuOptions.setObjectName("menuOptions")
         self.menuEdit = QtWidgets.QMenu(self.mainMenu)
@@ -618,6 +626,16 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionQuit)
         self.menuView.addAction(self.acViewLogMessages)
         self.menuView.addAction(self.actionProg_test)
+        self.menuTest_Sets.addAction(self.actionAAK_2015)
+        self.menuTest_Sets.addAction(self.actionALE)
+        self.menuTest_Sets.addAction(self.actionBORG)
+        self.menuTest_Sets.addAction(self.actionERM)
+        self.menuTest_Sets.addAction(self.actionPFO_CTBTO)
+        self.menuTest_Sets.addAction(self.actionRPN)
+        self.menuTest_Sets.addAction(self.actionTAU)
+        self.menuTest_Sets.addAction(self.actionUOSS_2016)
+        self.menuTest_Sets.addAction(self.actionXPFO_2016)
+        self.menuTest_Sets.addAction(self.actionSHEMLYA)
         self.menuOptions.addAction(self.actionVerbose_Log)
         self.menuEdit.addAction(self.actionNew)
         self.menuEdit.addAction(self.actionEdit)
@@ -627,6 +645,7 @@ class Ui_MainWindow(object):
         self.mainMenu.addAction(self.menuEdit.menuAction())
         self.mainMenu.addAction(self.menuOptions.menuAction())
         self.mainMenu.addAction(self.menuView.menuAction())
+        self.mainMenu.addAction(self.menuTest_Sets.menuAction())
 
         self.retranslateUi(MainWindow)
         self.quitBtn.clicked.connect(self.actionQuit.trigger)
@@ -690,8 +709,11 @@ class Ui_MainWindow(object):
         self.dpauthLE.setPlaceholderText(_translate("MainWindow", "0"))
         self.q330Info.setText(_translate("MainWindow", "TextLabel"))
         self.quitBtn.setText(_translate("MainWindow", "Quit"))
+        self.testAnalysisBtn.setToolTip(_translate("MainWindow", "Initiate sensor A calibration."))
+        self.testAnalysisBtn.setText(_translate("MainWindow", "Test Analysis"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuView.setTitle(_translate("MainWindow", "View"))
+        self.menuTest_Sets.setTitle(_translate("MainWindow", "Test Sets"))
         self.menuOptions.setTitle(_translate("MainWindow", "Options"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
         self.actionQuit.setText(_translate("MainWindow", "Quit"))

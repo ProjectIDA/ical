@@ -1,7 +1,8 @@
 import logging
 import os.path
-from numpy import pi, ceil, sin, cos, angle, abs, linspace, multiply, logical_and, \
-    divide, power, subtract, median, concatenate
+from numpy import ndarray, complex128, pi, ceil, sin, cos, angle, abs, linspace, multiply, \
+    logical_and, less_equal, polyfit, polyval, \
+    divide, subtract, median, concatenate
 from numpy.fft import rfft, irfft
 from scipy.signal import tukey
 from scipy.optimize import least_squares
@@ -32,16 +33,16 @@ def nominal_sys_sens_1hz(sens_resp_at_1hz, seis_model):
     sens_nom_gain = INSTRUMENT_NOMINAL_GAINS[seis_model]
     digi_nom_gain_1hz = Q330_NOMINAL_GAIN * \
                         Q330_40HZ_NOMINAL_FIR_GAIN_1HZ * \
-                        Q330_GCALIB_FOR_SENSER[seis_model]
+                        Q330_GCALIB_FOR_SEIS[seis_model]
 
     return resp_gain_at_nom_freq * sens_nom_gain * digi_nom_gain_1hz
 
 
-def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
+def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel', phase_detrend=False):
     """Compute amp and pha response of paz1 against paz2.
 
-    :param freqs: Frequencies at which to compare responses
-    :type freqs: ndarray of np.float
+    :param freqs: Frequencies at which to compare responses. phase_detrend assumes freqs go to Nyquist.
+    :type freqs: ndarray
     :param paz1: First PAZ repsonse
     :type paz1: PAZ instance
     :param paz2: Second PAZ response
@@ -50,6 +51,8 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
     :type norm_freq: float
     :param mode: Units to use when computing responses
     :type mode: str ['disp', 'vel', 'acc']
+    :param phase_detrend: Boolean indicating whether to remove linear trend from phase. Assumes nyquist in freqs[-1]
+    :type phase_detrend: Bool
     :return: Normalized responses of paz1,
          Normalized responses of paz2,
          Amplitude deviation of paz2 from paz1 in percent,
@@ -75,6 +78,22 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
     resp2 = ida.signals.utils.compute_response(freqs, paz2, mode=mode)
     resp2_norm, _, _ = ida.signals.utils.normalize_response(resp2, freqs, norm_freq)
 
+    if phase_detrend:
+        freq_range = less_equal(freqs, 0.9 * freqs[-1])  # 90% of nyquist
+
+        lin_trend_coeff = polyfit(freqs[freq_range], angle(resp1_norm[freq_range]), 1)
+        trend_vals = polyval(lin_trend_coeff, freqs)
+        amp = abs(resp1_norm)
+        pha = angle(resp1_norm) - trend_vals
+        resp1_norm = amp * complex128(cos(pha) + 1j*sin(pha))
+
+        lin_trend_coeff = polyfit(freqs[freq_range], angle(resp2_norm[freq_range]), 1)
+        trend_vals = polyval(lin_trend_coeff, freqs)
+        amp = abs(resp2_norm)
+        pha = angle(resp2_norm) - trend_vals
+        resp2_norm = amp * complex128(cos(pha) + 1j*sin(pha))
+
+
     # calculate percentage deviations
     resp2_a_dev = (divide(abs(resp2_norm[1:]), abs(resp1_norm[1:])) - 1.0) * 100.0
     resp2_p_dev = subtract(angle(resp2_norm[1:])*180/pi, angle(resp1_norm[1:])*180/pi)
@@ -85,19 +104,26 @@ def compare_component_response(freqs, paz1, paz2, norm_freq=0.05, mode='vel'):
     return resp1_norm, resp2_norm, resp2_a_dev, resp2_p_dev, resp2_a_dev_max, resp2_p_dev_max
 
 
-def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfmeas, chncode):
+def analyze_cal_component(full_paz, lf_paz_pert_map, hf_paz_pert_map,
+                          lf_sr, hf_sr, operating_sr, lfinput, hfinput, lfmeas, hfmeas):
     """Analyze both high and low frequency calibration component timeseries output with calibration input
-    using starting paz start_paz.
+    using starting paz fitting_paz.
 
-    Find improved PAZ fit to reduce transfer function based on start_paz between input/output time series using a least_squares minimization
+    Find improved PAZ fit to reduce transfer function based on fitting_paz between input/output time series using a least_squares minimization
     approach.
 
-    :param start_paz: Starting model response
-    :type start_paz: PAZ
+    :param full_paz: Full model response for fitting (note: may be different then resp used to convolve w/input)
+    :type full_paz: PAZ
+    :param lf_paz_pert_map: paz map of which LF poles/zeros to perturb for fitting
+    :type ([], [])
+    :param hf_paz_pert_map: paz map of which HF poles/zeros to perturb for fitting
+    :type ([], [])
     :param lf_sr: Low frequency sampling rate
     :type lf_sr: float
-    :param hf_sr: High frequency sampling erate
+    :param hf_sr: High frequency sampling rate
     :type hf_sr: float
+    :param operating_sr: Operational Sampling rate of channels
+    :type operating_sr: float
     :param lfinput: Low frequency calibration input signal timeseries
     :type lfinput: ndarray
     :param hfinput: High frequency calibration input signal timeseries
@@ -130,7 +156,7 @@ def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfm
     lflo = 1e-04
     lfhi = 0.3
     hflo = 0.3
-    hfhi = 18
+    hfhi = operating_sr * 0.45  # e.g. 18hz for 40hz channels
     lf_norm_freq = 0.05
     hf_norm_freq = 1.0
 
@@ -170,11 +196,8 @@ def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfm
     #TODO need to move this to be sensor dependent in instruments.py
     # for sts2.5 ONLY
     logging.debug('Setting paz perturbation map and splitting...')
-    hf_paz_pert_map = ([4, 5], []) # perturbed paz must not be in both lf anf hf sets
-    lf_paz_pert_map = ([0,1], [])
-
-    hf_paz_pert = start_paz.make_partial(hf_paz_pert_map, hf_norm_freq)
-    lf_paz_pert = start_paz.make_partial(lf_paz_pert_map, lf_norm_freq)
+    hf_paz_pert = full_paz.make_partial(hf_paz_pert_map, hf_norm_freq)
+    lf_paz_pert = full_paz.make_partial(lf_paz_pert_map, lf_norm_freq)
 
     logging.debug('Computing response of perturbed paz...')
     # initial response of paz_pert over freq_band of interest
@@ -262,14 +285,14 @@ def analyze_cal_component(start_paz, lf_sr, hf_sr, lfinput, hfinput, lfmeas, hfm
 
     new_hf_paz_pert = ida.signals.utils.pack_paz(hf_res.x, hf_paz_pert_flags)
     new_lf_paz_pert = ida.signals.utils.pack_paz(lf_res.x, lf_paz_pert_flags)
-    new_paz = start_paz.copy()
+    new_paz = full_paz.copy()
     new_paz.merge_paz_partial(new_hf_paz_pert, hf_paz_pert_map, hf_norm_freq)
     new_paz.merge_paz_partial(new_lf_paz_pert, lf_paz_pert_map, hf_norm_freq)
 
     return new_paz
 
 
-def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
+def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, lf_paz_tpl, hf_paz_tpl):
     """Prepare low and high frequency miniseed files produced by qcal for analysis.
     It assumes all three observed Z12 coponents plus input signal will exist in each miniseed file.
     Each components is:
@@ -302,23 +325,33 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
     :type hf_fnames: (str, str)
     :param seis_model: Seismometermodel key
     :type seis_model: str
-    :param paz: Starting model with which to convolve the calibration input signal.
-    :type paz: PAZ
+    :param lf_paz_tpl: ComponentTpl with starting LF model with which to convolve the calibration input signal.
+    :type lf_paz_tpl: ComponentTpl
+    :param hf_paz_tpl: ComponentTpl with starting HF model with which to convolve the calibration input signal.
+    :type hf_paz_tpl: ComponentTpl
     :return:
         low freq sampling rate,
         low freq time series start_time,
-        low freq convolved input timeseries,
-        low freq observed east, north, vertical timeseries,
+        low freq convolved input timeseries, in ComponentTpl
+        low freq measured east, north, vertical timeseries, in ComponentTpl
         high freq sampling rate,
         high freq time series start_time,
-        high freq convolved input timeseries,
-        high freq observed east, north, vertical timeseries,
-        complex paz response in low freq band, list of low freq frequencies,
-        complex paz response in high freq band, list of high freq frequencies
-    :rtype: float, timestamp, ndarray, ndarray, ndarray, ndarray,
-            float, timestamp, ndarray, ndarray, ndarray, ndarray,
-            ndarray, ndarray, ndarray, ndarray
+        high freq convolved input timeseries, in ComponentTpl
+        high freq measured east, north, vertical timeseries, in ComponentTpl
+        complex paz response in low freq band in ComponentTpl, list of low freq frequencies,
+        complex paz response in high freq band in ComponentTpl, list of high freq frequencies
+    :rtype: float, timestamp, ComponentTpl, ComponentTpl
+            float, timestamp, ComponentTpl, ComponentTpl
+            ComponentTpl, ndarray, ComponentTpl, ndarray
     """
+
+    if not isinstance(lf_paz_tpl, ComponentsTpl):
+        msg = 'lf_paz_tpl must be a ComponentsTpl with LF PAZ (for fitting) responses for each component'
+        raise TypeError(msg)
+
+    if not isinstance(hf_paz_tpl, ComponentsTpl):
+        msg = 'hf_paz_tpl must be a ComponentsTpl with HF PAZ (for fitting) responses for each component'
+        raise TypeError(msg)
 
     ms_fpath_lf = os.path.join(data_dir, lf_fnames[0])
     log_fpath_lf = os.path.join(data_dir, lf_fnames[1])
@@ -376,73 +409,113 @@ def prepare_cal_data(data_dir, lf_fnames, hf_fnames, seis_model, paz):
     taper_bin_cnt_hf = int(ceil(npts_hf * fraction))
     logging.debug('Creating tapers complete.')
 
-    logging.debug('Generating nominal  LF (acc) response...')
-    freqs_lf = linspace(0, samp_rate_lf/2, npts_lf//2 + 1)  # count is to match behavior of np.fft.rfft below
-    resp_tmp_lf = ida.signals.utils.compute_response(freqs_lf, paz, mode='acc')
-    resp_lf, scale, ndx = ida.signals.utils.normalize_response(resp_tmp_lf, freqs_lf, 0.05)
+    logging.debug('Generating starting LF (mode=acc) response...')
 
-    logging.debug('Generating nominal  HF (acc) response...')
+    freqs_lf = linspace(0, samp_rate_lf/2, npts_lf//2 + 1)  # count is to match behavior of np.fft.rfft below
+    resp_tmp_lf = ida.signals.utils.compute_response(freqs_lf, lf_paz_tpl.vertical, mode='acc')
+    resp_lf_v, _, _ = ida.signals.utils.normalize_response(resp_tmp_lf, freqs_lf, 0.05)
+    resp_tmp_lf = ida.signals.utils.compute_response(freqs_lf, lf_paz_tpl.north, mode='acc')
+    resp_lf_n, _, _ = ida.signals.utils.normalize_response(resp_tmp_lf, freqs_lf, 0.05)
+    resp_tmp_lf = ida.signals.utils.compute_response(freqs_lf, lf_paz_tpl.east, mode='acc')
+    resp_lf_e, _, _ = ida.signals.utils.normalize_response(resp_tmp_lf, freqs_lf, 0.05)
+
+    logging.debug('Generating starting  HF (acc) response...')
+
     freqs_hf = linspace(0, samp_rate_hf/2, npts_hf//2 + 1)  # count is to match behavior of np.fft.rfft below
-    resp_tmp_hf = ida.signals.utils.compute_response(freqs_hf, paz, mode='acc')
-    resp_hf, scale, ndx = ida.signals.utils.normalize_response(resp_tmp_hf, freqs_hf, 0.05)
-    logging.debug('Generating nominal L/HF responses complete.')
+    resp_tmp_hf = ida.signals.utils.compute_response(freqs_hf, hf_paz_tpl.vertical, mode='acc')
+    resp_hf_v, _, _ = ida.signals.utils.normalize_response(resp_tmp_hf, freqs_hf, 0.05)
+    resp_tmp_hf = ida.signals.utils.compute_response(freqs_hf, hf_paz_tpl.north, mode='acc')
+    resp_hf_n, _, _ = ida.signals.utils.normalize_response(resp_tmp_hf, freqs_hf, 0.05)
+    resp_tmp_hf = ida.signals.utils.compute_response(freqs_hf, hf_paz_tpl.east, mode='acc')
+    resp_hf_e, _, _ = ida.signals.utils.normalize_response(resp_tmp_hf, freqs_hf, 0.05)
+
+    logging.debug('Generating starting L/HF responses complete.')
+
+    resp_lf = ComponentsTpl(vertical=resp_lf_v, north=resp_lf_n, east=resp_lf_e)
+    resp_hf = ComponentsTpl(vertical=resp_hf_v, north=resp_hf_n, east=resp_hf_e)
 
     #TODO: This should be generalized for to accommodate different strating paz for each component
     # prep input signal: taper, fft, conv resp, ifft
     logging.debug('Convolving LF input with nominal response...')
     input_fft           = rfft(multiply(cal_lf_tpl.input.data[:npts_lf], taper_lf))
-    inp_freqs_cnv_resp  = multiply(input_fft, resp_lf)
-    lf_inp_wth_resp     = irfft(inp_freqs_cnv_resp, npts_lf)
-    lf_inp_wth_resp     = lf_inp_wth_resp[taper_bin_cnt_lf:-taper_bin_cnt_lf]
-    lf_inp_wth_resp.__itruediv__(lf_inp_wth_resp.std())
-    lf_inp_wth_resp.__isub__(lf_inp_wth_resp.mean())
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_lf_v)
+    lf_inp_wth_resp_v     = irfft(inp_freqs_cnv_resp, npts_lf)
+    lf_inp_wth_resp_v     = lf_inp_wth_resp_v[taper_bin_cnt_lf:-taper_bin_cnt_lf]
+    lf_inp_wth_resp_v.__itruediv__(lf_inp_wth_resp_v.std())
+    lf_inp_wth_resp_v.__isub__(lf_inp_wth_resp_v.mean())
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_lf_n)
+    lf_inp_wth_resp_n     = irfft(inp_freqs_cnv_resp, npts_lf)
+    lf_inp_wth_resp_n     = lf_inp_wth_resp_n[taper_bin_cnt_lf:-taper_bin_cnt_lf]
+    lf_inp_wth_resp_n.__itruediv__(lf_inp_wth_resp_n.std())
+    lf_inp_wth_resp_n.__isub__(lf_inp_wth_resp_n.mean())
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_lf_e)
+    lf_inp_wth_resp_e     = irfft(inp_freqs_cnv_resp, npts_lf)
+    lf_inp_wth_resp_e     = lf_inp_wth_resp_e[taper_bin_cnt_lf:-taper_bin_cnt_lf]
+    lf_inp_wth_resp_e.__itruediv__(lf_inp_wth_resp_e.std())
+    lf_inp_wth_resp_e.__isub__(lf_inp_wth_resp_e.mean())
     logging.debug('Convolving LF input with nominal response complete')
 
     logging.debug('Convolving HF input with nominal response...')
     input_fft           = rfft(multiply(cal_hf_tpl.input.data, taper_hf))
-    inp_freqs_cnv_resp  = multiply(input_fft, resp_hf)
-    hf_inp_wth_resp     = irfft(inp_freqs_cnv_resp, npts_hf)
-    hf_inp_wth_resp     = hf_inp_wth_resp[taper_bin_cnt_hf:-taper_bin_cnt_hf]
-    hf_inp_wth_resp.__itruediv__(hf_inp_wth_resp.std())
-    hf_inp_wth_resp.__isub__(hf_inp_wth_resp.mean())
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_hf_v)
+    hf_inp_wth_resp_v     = irfft(inp_freqs_cnv_resp, npts_hf)
+    hf_inp_wth_resp_v     = hf_inp_wth_resp_v[taper_bin_cnt_hf:-taper_bin_cnt_hf]
+    hf_inp_wth_resp_v.__itruediv__(hf_inp_wth_resp_v.std())
+    hf_inp_wth_resp_v.__isub__(hf_inp_wth_resp_v.mean())
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_hf_n)
+    hf_inp_wth_resp_n     = irfft(inp_freqs_cnv_resp, npts_hf)
+    hf_inp_wth_resp_n     = hf_inp_wth_resp_n[taper_bin_cnt_hf:-taper_bin_cnt_hf]
+    hf_inp_wth_resp_n.__itruediv__(hf_inp_wth_resp_n.std())
+    hf_inp_wth_resp_n.__isub__(hf_inp_wth_resp_n.mean())
+    inp_freqs_cnv_resp  = multiply(input_fft, resp_hf_e)
+    hf_inp_wth_resp_e     = irfft(inp_freqs_cnv_resp, npts_hf)
+    hf_inp_wth_resp_e     = hf_inp_wth_resp_e[taper_bin_cnt_hf:-taper_bin_cnt_hf]
+    hf_inp_wth_resp_e.__itruediv__(hf_inp_wth_resp_e.std())
+    hf_inp_wth_resp_e.__isub__(hf_inp_wth_resp_e.mean())
     logging.debug('Convolving HF input with nominal response complete')
+
+    lf_inp_with_resp = ComponentsTpl(vertical=lf_inp_wth_resp_v, north=lf_inp_wth_resp_n, east=lf_inp_wth_resp_e)
+    hf_inp_with_resp = ComponentsTpl(vertical=hf_inp_wth_resp_v, north=hf_inp_wth_resp_n, east=hf_inp_wth_resp_e)
 
     logging.debug('Input signals ready for coherence analysis.')
 
     # prep output channels
     logging.debug('Preparing LF output for coherence analysis...')
-    lf_out_eas = cal_lf_tpl.east.data.copy()[taper_bin_cnt_lf:-taper_bin_cnt_lf]
-    lf_out_eas.__itruediv__(lf_out_eas.std())
-    lf_out_eas.__isub__(lf_out_eas.mean())
-    lf_out_nor = cal_lf_tpl.north.data.copy()[taper_bin_cnt_lf:-taper_bin_cnt_lf]
-    lf_out_nor.__itruediv__(lf_out_nor.std())
-    lf_out_nor.__isub__(lf_out_nor.mean())
-    lf_out_ver = cal_lf_tpl.vertical.data.copy()[taper_bin_cnt_lf:-taper_bin_cnt_lf]
-    lf_out_ver.__itruediv__(lf_out_ver.std())
-    lf_out_ver.__isub__(lf_out_ver.mean())
+    lf_out_e = cal_lf_tpl.east.data.copy()[taper_bin_cnt_lf:-taper_bin_cnt_lf]
+    lf_out_e.__itruediv__(lf_out_e.std())
+    lf_out_e.__isub__(lf_out_e.mean())
+    lf_out_n = cal_lf_tpl.north.data.copy()[taper_bin_cnt_lf:-taper_bin_cnt_lf]
+    lf_out_n.__itruediv__(lf_out_n.std())
+    lf_out_n.__isub__(lf_out_n.mean())
+    lf_out_v = cal_lf_tpl.vertical.data.copy()[taper_bin_cnt_lf:-taper_bin_cnt_lf]
+    lf_out_v.__itruediv__(lf_out_v.std())
+    lf_out_v.__isub__(lf_out_v.mean())
     logging.debug('Preparing LF output for coherence analysis complete.')
 
     logging.debug('Preparing HF output for coherence analysis...')
-    hf_out_eas = cal_hf_tpl.east.data.copy()[taper_bin_cnt_hf:-taper_bin_cnt_hf]
-    hf_out_eas.__itruediv__(hf_out_eas.std())
-    hf_out_eas.__isub__(hf_out_eas.mean())
-    hf_out_nor = cal_hf_tpl.north.data.copy()[taper_bin_cnt_hf:-taper_bin_cnt_hf]
-    hf_out_nor.__itruediv__(hf_out_nor.std())
-    hf_out_nor.__isub__(hf_out_nor.mean())
-    hf_out_ver = cal_hf_tpl.vertical.data.copy()[taper_bin_cnt_hf:-taper_bin_cnt_hf]
-    hf_out_ver.__itruediv__(hf_out_ver.std())
-    hf_out_ver.__isub__(hf_out_ver.mean())
+    hf_out_e = cal_hf_tpl.east.data.copy()[taper_bin_cnt_hf:-taper_bin_cnt_hf]
+    hf_out_e.__itruediv__(hf_out_e.std())
+    hf_out_e.__isub__(hf_out_e.mean())
+    hf_out_n = cal_hf_tpl.north.data.copy()[taper_bin_cnt_hf:-taper_bin_cnt_hf]
+    hf_out_n.__itruediv__(hf_out_n.std())
+    hf_out_n.__isub__(hf_out_n.mean())
+    hf_out_v = cal_hf_tpl.vertical.data.copy()[taper_bin_cnt_hf:-taper_bin_cnt_hf]
+    hf_out_v.__itruediv__(hf_out_v.std())
+    hf_out_v.__isub__(hf_out_v.mean())
     logging.debug('Preparing HF output for coherence analysis complete.')
 
-    logging.debug('SNR LF VER: {}'.format(1/subtract(lf_inp_wth_resp, lf_out_ver).std()))
-    logging.debug('SNR LF NOR: {}'.format(1/subtract(lf_inp_wth_resp, lf_out_nor).std()))
-    logging.debug('SNR LF EAS: {}'.format(1/subtract(lf_inp_wth_resp, lf_out_eas).std()))
-    logging.debug('SNR HF VER: {}'.format(1/subtract(hf_inp_wth_resp, hf_out_ver).std()))
-    logging.debug('SNR HF NOR: {}'.format(1/subtract(hf_inp_wth_resp, hf_out_nor).std()))
-    logging.debug('SNR HF EAS: {}'.format(1/subtract(hf_inp_wth_resp, hf_out_eas).std()))
+    lf_meas = ComponentsTpl(vertical=lf_out_v, north=lf_out_n, east=lf_out_e)
+    hf_meas = ComponentsTpl(vertical=hf_out_v, north=hf_out_n, east=hf_out_e)
 
-    return samp_rate_lf, start_time_lf, lf_inp_wth_resp, lf_out_eas, lf_out_nor, lf_out_ver, \
-           samp_rate_hf, start_time_hf, hf_inp_wth_resp, hf_out_eas, hf_out_nor, hf_out_ver, \
+    logging.debug('SNR LF VER: {}'.format(1/subtract(lf_inp_wth_resp_v, lf_out_v).std()))
+    logging.debug('SNR LF NOR: {}'.format(1/subtract(lf_inp_wth_resp_n, lf_out_n).std()))
+    logging.debug('SNR LF EAS: {}'.format(1/subtract(lf_inp_wth_resp_e, lf_out_e).std()))
+    logging.debug('SNR HF VER: {}'.format(1/subtract(hf_inp_wth_resp_v, hf_out_v).std()))
+    logging.debug('SNR HF NOR: {}'.format(1/subtract(hf_inp_wth_resp_n, hf_out_n).std()))
+    logging.debug('SNR HF EAS: {}'.format(1/subtract(hf_inp_wth_resp_e, hf_out_e).std()))
+
+    return samp_rate_lf, start_time_lf, lf_inp_with_resp, lf_meas, \
+           samp_rate_hf, start_time_hf, hf_inp_with_resp, hf_meas, \
            resp_lf, freqs_lf, resp_hf, freqs_hf
 
 

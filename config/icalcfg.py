@@ -61,26 +61,26 @@ class Icalcfg(IcalConfigItemReader):
         if len(tokens) == self.ICALCFG_COLCOUNT:
 
             if not ((re.fullmatch(self.ICALCFG_NET_VALID_REGEX, tokens[self.ICALCFG_NDX_NET]) != None) and
-                    (re.fullmatch(self.ICALCFG_STA_VALID_REGEX, tokens[self.ICALCFG_NDX_STA]) != None) and
-                    (re.fullmatch(self.ICALCFG_TAGNO_VALID_REGEX, tokens[self.ICALCFG_NDX_TAGNO]) != None) and
-                    (re.fullmatch(self.ICALCFG_DATAPORT_VALID_REGEX, tokens[self.ICALCFG_NDX_DATAPORT]) != None) and
-                    ((re.fullmatch(self.ICALCFG_MONPORT_A_VALID_REGEX, tokens[self.ICALCFG_NDX_MONPORT_A]) != None) or
-                         (tokens[self.ICALCFG_NDX_MONPORT_A] == self.ICALCFG_KEY_NONE)) and
+                        (re.fullmatch(self.ICALCFG_STA_VALID_REGEX, tokens[self.ICALCFG_NDX_STA]) != None) and
+                        (re.fullmatch(self.ICALCFG_TAGNO_VALID_REGEX, tokens[self.ICALCFG_NDX_TAGNO]) != None) and
+                        (re.fullmatch(self.ICALCFG_DATAPORT_VALID_REGEX, tokens[self.ICALCFG_NDX_DATAPORT]) != None) and
+                        ((re.fullmatch(self.ICALCFG_MONPORT_A_VALID_REGEX, tokens[self.ICALCFG_NDX_MONPORT_A]) != None) or
+                             (tokens[self.ICALCFG_NDX_MONPORT_A] == self.ICALCFG_KEY_NONE)) and
 
-                    ((re.fullmatch(self.ICALCFG_MONPORT_B_VALID_REGEX, tokens[self.ICALCFG_NDX_MONPORT_B]) != None) or
-                        (tokens[self.ICALCFG_NDX_MONPORT_B] == self.ICALCFG_KEY_NONE)) and
+                        ((re.fullmatch(self.ICALCFG_MONPORT_B_VALID_REGEX, tokens[self.ICALCFG_NDX_MONPORT_B]) != None) or
+                             (tokens[self.ICALCFG_NDX_MONPORT_B] == self.ICALCFG_KEY_NONE)) and
 
-                    ((re.fullmatch(self.ICALCFG_LOCATION_VALID_REGEX, tokens[self.ICALCFG_NDX_LOCATION_A]) != None) or
-                        (tokens[self.ICALCFG_NDX_LOCATION_A] == self.ICALCFG_KEY_NONE)) and
+                        ((re.fullmatch(self.ICALCFG_LOCATION_VALID_REGEX, tokens[self.ICALCFG_NDX_LOCATION_A]) != None) or
+                             (tokens[self.ICALCFG_NDX_LOCATION_A] == self.ICALCFG_KEY_NONE)) and
 
-                    ((re.fullmatch(self.ICALCFG_LOCATION_VALID_REGEX, tokens[self.ICALCFG_NDX_LOCATION_B]) != None) or
-                        (tokens[self.ICALCFG_NDX_LOCATION_B] == self.ICALCFG_KEY_NONE)) and
+                        ((re.fullmatch(self.ICALCFG_LOCATION_VALID_REGEX, tokens[self.ICALCFG_NDX_LOCATION_B]) != None) or
+                             (tokens[self.ICALCFG_NDX_LOCATION_B] == self.ICALCFG_KEY_NONE)) and
 
-                    ((re.fullmatch(self.ICALCFG_CHANNELS_VALID_REGEX, tokens[self.ICALCFG_NDX_CHANNELS_A]) != None) or
-                        (tokens[self.ICALCFG_NDX_CHANNELS_A] == self.ICALCFG_KEY_NONE)) and
+                        ((re.fullmatch(self.ICALCFG_CHANNELS_VALID_REGEX, tokens[self.ICALCFG_NDX_CHANNELS_A]) != None) or
+                             (tokens[self.ICALCFG_NDX_CHANNELS_A] == self.ICALCFG_KEY_NONE)) and
 
-                    ((re.fullmatch(self.ICALCFG_CHANNELS_VALID_REGEX, tokens[self.ICALCFG_NDX_CHANNELS_B]) != None) or
-                        (tokens[self.ICALCFG_NDX_CHANNELS_B] == self.ICALCFG_KEY_NONE))):
+                        ((re.fullmatch(self.ICALCFG_CHANNELS_VALID_REGEX, tokens[self.ICALCFG_NDX_CHANNELS_B]) != None) or
+                             (tokens[self.ICALCFG_NDX_CHANNELS_B] == self.ICALCFG_KEY_NONE))):
                 raise IcalcfgMalformedRecordExcept
 
             self.data[self.ICALCFG_KEY_NET]          = tokens[self.ICALCFG_NDX_NET]
@@ -91,29 +91,10 @@ class Icalcfg(IcalConfigItemReader):
             self.data[self.ICALCFG_KEY_MONPORT_B]    = tokens[self.ICALCFG_NDX_MONPORT_B]
             self.data[self.ICALCFG_KEY_LOCATION_A]    = tokens[self.ICALCFG_NDX_LOCATION_A]
             self.data[self.ICALCFG_KEY_LOCATION_B]    = tokens[self.ICALCFG_NDX_LOCATION_B]
+            self.data[self.ICALCFG_KEY_LAST_CAL_A]    = tokens[self.ICALCFG_NDX_LAST_CAL_A]
+            self.data[self.ICALCFG_KEY_LAST_CAL_B]    = tokens[self.ICALCFG_NDX_LAST_CAL_B]
             self.data[self.ICALCFG_KEY_CHANNELS_A]    = tokens[self.ICALCFG_NDX_CHANNELS_A]
             self.data[self.ICALCFG_KEY_CHANNELS_B]    = tokens[self.ICALCFG_NDX_CHANNELS_B]
-
-            # deal with parsing dates of last calibrations
-            try:
-                if tokens[self.ICALCFG_NDX_LAST_CAL_A] == self.ICALCFG_KEY_NONE:
-                    self.data[self.ICALCFG_KEY_LAST_CAL_A] = self.ICALCFG_KEY_NONE
-                else:
-                    parser.parse(tokens[self.ICALCFG_NDX_LAST_CAL_A])
-            except Exception:
-                logging.error('Error parsing ' + self.ICALCFG_KEY_LAST_CAL_B + \
-                              ' in ical.cfg. Data ignored: ' + tokens[self.ICALCFG_NDX_LAST_CAL_A])
-                self.data[self.ICALCFG_KEY_LAST_CAL_A] = self.ICALCFG_KEY_NONE
-
-            try:
-                if tokens[self.ICALCFG_NDX_LAST_CAL_B] == self.ICALCFG_KEY_NONE:
-                    self.data[self.ICALCFG_KEY_LAST_CAL_B] = self.ICALCFG_KEY_NONE
-                else:
-                    parser.parse(tokens[self.ICALCFG_NDX_LAST_CAL_B])
-            except Exception:
-                logging.error('Error parsing ' + self.ICALCFG_KEY_LAST_CAL_B + \
-                              ' in ical.cfg. Data ignored: ' + tokens[self.ICALCFG_NDX_LAST_CAL_B])
-                self.data[self.ICALCFG_KEY_LAST_CAL_B] = self.ICALCFG_KEY_NONE
 
         else:
             raise IcalcfgBadColumnCountExcept

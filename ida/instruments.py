@@ -1,7 +1,25 @@
 from collections import namedtuple
 from numpy import sqrt
 
-"""Instrument properties and related application constants and structures"""
+"""Instrument properties and related application constants and structures.
+
+    Adding support for a new seismometer model:
+        1) Add a SEISTYPE_ constant for model
+        2) Add SEISTYPE_ constant into SEISMOMETER_MODELS list
+        3) If Triaxial model:
+            a) add to TRIAXIAL_SEIS_MODELS list
+            b) add transformations of type XFRM_TYPE_XYZ2UVW and XFRM_TYPE_UVW2ENZ_ABS
+                named SEISTYPE_ + 'XYZ2UVW' and SEISTYPE_ + 'UVW2ENZ_ABS'
+            c) add transformations to TRIAXIAL_TRANSFORMS dict with SEISTYPE_ as key
+        4) if model is CTBTO model, add to CTBTO_SEIS_MODELS list
+        5) Add model to SEIS_INVERT_ lists, as appropriate
+        6) Add entry to SEISMOMETER_RESPONSES dict
+            a) Set embedded nominal full response file
+            b) Set Fitting poles/zeros indices into full response paz
+            c) Set (default) perturbing poles/zeros indices into full response paz
+        7) Add model entry to INSRTUMENT_NOMINAL_GAINS dict
+        8) Add model entry to Q330_GCALIB_FOR_SEIS (for Q330 <=> sensor impedance adjustment)
+"""
 
 # making these match existing instrument abbreviations in DataScope ABBREV table
 # only include seismometer models deployed by IDA on 2016-05-26, plus TR360
@@ -83,6 +101,43 @@ STS2_5_UVW2ENZ_ABS = [
     [sqrt(3)/3, sqrt(3)/3, sqrt(3)/3]
 ]
 
+# paz maps for seismometer response fitting by model
+# indices are for python ZERO-based arrays
+# 'fit' indices are into FULL response PAZ
+# 'perturb' indices are into FULL response PAZ
+SEISMOMETER_RESPONSES = {
+    SEISTYPE_STS25 : {
+        'full_resp_file': SEISTYPE_STS25 + "_full.ida",
+        'fit': {
+            'lf_poles' : [0,1,2,3,4,5,6],
+            'lf_zeros' : [0,1,2,3,4,5,6,7],
+            'hf_poles' : [0,1,2,3,4,5,6],
+            'hf_zeros' : [0,1,2,3,7]
+        },
+        'perturb': {
+            'lf_poles': [0,1],
+            'lf_zeros': [],
+            'hf_poles': [4,5],
+            'hf_zeros': [],
+        },
+    },
+    SEISTYPE_STS25F : {
+        'full_resp_file': SEISTYPE_STS25 + "_full.ida",
+        'fit': {
+            'lf_poles' : [0,1,2,3,4,5,6],
+            'lf_zeros' : [0,1,2,3,4,5,6,7],
+            'hf_poles' : [0,1,2,3,4,5,6],
+            'hf_zeros' : [0,1,2,3,7]
+        },
+        'perturb': {
+            'lf_poles': [0,1],
+            'lf_zeros': [],
+            'hf_poles': [4,5],
+            'hf_zeros': [],
+        },
+    },
+}
+
 XFRM_TYPE_XYZ2UVW = 'XYZ2UVW'
 XFRM_TYPE_UVW2ENZ_ABS = 'UVW2ENZ_ABS'
 
@@ -134,7 +189,7 @@ Q330_40_FIR_FILTER_DELAY = 17.218
 
 # obtained from IDA database. This value is specific to each Q330-Seis_Model combination
 # and is in the IDA database as gcalib
-Q330_GCALIB_FOR_SENSER = {
+Q330_GCALIB_FOR_SEIS = {
     SEISTYPE_STS25: .9911,  # value for Q330/STS2.5 combination
     SEISTYPE_STS25F: .9911,  # value for Q330/STS2.5 combination
 }

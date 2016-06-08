@@ -3,7 +3,7 @@ import os.path
 import sys
 from os import makedirs, getcwd
 from subprocess import call
-from datetime import datetime
+from datetime import datetime, timezone
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 import config.pycal_globals as pcgl
@@ -82,7 +82,7 @@ class MainWindowHelper(object):
         self.main_win.actionQuit.triggered.connect(self.close)
         self.main_win.actionVerbose_Log.triggered.connect(self.toggle_verbose)
 
-        self.main_win.testAnalysisBtn.clicked.connect(self.run_test_analysis)
+        # self.main_win.testAnalysisBtn.clicked.connect(self.run_test_analysis)
         self.test_set_action_group.triggered.connect(self.set_test_set)
 
 
@@ -332,14 +332,14 @@ class MainWindowHelper(object):
 
                 dlg, dlgUI, dlgUIHlpr = None, None, None
 
+        self.main_win.cfgListTV.resizeColumnsToContents()
+
 
     def delete_cfg(self):
         if self.cur_row >= 0:
             # get tagno and delete
             mdlNdx = QtCore.QAbstractItemModel.createIndex(self.cdm, self.cur_row, CfgDataModel.TAGNO_COL)
             tagno = self.cdm.data(mdlNdx, QtCore.Qt.DisplayRole)
-            print(type(tagno), tagno)
-            # wcfg = self.cfg.find(tagno)
             if tagno:
                 msg_box = QtWidgets.QMessageBox()
                 msg_box.setIcon(QtWidgets.QMessageBox.Warning)
@@ -355,6 +355,8 @@ class MainWindowHelper(object):
                     logging.info('Deleting configuration for Q330 with Tag # {}'.format(tagno))
                     self.cfg.remove(tagno)
                     self.cdm.endResetModel()
+
+        self.main_win.cfgListTV.resizeColumnsToContents()
 
 
     def AddCfg(self):
@@ -372,7 +374,7 @@ class MainWindowHelper(object):
         else:
             logging.info('Add new configuration cancelled by user.')
 
-            self.main_win.cfgListTV.resizeColumnsToContents()
+        self.main_win.cfgListTV.resizeColumnsToContents()
 
 
     def run_analysis(self, method, *args):
@@ -434,14 +436,12 @@ class MainWindowHelper(object):
 
         output_dir = os.path.join(pcgl.get_results_root(), '-'.join([sta, ip.replace('.','_'), sensor, seis_model]))
 
-        if seis_model in [SEISTYPE_STS25, SEISTYPE_STS25F]:
+        if seis_model in SEISMOMETER_RESPONSES:
             if getattr(sys, 'frozen', False):
                 bundle_dir = sys._MEIPASS
-                start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts2_5_for_fitting.ida'))
-                nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts2_5_for_fitting.ida'))
+                full_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', SEISMOMETER_RESPONSES[seis_model]['full_resp_file']))
             else:
-                start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts2_5_for_fitting.ida'))
-                nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts2_5_for_fitting.ida'))
+                full_paz_fn = os.path.abspath(os.path.join('.', 'data', SEISMOMETER_RESPONSES[seis_model]['full_resp_file']))
         else:
             msg1 = 'PyCal does not have response information for SENSOR MODEL: ' + seis_model
             msg2 = 'Analysis can not be performed.'
@@ -453,18 +453,8 @@ class MainWindowHelper(object):
             return
 
         logging.info('Analysis starting...')
-        logging.debug('Fitting Start response: ' + start_paz_fn)
-        logging.debug('Nominal Start response: ' + nom_paz_fn)
+        logging.debug('Using FULL response at: ' + full_paz_fn)
 
-        # ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn = ida.ctbto.process.process_qcal_data(sta,
-        #                                                                              channel_codes,
-        #                                                                              loc,
-        #                                                                              output_dir,
-        #                                                                              (lf_msfn, lf_logfn),
-        #                                                                              (hf_msfn, hf_logfn),
-        #                                                                              seis_model.upper(),
-        #                                                                              start_paz_fn,
-        #                                                                              nom_paz_fn)
         retcode, \
         ims_calres_txt_fn, \
         cal_amp_plot_fn, \
@@ -476,8 +466,7 @@ class MainWindowHelper(object):
                                             (lf_msfn, lf_logfn),
                                             (hf_msfn, hf_logfn),
                                             seis_model,
-                                            start_paz_fn,
-                                            nom_paz_fn)
+                                            full_paz_fn)
 
         if retcode == 0:
             call(['open', output_dir])
@@ -660,16 +649,19 @@ class MainWindowHelper(object):
                                                         QtWidgets.QMessageBox().Close,
                                                         QtWidgets.QMessageBox().Close)
 
-                    if seis_model in [SEISTYPE_STS25, SEISTYPE_STS25F]:
+                    if seis_model in SEISMOMETER_RESPONSES:
                         if getattr(sys, 'frozen', False):
                             bundle_dir = sys._MEIPASS
-                            start_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_adj.ida'))
-                            nom_paz_fn = os.path.abspath(os.path.join(bundle_dir, 'IDA', 'data', 'sts25_nom.ida'))
+                            full_paz_fn = os.path.abspath(os.path.join(bundle_dir,
+                                                                       'IDA',
+                                                                       'data',
+                                                                       SEISMOMETER_RESPONSES[seis_model]['full_resp_file']))
                         else:
-                            start_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_adj.ida'))
-                            nom_paz_fn = os.path.abspath(os.path.join('.', 'data', 'sts25_nom.ida'))
+                            full_paz_fn = os.path.abspath(os.path.join('.',
+                                                                       'data',
+                                                                       SEISMOMETER_RESPONSES[seis_model]['full_resp_file']))
                     else:
-                        msg1 = 'PyCal has response information for SENSOR MODEL: ' + seis_model
+                        msg1 = 'PyCal does not have response information for SENSOR MODEL: ' + seis_model
                         msg2 = 'Analysis can not be performed.'
                         logging.error(msg1)
                         logging.error(msg2)
@@ -679,8 +671,7 @@ class MainWindowHelper(object):
                         return
 
                     logging.info('Analysis starting...')
-                    logging.debug('Fitting Start response: ' + start_paz_fn)
-                    logging.debug('Nominal Start response: ' + nom_paz_fn)
+                    logging.debug('Using FULL response at: ' + full_paz_fn)
 
                     retcode, \
                     ims_calres_txt_fn, \
@@ -693,15 +684,14 @@ class MainWindowHelper(object):
                                                         (lf_msfn, lf_logfn),
                                                         (hf_msfn, hf_logfn),
                                                         seis_model,
-                                                        start_paz_fn,
-                                                        nom_paz_fn)
+                                                        full_paz_fn)
 
                     if retcode == 0:
                         msg_list = ['Calibration completed successfully. ',
-                                'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
-                                '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
-                                '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
-                                '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
+                                    'The following files have been saved in directory:\n\n{}\n\n'.format(output_dir),
+                                    '{}:\n\n{}\n\n'.format('CALIBRATE_RESULT Msg', os.path.basename(ims_calres_txt_fn)),
+                                    '{}:\n\n{}\n\n'.format('Amplitude Response Plots', os.path.basename(cal_amp_plot_fn)),
+                                    '{}:\n\n{}'.format('Phase Response Plots', os.path.basename(cal_pha_plot_fn))]
 
                         logging.info('Analysis phase completed with return code: {}'.format(retcode))
                         logging.info('The following files have been saved in directory: ' + output_dir)
@@ -713,6 +703,15 @@ class MainWindowHelper(object):
                                                                   'Calibration Completed!\n\n' + ''.join(msg_list),
                                                                   QtWidgets.QMessageBox().Close,
                                                                   QtWidgets.QMessageBox().Close)
+
+                        now_str = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+                        if sensor == 'A':
+                            wcfg.update({ wcfg.WRAPPER_KEY_LAST_CAL_A : now_str })
+                        else:  # must be 'B'
+                            wcfg.update({ wcfg.WRAPPER_KEY_LAST_CAL_B : now_str })
+                        self.cfg.save()
+
+                        self.update_details(self.cur_row)
 
                         call(['open', output_dir])
                         call(['open', ims_calres_txt_fn])

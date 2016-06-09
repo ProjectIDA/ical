@@ -19,9 +19,9 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class representing single record from ical.cfg file"""
 
 import re
-from config.ical_config_item_reader import IcalConfigItemReader
 
 
 class IcalcfgBadColumnCountExcept(Exception):
@@ -30,7 +30,7 @@ class IcalcfgBadColumnCountExcept(Exception):
 class IcalcfgMalformedRecordExcept(Exception):
     pass
 
-class Icalcfg(IcalConfigItemReader):
+class Icalcfg(object):
 
     ICALCFG_COLCOUNT = 12
     ICALCFG_NDX_NET = 0

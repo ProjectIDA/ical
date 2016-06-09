@@ -6,7 +6,7 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 from gui.mainwindow import *
 from gui.mainwindow_helper import MainWindowHelper
 from config.ical_config import IcalConfig
-import config.pycal_globals as pcgl
+import config.config_utils as pcgl
 
 
 class PyCalMainWindow(QtWidgets.QMainWindow):

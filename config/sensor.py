@@ -19,11 +19,10 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class representing single record from qcal sensor file"""
 
 import re
 import functools
-
-from config.ical_config_item_reader import IcalConfigItemReader
 
 
 class SensorBadColumnCountExcept(Exception):
@@ -32,7 +31,7 @@ class SensorBadColumnCountExcept(Exception):
 class SensorMalformedRecordExcept(Exception):
     pass
 
-class Sensor(IcalConfigItemReader):
+class Sensor(object):
 
     SENSOR_COLCOUNT = 5 # this is minimum cause last col (5) is quoted and contains spaces
     SENSOR_NDX_SHORTNAME = 0

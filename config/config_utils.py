@@ -19,25 +19,32 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Configuration utility functions"""
+import sys
+from os.path import expanduser, join, abspath, dirname
 
-import abc
+def get_root():
+    return expanduser('~/PyCal')
 
-class IcalConfigItemReader(metaclass=abc.ABCMeta):
-
-    @abc.abstractmethod
-    def __init__(self, record_str):
-        pass
-
-    @abc.abstractmethod
-    def __str__(self):
-        pass
+def get_bin_root():
+    if getattr(sys, 'frozen', False):  # assuming running from .app bundle in MacOS folder
+        return join(sys._MEIPASS, 'IDA/bin')
+    else:
+        return './bin'  # for when running outside of .app bundle
 
 
-    @abc.abstractmethod
-    def __eq__(self, other):
-        pass
-  
+def get_config_root():
+    return join(get_root(), '.etc')
 
-    @abc.abstractmethod
-    def __lt__(self, other):
-        pass
+def get_initial_config_root():
+    if getattr(sys, 'frozen', False):  # assuming running from .app bundle in MacOS folder
+        return join(sys._MEIPASS, 'etc')
+    else:
+        return './etc' # for when running outside of .app bundle
+
+def get_results_root():
+    return join(get_root(), 'Results')
+
+def get_log_filename():
+    return join(get_root(), 'pycal.log')
+

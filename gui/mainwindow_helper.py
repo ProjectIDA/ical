@@ -28,7 +28,7 @@ from subprocess import call
 from datetime import datetime, timezone
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-import config.pycal_globals as pcgl
+import config.config_utils as pcgl
 from config.ical_config import IcalConfig
 from config.wrapper_cfg import WrapperCfg
 import gui.mainwindow

@@ -19,6 +19,7 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""PyCal configuration reader superclass"""
 
 import abc
 import os

@@ -19,10 +19,10 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class representing single record from qcal calib file"""
 
 import re
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF
-from config.ical_config_item_reader import IcalConfigItemReader
 
 
 class CalibBadColumnCountExcept(Exception):
@@ -31,7 +31,7 @@ class CalibBadColumnCountExcept(Exception):
 class CalibMalformedRecordExcept(Exception):
     pass
 
-class Calib(IcalConfigItemReader):
+class Calib(object):
 
     CALIB_COLCOUNT = 8
     CALIB_NDX_CALTYPE = 0

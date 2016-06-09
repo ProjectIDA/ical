@@ -19,7 +19,9 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class for in-memory representation of qcal calib file"""
 
+import logging
 from config.ical_config_reader import IcalConfigReader
 from config.calib import Calib, CalibBadColumnCountExcept, CalibMalformedRecordExcept
 

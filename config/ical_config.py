@@ -19,10 +19,10 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class representing the entire PyCal configuration in-memory"""
 
 import logging
 import os
-
 from config.wrapper_cfg import WrapperCfg
 from config.sensors import Sensors
 from config.sensor import Sensor

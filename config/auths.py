@@ -19,7 +19,9 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class for in-memory representation of qcal auth file"""
 
+import logging
 from config.ical_config_reader import IcalConfigReader
 from config.ical_config_writer import IcalConfigWriter
 from config.auth import Auth, AuthBadColumnCountExcept, AuthMalformedRecordExcept

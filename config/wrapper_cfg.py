@@ -19,6 +19,9 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class representing entire CONFIGURATION for single Q330.
+This incorporates info from multiple cfg and qcal config files
+"""
 
 import re
 from config.calib import Calib

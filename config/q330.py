@@ -19,9 +19,9 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class representing single record from q330.cfg file"""
 
 import re
-from config.ical_config_item_reader import IcalConfigItemReader
 
 
 class Q330BadColumnCountExcept(Exception):
@@ -30,7 +30,7 @@ class Q330BadColumnCountExcept(Exception):
 class Q330MalformedRecordExcept(Exception):
     pass
 
-class Q330(IcalConfigItemReader):
+class Q330(object):
 
     Q330_COLCOUNT = 4
     Q330_NDX_IP = 0

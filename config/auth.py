@@ -19,11 +19,9 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+"""Class representing single record from qcal auth file"""
 
 import re
-import functools
-
-from config.ical_config_item_reader import IcalConfigItemReader
 
 
 class AuthBadColumnCountExcept(Exception):
@@ -32,7 +30,7 @@ class AuthBadColumnCountExcept(Exception):
 class AuthMalformedRecordExcept(Exception):
     pass
 
-class Auth(IcalConfigItemReader):
+class Auth(object):
 
     AUTH_COLCOUNT = 8
     AUTH_NDX_TAGNO = 0

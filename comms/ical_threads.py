@@ -19,6 +19,7 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
+""" Classes for threading long running calibration processes"""
 
 from PyQt5 import QtCore
 import logging
@@ -27,6 +28,7 @@ import os.path
 from os import getcwd, chdir
 
 class AnalysisThread(QtCore.QThread):
+    """QThread class for running the data analysis after acquisition"""
 
     completed = QtCore.pyqtSignal(str, str, str)
 
@@ -45,6 +47,7 @@ class AnalysisThread(QtCore.QThread):
 
 
 class QVerifyThread(QtCore.QThread):
+    """QThread class for checking communication with Q330 via qverify binary"""
 
     qVerifyQueryResult = QtCore.pyqtSignal(str, str, bool, str)
     # qverify -v root=/ida/nrts/etc dec00 4
@@ -86,6 +89,7 @@ class QVerifyThread(QtCore.QThread):
 
 
 class QCalThread(QtCore.QThread):
+    """QThread class for running calibration data acquisition"""
 
     completed = QtCore.pyqtSignal(int, str, str)
 

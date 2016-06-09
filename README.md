@@ -13,11 +13,11 @@ For the reading of raw miniseed data it utilizes source code from ObsPy, a pytho
 * sip (v4.18; built from source)
 * matplotlib (v1.5.1; built from source with custom configuration set via setup.cfg.matplotlib_build)
 * PyInstaller (v3.2, develop branch v3.2-47-g8c6332e)
-* python-dateutil (2.4.2)
-* pytz (2015.7)
-* NumPy (v1.11.0)
-* SciPy (v0.17.0)
-* setuptools (v19.2; due to conflicts with PyInstaller, this must be v19.2)
+* setuptools (v19.2; due to conflicts with PyInstaller, this must be v19.2, installed into python env with conda)
+* python-dateutil (v2.4.2, installed into python env with conda)
+* pytz (2015.7, installed into python env with conda)
+* NumPy (v1.11.0, installed into python env with conda)
+* SciPy (v0.17.0, installed into python env with conda)
 
 ## Other Tools Utilized
 * Qt Creator 3.6.1 (Used for form building, but not technically necessary)

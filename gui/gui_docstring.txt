@@ -1,0 +1,1 @@
+"""GUI Python code auto-generated from Qt Creator *.ui files by PyQt pyuic utility."""

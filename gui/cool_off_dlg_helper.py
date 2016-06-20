@@ -26,7 +26,7 @@ from PyQt5.QtCore import QTimer
 
 class CoolOffDlgHelper(object):
 
-    update_interval = 10  # seconds
+    update_interval = 5  # seconds
 
     def __init__(self, dlg, dlgUI):
         self.dlgUI = dlgUI
@@ -69,7 +69,7 @@ class CoolOffDlgHelper(object):
     def start(self):
 
         self.start_tme = time()
-        self.dlgUI.progPB.setMinimum(0)
+        self.dlgUI.progPB.setMinimum(-5)
         self.dlgUI.progPB.setMaximum(100)
         self.dlgUI.progPB.setValue(0)
 

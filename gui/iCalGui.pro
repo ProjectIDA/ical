@@ -23,6 +23,7 @@ FORMS    += mainwindow.ui \
     progress_dlg.ui \
     logview_dlg.ui \
     analysis_progress_window.ui \
+    cool_off_progress_window.ui \
     about.ui
 
 RESOURCES += \

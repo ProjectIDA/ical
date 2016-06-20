@@ -47,7 +47,7 @@
     <number>-1</number>
    </property>
   </widget>
-  <widget class="QLabel" name="calDescrLbl">
+  <widget class="QLabel" name="infoLbl">
    <property name="geometry">
     <rect>
      <x>20</x>

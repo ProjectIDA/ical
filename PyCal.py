@@ -3,6 +3,7 @@ import shutil
 import sys
 import logging
 from PyQt5 import QtGui, QtWidgets, QtCore
+import gui.resources
 from gui.mainwindow import *
 from gui.mainwindow_helper import MainWindowHelper
 from config.ical_config import IcalConfig

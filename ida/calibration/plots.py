@@ -86,13 +86,21 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     f100 = plt.figure(100, figsize=(15, 20))
     ax = plt.subplot(211)
     plt.tick_params(labelsize=13)
-    plt.title('Amplitude Responses - ({:<} - {:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
+    if loc.strip() != '':
+        plt.title('Amplitude Responses - ({:<} - {:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
                                                                                                      loc,
                                                                                                      seis_model,
                                                                                                      datestr,
                                                                                                      int(round(operating_sample_rate, 0))),
-              fontsize=14,
-              fontweight='bold')
+                  fontsize=14,
+                  fontweight='bold')
+    else:
+        plt.title('Amplitude Responses - ({:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
+                                                                                             seis_model,
+                                                                                             datestr,
+                                                                                             int(round(operating_sample_rate, 0))),
+                  fontsize=14,
+                  fontweight='bold')
     plt.ylabel('Amplitude (Normalized @ {} hz, V/m/s)'.format(norm_freq), fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     ax.grid(which='both')
@@ -107,7 +115,10 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     #
     ax = plt.subplot(212)
     plt.tick_params(labelsize=13)
-    plt.title('Amplitude Deviations from Nominal - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
+    if loc.strip() != '':
+        plt.title('Amplitude Deviations from Nominal - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
+    else:
+        plt.title('Amplitude Deviations from Nominal - ({:<} - {:<} - {:<})'.format(sta, seis_model, datestr), fontsize=14, fontweight='bold')
     plt.ylabel('Amplitude Deviation (%)\n(up to 90% of Nyquist)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     ax.grid(which='both')
@@ -130,13 +141,21 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
     f101 = plt.figure(101, figsize=(15, 20))
     ax = plt.subplot(211)
     plt.tick_params(labelsize=13)
-    plt.title('Phase Responses - ({:<} - {:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
+    if loc.strip() != '':
+        plt.title('Phase Responses - ({:<} - {:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
                                                                                                  loc,
                                                                                                  seis_model,
                                                                                                  datestr,
                                                                                                  int(round(operating_sample_rate, 0))),
-              fontsize=14,
-              fontweight='bold')
+                  fontsize=14,
+                  fontweight='bold')
+    else:
+        plt.title('Phase Responses - ({:<} - {:<} - {:<})\n(sampling rate: {} hz)'.format(sta,
+                                                                                         seis_model,
+                                                                                         datestr,
+                                                                                         int(round(operating_sample_rate, 0))),
+                  fontsize=14,
+                  fontweight='bold')
 
     plt.ylabel('Phase (deg)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
@@ -151,7 +170,10 @@ def save_response_comparison_plots(sta, chancodes, loc, amp_fn, pha_fn, seis_mod
 
     ax = plt.subplot(212)
     plt.tick_params(labelsize=13)
-    plt.title('Phase Deviations from Nominal - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
+    if loc.strip() != '':
+        plt.title('Phase Deviations from Nominal - ({:<} - {:<} - {:<} - {:<})'.format(sta, loc, seis_model, datestr), fontsize=14, fontweight='bold')
+    else:
+        plt.title('Phase Deviations from Nominal - ({:<} - {:<} - {:<})'.format(sta, seis_model, datestr), fontsize=14, fontweight='bold')
     plt.ylabel('Phase Deviation (deg)\n(up to 90% of Nyquist)', fontsize=12, fontweight='bold')
     plt.xlabel('Frequency (hz)', fontsize=12, fontweight='bold')
     ax.grid(which='both')

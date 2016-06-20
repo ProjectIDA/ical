@@ -32,19 +32,17 @@ class IcalcfgMalformedRecordExcept(Exception):
 
 class Icalcfg(object):
 
-    ICALCFG_COLCOUNT = 12
+    ICALCFG_COLCOUNT = 10
     ICALCFG_NDX_NET = 0
     ICALCFG_NDX_STA = 1
     ICALCFG_NDX_TAGNO = 2
     ICALCFG_NDX_DATAPORT = 3
     ICALCFG_NDX_MONPORT_A = 4
     ICALCFG_NDX_MONPORT_B = 5
-    ICALCFG_NDX_LAST_CAL_A = 6
-    ICALCFG_NDX_LAST_CAL_B = 7
-    ICALCFG_NDX_LOCATION_A = 8
-    ICALCFG_NDX_LOCATION_B = 9
-    ICALCFG_NDX_CHANNELS_A = 10
-    ICALCFG_NDX_CHANNELS_B = 11
+    ICALCFG_NDX_LOCATION_A = 6
+    ICALCFG_NDX_LOCATION_B = 7
+    ICALCFG_NDX_CHANNELS_A = 8
+    ICALCFG_NDX_CHANNELS_B = 9
 
     ICALCFG_KEY_NET = 'network'
     ICALCFG_KEY_STA = 'station'
@@ -56,8 +54,6 @@ class Icalcfg(object):
     ICALCFG_KEY_LOCATION_B = 'sensor_b_location'
     ICALCFG_KEY_CHANNELS_A = 'sensor_a_channels'
     ICALCFG_KEY_CHANNELS_B = 'sensor_b_channels'
-    ICALCFG_KEY_LAST_CAL_A = 'sensor_a_last_cal'
-    ICALCFG_KEY_LAST_CAL_B = 'sensor_b_last_cal'
 
     ICALCFG_KEY_NONE     = 'none'
 
@@ -67,7 +63,7 @@ class Icalcfg(object):
     ICALCFG_DATAPORT_VALID_REGEX = '[1-4]'
     ICALCFG_MONPORT_A_VALID_REGEX = '[4-6]'
     ICALCFG_MONPORT_B_VALID_REGEX = '[1-3]'
-    ICALCFG_LOCATION_VALID_REGEX = '[0-9]{2}'
+    ICALCFG_LOCATION_VALID_REGEX = '[0-9]{2}|__'
     ICALCFG_CHANNELS_VALID_REGEX = '[A-Za-z]{2}[Zz]{1} *, *[A-Za-z]{2}[Nn1] *, *[A-Za-z]{2}[Ee2]{1} *'
 
 
@@ -110,8 +106,6 @@ class Icalcfg(object):
             self.data[self.ICALCFG_KEY_MONPORT_B]    = tokens[self.ICALCFG_NDX_MONPORT_B]
             self.data[self.ICALCFG_KEY_LOCATION_A]    = tokens[self.ICALCFG_NDX_LOCATION_A]
             self.data[self.ICALCFG_KEY_LOCATION_B]    = tokens[self.ICALCFG_NDX_LOCATION_B]
-            self.data[self.ICALCFG_KEY_LAST_CAL_A]    = tokens[self.ICALCFG_NDX_LAST_CAL_A]
-            self.data[self.ICALCFG_KEY_LAST_CAL_B]    = tokens[self.ICALCFG_NDX_LAST_CAL_B]
             self.data[self.ICALCFG_KEY_CHANNELS_A]    = tokens[self.ICALCFG_NDX_CHANNELS_A]
             self.data[self.ICALCFG_KEY_CHANNELS_B]    = tokens[self.ICALCFG_NDX_CHANNELS_B]
 
@@ -124,15 +118,13 @@ class Icalcfg(object):
  
 
     def __str__(self):
-        return '{:<3} {:<6} {:<7} {:<2} {:<5} {:<5} {<:30} {<:30} {<:3} {<:3} {<:12} {<:12}'.format(
+        return '{:<3} {:<6} {:<7} {:<2} {:<5} {:<5} {<:3} {<:3} {<:12} {<:12}'.format(
                     self.data[self.ICALCFG_KEY_NET],
                     self.data[self.ICALCFG_KEY_STA],
                     self.data[self.ICALCFG_KEY_TAGNO],
                     self.data[self.ICALCFG_KEY_DATAPORT],
                     self.data[self.ICALCFG_KEY_MONPORT_A],
                     self.data[self.ICALCFG_KEY_MONPORT_B],
-                    self.data[self.ICALCFG_KEY_LAST_CAL_A],
-                    self.data[self.ICALCFG_KEY_LAST_CAL_B],
                     self.data[self.ICALCFG_KEY_LOCATION_A],
                     self.data[self.ICALCFG_KEY_LOCATION_B],
                     self.data[self.ICALCFG_KEY_CHANNELS_A],

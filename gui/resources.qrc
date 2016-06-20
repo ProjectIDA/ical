@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>ucsd-logo-web.png</file>
+        <file>SIO-logos-2014.jpg</file>
+        <file>igpp-black.png</file>
+        <file>pycal-icon2.png</file>
+    </qresource>
+</RCC>

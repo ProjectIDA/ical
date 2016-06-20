@@ -270,8 +270,6 @@ class IcalConfig(object):
         tmpdict[WrapperCfg.WRAPPER_KEY_DATAPORT]  = icalentry.data[Icalcfg.ICALCFG_KEY_DATAPORT]
         tmpdict[WrapperCfg.WRAPPER_KEY_MONPORT_A] = icalentry.data[Icalcfg.ICALCFG_KEY_MONPORT_A]
         tmpdict[WrapperCfg.WRAPPER_KEY_MONPORT_B] = icalentry.data[Icalcfg.ICALCFG_KEY_MONPORT_B]
-        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_CAL_A] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_CAL_A]
-        tmpdict[WrapperCfg.WRAPPER_KEY_LAST_CAL_B] = icalentry.data[Icalcfg.ICALCFG_KEY_LAST_CAL_B]
         tmpdict[WrapperCfg.WRAPPER_KEY_LOCATION_A] = icalentry.data[Icalcfg.ICALCFG_KEY_LOCATION_A]
         tmpdict[WrapperCfg.WRAPPER_KEY_LOCATION_B] = icalentry.data[Icalcfg.ICALCFG_KEY_LOCATION_B]
         tmpdict[WrapperCfg.WRAPPER_KEY_CHANNELS_A] = icalentry.data[Icalcfg.ICALCFG_KEY_CHANNELS_A]

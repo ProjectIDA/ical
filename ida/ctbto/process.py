@@ -45,7 +45,7 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
     :type sta: str
     :param chancodes: ComponentsTpl tuple containing chan codes for each component.
     :type chancodes: ida.instruments.ComponentsTpl
-    :param loc: Location code
+    :param loc: Location code, 2 decimal digits or spaces
     :type loc: str
     :param data_dir: Directory where miniseed and qcal log files are located
     :type data_dir: str

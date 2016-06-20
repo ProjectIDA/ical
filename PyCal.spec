@@ -64,7 +64,7 @@ coll = COLLECT(exe,
                name='PyCal')
 app = BUNDLE(coll,
              name='PyCal.app',
-             icon=None,
+             icon='pycal-icon2.png.icns',
              bundle_identifier='edu.ucsd.ida.PyCal',
              info_plist={
                 'CFBundleShortVersionString': '1.0.0'

@@ -43,8 +43,6 @@ class WrapperCfg(object):
     WRAPPER_KEY_LOCATION_B        = 'sensor_b_location'
     WRAPPER_KEY_CHANNELS_A        = 'sensor_a_channels'
     WRAPPER_KEY_CHANNELS_B        = 'sensor_b_channels'
-    WRAPPER_KEY_LAST_CAL_A        = 'sensor_a_last_cal'
-    WRAPPER_KEY_LAST_CAL_B        = 'sensor_b_last_cal'
     WRAPPER_KEY_SENS_COMPNAME_A   = 'sensor_a_comp_name'
     WRAPPER_KEY_SENS_COMPNAME_B   = 'sensor_b_comp_name'
     WRAPPER_KEY_SENS_ROOTNAME_A   = 'sensor_a_root_name'
@@ -104,8 +102,6 @@ class WrapperCfg(object):
             cls.WRAPPER_KEY_DATAPORT : '',
             cls.WRAPPER_KEY_MONPORT_A : cls.WRAPPER_KEY_NONE,
             cls.WRAPPER_KEY_MONPORT_B : cls.WRAPPER_KEY_NONE,
-            cls.WRAPPER_KEY_LAST_CAL_A : cls.WRAPPER_KEY_NONE,
-            cls.WRAPPER_KEY_LAST_CAL_B : cls.WRAPPER_KEY_NONE,
             cls.WRAPPER_KEY_SENS_COMPNAME_A : cls.WRAPPER_KEY_NONE,
             cls.WRAPPER_KEY_SENS_COMPNAME_B : cls.WRAPPER_KEY_NONE,
             cls.WRAPPER_KEY_SENS_ROOTNAME_A : cls.WRAPPER_KEY_NONE,
@@ -169,15 +165,13 @@ class WrapperCfg(object):
 
     def ical_rec(self):
 
-        rec = '{:<3} {:<6} {:<7} {:<2} {:<5} {:<5} {:<30} {:<30} {:<3} {:<3} {:<12} {:<12}'.format(
+        rec = '{:<3} {:<6} {:<7} {:<2} {:<5} {:<5} {:<3} {:<3} {:<12} {:<12}'.format(
                     self.data[self.WRAPPER_KEY_NET],
                     self.data[self.WRAPPER_KEY_STA],
                     self.data[self.WRAPPER_KEY_TAGNO],
                     self.data[self.WRAPPER_KEY_DATAPORT],
                     self.data[self.WRAPPER_KEY_MONPORT_A],
                     self.data[self.WRAPPER_KEY_MONPORT_B],
-                    self.data[self.WRAPPER_KEY_LAST_CAL_A],
-                    self.data[self.WRAPPER_KEY_LAST_CAL_B],
                     self.data[self.WRAPPER_KEY_LOCATION_A],
                     self.data[self.WRAPPER_KEY_LOCATION_B],
                     self.data[self.WRAPPER_KEY_CHANNELS_A],

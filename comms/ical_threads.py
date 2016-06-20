@@ -58,10 +58,13 @@ class QVerifyThread(QtCore.QThread):
         self.port = port
         self.cfg_path = cfg_root_path
         self.proc = None
+        self.cancelling = False
 
     def run(self):
         result = self.qVerify_query()
-        self.qVerifyQueryResult.emit(*result)
+        if not self.cancelling:
+            self.qVerifyQueryResult.emit(*result)
+
 
     def qVerify_query(self):
         self.proc = subprocess.Popen(
@@ -73,19 +76,22 @@ class QVerifyThread(QtCore.QThread):
         ret_code = self.proc.returncode
         if ret_code == 0:
             infomsg = '\n'.join(str(stdout).splitlines())
-            # print(infomsg)
         else:
-            lines = str(stderr).splitlines()
+            lines = str(stderr).strip().splitlines()
             infomsg = ' '.join(lines)
-            # print(infomsg)
+        logging.debug('qverify output ' + infomsg)
+
         return (self.host, self.port, ret_code, infomsg)
 
 
     def cancel(self):
+        self.cancelling = True
         if self.proc:
             self.proc.terminate()
-            self.terminate()
-            self.wait()
+            try:
+                self.proc.wait()
+            except Exception as e:
+                logging.debug('Exception while terminating subprocess: ' + str(e))
 
 
 class QCalThread(QtCore.QThread):
@@ -98,20 +104,30 @@ class QCalThread(QtCore.QThread):
         self.bin_path = os.path.join(bin_root_path, 'qcal')
         self.cmdline = cmdline
         self.output_path = output_path
+        self.orig_dir = None
         self.proc = None
 
     def cancel(self):
         if self.proc:
+            if self.orig_dir:
+                chdir(self.orig_dir)
             self.proc.terminate()
-            self.terminate()
-            self.wait()
+            try:
+                self.proc.wait()
+            except Exception as e:
+                logging.debug('Exception while terminating subprocess: ' + str(e))
+
+        # if self.proc:
+        #     self.proc.terminate()
+        #     self.terminate()
+        #     self.wait()
 
     def run(self):
         result = self.run_qcal()
         self.completed.emit(*result)
 
     def run_qcal(self):
-        curdir = getcwd()
+        self.orig_dir = getcwd()
         chdir(self.output_path)
         logging.info('Spawning calibration subprocess: ' + ' '.join([self.bin_path] + self.cmdline.split()[1:]))
         logging.info('Output directory: ' + getcwd())
@@ -125,15 +141,52 @@ class QCalThread(QtCore.QThread):
         except Exception as e:
             stdout, stderr = '', ''
             logging.error('EXCEPTION: ' + str(e))
-        ret_code = self.proc.returncode
-        chdir(curdir)
+        finally:
+            chdir(self.orig_dir)
+            ret_code = self.proc.returncode
+
         if ret_code == 0:
             lines = str(stdout).splitlines()
             infomsg = lines[1] + '\n\n' + lines[2]
             msfilename = lines[1].split()[-1]
-            # print(lines)
         else:
             lines = str(stderr).splitlines()
             infomsg = '\n'.join(lines)
             msfilename = ''
+        logging.debug('qcal output ' + infomsg)
+
         return ret_code, infomsg, msfilename
+
+
+class PingThread(QtCore.QThread):
+    """QThread class for checking network connection to given host using Ping"""
+
+    completed = QtCore.pyqtSignal(str, bool, str)
+
+    def __init__(self, host):
+        super().__init__()
+        self.host = host
+
+    def run(self):
+        result = self.ping_host(self.host)
+        self.completed.emit(*result)
+
+    def cancel(self):
+        self.terminate()
+        self.wait()
+
+    def ping_host(self, host):
+        proc = subprocess.Popen(
+            ['ping', '-c', '1', '-t', '1', host],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        ret_code = proc.returncode
+        if ret_code == 0:
+            lines = str(stdout, 'utf-8').splitlines()
+            time_line = lines[1]
+            res = time_line.split()[6].split('=')[1] + time_line.split()[7]
+        else:
+            res = str(stderr, 'utf-8')
+        return (host, proc.returncode == 0, res)
+

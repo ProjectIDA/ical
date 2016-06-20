@@ -24,3 +24,6 @@ FORMS    += mainwindow.ui \
     logview_dlg.ui \
     analysis_progress_window.ui \
     about.ui
+
+RESOURCES += \
+    resources.qrc

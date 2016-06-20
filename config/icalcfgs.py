@@ -50,10 +50,6 @@ class Icalcfgs(IcalConfigReader, IcalConfigWriter):
 #   DATA_PORT       : The Q330 Data Port to use for calibrations ([1-4])
 #   MONITOR_CHAN_A  : The Q330 monitoring port for calibrations on sensor A (should be '0' if no sensor present, else [4-6])
 #   MONITOR_CHAN_B  : The Q330 monitoring port for calibrations on sensor B (should be '0' if no sensor present, else [1-3])
-#   LAST_CAL_A      : A timestamp indicating the previous  Low Frequency calibration of sensor A.
-#   LAST_CAL_B      : A timestamp indicating the previous High Frequency calibration of sensor B.
-#                     Above 4 timestamps are UTC in iso format: 'YYYY-MM-DDTHH:MM:SS.mmmmmm+00:00'.
-#                     Should be 'none' until after first calibration or if sensor not installed
 #   LOC_A           : Location code for sensor A.
 #   LOC_B           : Location code for sensor B.
 #   CHANNELS_A      : Channel codes, comma separated in vertical, nort, east order for sensor A.

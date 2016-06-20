@@ -8,7 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class ProgressDlg(QtWidgets.QDialog):
+class CoolOffDlg(QtWidgets.QDialog):
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -17,6 +17,3 @@ class ProgressDlg(QtWidgets.QDialog):
         pass
 
 
-    def keyPressEvent(self, event):
-        if(event.key != QtCore.Qt.Key_Escape):
-            super().keyPressEvent(event)

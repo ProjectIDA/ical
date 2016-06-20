@@ -156,7 +156,7 @@
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
-        <x>68</x>
+        <x>71</x>
         <y>31</y>
         <width>42</width>
         <height>16</height>
@@ -188,7 +188,7 @@
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>7</x>
+        <x>10</x>
         <y>78</y>
         <width>102</width>
         <height>16</height>
@@ -232,10 +232,10 @@
      <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
-        <x>35</x>
+        <x>11</x>
         <y>105</y>
-        <width>75</width>
-        <height>16</height>
+        <width>101</width>
+        <height>20</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -252,7 +252,7 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>75</width>
+        <width>125</width>
         <height>16777215</height>
        </size>
       </property>
@@ -267,7 +267,7 @@
        <string>Timestamp of previous (successful) HIGH Frequency calibration (UTC)</string>
       </property>
       <property name="text">
-       <string>Last Cal:</string>
+       <string>Pri Chan Codes:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -324,13 +324,13 @@
        <string/>
       </property>
      </widget>
-     <widget class="QLineEdit" name="sensALastCalLE">
+     <widget class="QLineEdit" name="sensAPriChansLE">
       <property name="geometry">
        <rect>
         <x>118</x>
         <y>105</y>
         <width>230</width>
-        <height>17</height>
+        <height>20</height>
        </rect>
       </property>
       <property name="minimumSize">
@@ -506,7 +506,7 @@
        <string>Sensor B</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="sensBLastCalLE">
+     <widget class="QLineEdit" name="sensBPriChansLE">
       <property name="geometry">
        <rect>
         <x>118</x>
@@ -573,50 +573,6 @@
        <string>Run Sensor B Calibration</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_8">
-      <property name="geometry">
-       <rect>
-        <x>35</x>
-        <y>105</y>
-        <width>75</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>75</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>75</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Timestamp of previous (successful) HIGH Frequency calibration (UTC)</string>
-      </property>
-      <property name="text">
-       <string>Last Cal:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
      <widget class="QPlainTextEdit" name="sensBDescrLE">
       <property name="geometry">
        <rect>
@@ -680,7 +636,7 @@
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
-        <x>68</x>
+        <x>71</x>
         <y>31</y>
         <width>42</width>
         <height>16</height>
@@ -766,7 +722,7 @@
      <widget class="QLabel" name="label_14">
       <property name="geometry">
        <rect>
-        <x>7</x>
+        <x>10</x>
         <y>78</y>
         <width>102</width>
         <height>16</height>
@@ -802,6 +758,50 @@
       </property>
       <property name="text">
        <string>Calib Mon Chan:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>12</x>
+        <y>103</y>
+        <width>101</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>75</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>125</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Timestamp of previous (successful) HIGH Frequency calibration (UTC)</string>
+      </property>
+      <property name="text">
+       <string>Pri Chan Codes:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1354,6 +1354,9 @@
     <property name="text">
      <string>Quit</string>
     </property>
+    <property name="shortcut">
+     <string/>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="mainMenu">
@@ -1381,7 +1384,6 @@
      <string>View</string>
     </property>
     <addaction name="acViewLogMessages"/>
-    <addaction name="actionProg_test"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -1405,6 +1407,9 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionQuit">
+   <property name="icon">
+    <iconset theme="Q"/>
+   </property>
    <property name="text">
     <string>Quit</string>
    </property>

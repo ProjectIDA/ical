@@ -20,27 +20,34 @@
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
 
-from PyQt5.QtWidgets import QMessageBox
-from comms.ical_threads import AnalysisThread
+from time import time
+from PyQt5.QtWidgets import QMessageBox, QDialog
+from PyQt5.QtCore import QTimer
 
-class AnalysisProgressDlgHelper(object):
+class CoolOffDlgHelper(object):
+
+    update_interval = 10  # seconds
 
     def __init__(self, dlg, dlgUI):
-        self.qtDlg = dlg
         self.dlgUI = dlgUI
-        self.ims_calres_txt_fn = ''
-        self.cal_amp_plot_fn = ''
-        self.cal_pha_plot_fn = ''
-        self.subthread = None
+        self.qtDlg = dlg
+        self.cooling_period_seconds = 330  # default to 5.5 minutes
+        self.start_time = time()
+
+        self.timer = QTimer(self.qtDlg)
+        # noinspection PyUnresolvedReferences
+        self.timer.timeout.connect(self.tick)
 
         self.dlgUI.cancelBtn.clicked.connect(self.cancel)
 
 
     def cancel(self):
 
+        self.timer.stop()
+
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Warning)
-        msg_box.setText('Do you wish to cancel this anaylsis?')
+        msg_box.setText('Do you wish to cancel this calibration?')
         msg_box.setInformativeText('If you cancel you will need to rerun the calibration from the beginning.')
         yes_btn = msg_box.addButton(QMessageBox.Yes)
         no_btn = msg_box.addButton(QMessageBox.No)
@@ -49,24 +56,33 @@ class AnalysisProgressDlgHelper(object):
         msg_box.exec()
 
         if msg_box.clickedButton() == yes_btn:
-            self.subthread.cancel()
-            self.qtDlg.done(-1)
+            self.qtDlg.done(QDialog.Rejected)
+        else:
+            self.timer.start()
 
 
-    def run_analysis(self, run_method, *args):
-
-        self.subthread = AnalysisThread(run_method, *args)
-        self.subthread.completed.connect(self.finished)
-        self.subthread.start()
-
-        return self.qtDlg.exec(), \
-               self.ims_calres_txt_fn, \
-               self.cal_amp_plot_fn, \
-               self.cal_pha_plot_fn
+    def exec(self):
+        self.start()
+        return self.qtDlg.exec()
 
 
-    def finished(self, ims_calres_txt_fn, cal_amp_plot_fn, cal_pha_plot_fn):
-        self.ims_calres_txt_fn = ims_calres_txt_fn
-        self.cal_amp_plot_fn = cal_amp_plot_fn
-        self.cal_pha_plot_fn = cal_pha_plot_fn
-        self.qtDlg.done(0)
+    def start(self):
+
+        self.start_tme = time()
+        self.dlgUI.progPB.setMinimum(0)
+        self.dlgUI.progPB.setMaximum(100)
+        self.dlgUI.progPB.setValue(0)
+
+        self.timer.start(1000 * self.update_interval)  # QTimer works in ms, so tick every 10 seconds
+
+
+    def tick(self):
+
+        pcnt_time = ((time() - self.start_time) / self.cooling_period_seconds) * 100.0
+
+        if pcnt_time > 100:
+            self.timer.stop()
+            self.qtDlg.done(QDialog.Accepted)
+        else:
+            self.dlgUI.progPB.setValue(pcnt_time)
+

@@ -93,6 +93,7 @@ class MainWindowHelper(object):
         self.main_win.actionAbout_PyCal.triggered.connect(self.show_about)
 
         self.main_win.acViewLogMessages.triggered.connect(self.view_log_messages)
+        self.main_win.actionUser_Guide.triggered.connect(self.open_user_guide)
 
         self.main_win.quitBtn.clicked.connect(self.main_win.actionQuit.trigger)
 
@@ -295,6 +296,11 @@ class MainWindowHelper(object):
         dlg.show()
 
 
+    def open_user_guide(self):
+        if os.path.exists(pcgl.get_user_guide_fullpath()):
+            call(['open', pcgl.get_user_guide_fullpath()])
+
+
     def MWSelectionChanged(self, seldelta, deseldelta):
         sel_ndxs = self.main_win.cfgListTV.selectedIndexes()
 
@@ -425,13 +431,13 @@ class MainWindowHelper(object):
         return res, msg_fn, amppltfn, phapltfn
 
 
-    def cool_off_q330(self, info_text='', cooling_period_seconds=330):
+    def cool_off_q330(self, window_title= '', info_text='', cooling_period_seconds=330):
 
         dlg = ProgressDlg()
         dlgUI = Ui_CoolOffFrm()
         dlgUI.setupUi(dlg)
         dlgUI.infoLbl.setText(info_text)
-        dlg.setWindowTitle('PyCal - Preparing for HF Stage')
+        dlg.setWindowTitle(window_title)
         dlgHlpr = CoolOffDlgHelper(dlg, dlgUI)
         dlgHlpr.cooling_period_seconds = cooling_period_seconds
 
@@ -682,7 +688,9 @@ class MainWindowHelper(object):
             logging.debug('cal_info:' + str(cal_info))
 
             # need  30 second "cooling off period" before starting LF run
-            if not self.cool_off_q330('Preparing for LF calibration stage...', cooling_period_seconds=30):
+            if not self.cool_off_q330(window_title='PyCal - Preparing for LF Stage',
+                                      info_text='Preparing for LF calibration stage...',
+                                      cooling_period_seconds=30):
                 return
 
             success, lf_msfn = self.run_sensor_cal_type(sensor, CALTYPE_RBLF, cal_info)
@@ -692,7 +700,9 @@ class MainWindowHelper(object):
                 logging.info('QCal RBLF Log file saved: ' + os.path.join(output_dir, lf_logfn))
 
                 # need 5.5 minute "cooling off period" before starting HF run
-                if not self.cool_off_q330('Preparing for HF calibration stage...', cooling_period_seconds=330):
+                if not self.cool_off_q330(window_title='PyCal - Preparing for HF Stage',
+                                          info_text='Preparing for HF calibration stage...',
+                                          cooling_period_seconds=330):
                     return
 
                 success, hf_msfn = self.run_sensor_cal_type(sensor, CALTYPE_RBHF, cal_info)

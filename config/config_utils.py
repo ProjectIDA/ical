@@ -32,9 +32,16 @@ def get_bin_root():
     else:
         return './bin'  # for when running outside of .app bundle
 
+def get_data_root():
+    if getattr(sys, 'frozen', False):  # assuming running from .app bundle in MacOS folder
+        return join(sys._MEIPASS, 'IDA/data')
+    else:
+        return './data'  # for when running outside of .app bundle
+
 
 def get_config_root():
     return join(get_root(), '.etc')
+
 
 def get_initial_config_root():
     if getattr(sys, 'frozen', False):  # assuming running from .app bundle in MacOS folder
@@ -48,3 +55,8 @@ def get_results_root():
 def get_log_filename():
     return join(get_root(), 'pycal.log')
 
+def user_guide_filename():
+    return 'PyCal_User_Guide.pdf'
+
+def get_user_guide_fullpath():
+    return join(get_root(), user_guide_filename())

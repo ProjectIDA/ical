@@ -40,6 +40,14 @@ def initialize_app():
     # make sure there exists a results dir
     os.makedirs(os.path.join(pcgl.get_root(), 'Results'), exist_ok=True)
 
+    # make sure the UserGuide is in ~/PyCal
+    if os.path.exists(os.path.join(pcgl.get_root(), 'PyCal_User_Guide.pdf')):
+        logging.debug('User Guide in place')
+    else:
+        logging.debug('Copying User Guide to user area')
+        shutil.copy2(os.path.join(pcgl.get_data_root(), pcgl.user_guide_filename()),
+                     os.path.join(pcgl.get_root(), pcgl.user_guide_filename()))
+
     return cfg_success, cfg
 
 

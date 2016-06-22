@@ -96,6 +96,7 @@ def process_qcal_data(sta, chancodes, loc, data_dir, lf_fnames, hf_fnames, seis_
 
     lf_fit_paz_tpl = ComponentsTpl(vertical=lf_fit_paz_v, north=lf_fit_paz_n, east=lf_fit_paz_e)
 
+    #ToDo: refactor to only use one paz tpl since LF and HF come from same response files.
     hf_fit_paz_v = full_paz_tpl.vertical.make_partial(hf_fit_paz_map, 1.0)
     hf_fit_paz_v.h0 = 1.0
     hf_fit_paz_n = full_paz_tpl.north.make_partial(hf_fit_paz_map, 1.0)

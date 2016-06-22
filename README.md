@@ -1,5 +1,5 @@
 # PyCal
-GUI front-end and configuration management for IDA calibration utilities. Developed specifically for random binary calibration of Streckheisen STS 2.5 seismometers.
+GUI front-end and configuration management for IDA calibration utilities. Developed specifically for random binary calibration of Streckeisen STS 2.5 seismometers used with Quanterra Q330HR digitizers.
 
 PyCal is a self contained Python application being developed and tested on Apple computers running OS X version 10.10 or 10.11.
 PyCal utilizes the latest Python scientific computing and visualization libraries including NumPy, SciPy and Matplotlib (see http://scipy.org/).

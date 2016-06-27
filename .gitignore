@@ -92,3 +92,8 @@ sts2*
 
 # don't need user guide PDF in repo
 PyCal_User_Guide*.pdf
+
+# no compressed data
+*.gz
+*.tgz
+*.zip

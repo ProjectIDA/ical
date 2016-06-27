@@ -27,7 +27,6 @@ a = Analysis(['PyCal.py'],
              pathex=['/Users/dauerbach/dev/ical/src'],
              binaries=[
               ('bin/qcal', 'IDA/bin'),
-              ('bin/q330', 'IDA/bin'),
               ('bin/qverify', 'IDA/bin'),
               ('/usr/local/opt/libxml2/lib/libxml2.2.dylib', '.'),
               ('./ida/obspy/lib/libmseed_Darwin_64bit_py34.so', '.')

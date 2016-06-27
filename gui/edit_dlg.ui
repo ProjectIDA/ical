@@ -1000,7 +1000,7 @@
       <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
      </property>
      <property name="placeholderText">
-      <string>NET</string>
+      <string>QT</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="ipLE">

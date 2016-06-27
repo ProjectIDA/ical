@@ -385,3 +385,10 @@ class IcalConfig(object):
         """
         return next(filter(lambda s: s.data[WrapperCfg.WRAPPER_KEY_TAGNO] == key, self.merged_cfg), None)
 
+
+    def index_from_tagno(self, tagno):
+        indices = [ndx for ndx,mcfg in enumerate(self.merged_cfg) if mcfg.data[WrapperCfg.WRAPPER_KEY_TAGNO] == tagno]
+        if len(indices) == 1:
+            return indices[0]
+        else:  # assumes only one tagno in list allowed
+            return None

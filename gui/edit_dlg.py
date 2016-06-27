@@ -613,7 +613,7 @@ class Ui_EditDlg(object):
         self.label_6.setText(_translate("EditDlg", "IP4 Address:"))
         self.networkLabel.setText(_translate("EditDlg", "Network:"))
         self.netLE.setToolTip(_translate("EditDlg", "<html><head/><body><p>Network Code</p></body></html>"))
-        self.netLE.setPlaceholderText(_translate("EditDlg", "NET"))
+        self.netLE.setPlaceholderText(_translate("EditDlg", "QT"))
         self.ipLE.setToolTip(_translate("EditDlg", "<html><head/><body><p>IP4 network address used by this Q330.</p></body></html>"))
         self.ipLE.setPlaceholderText(_translate("EditDlg", "000.000.000.000"))
         self.label_12.setToolTip(_translate("EditDlg", "<html><head/><body><p>Data Port used for calibrating sensors attached to this Q330.</p></body></html>"))

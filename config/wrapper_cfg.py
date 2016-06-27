@@ -57,8 +57,8 @@ class WrapperCfg(object):
     WRAPPER_KEY_DP4_AUTH          = 'dp4_auth'
 
     WRAPPER_KEY_NONE              = 'none'  # this text val much match 'none' in the sensor and calib cfg files.
+    WRAPPER_NO_SENSOR             = 'No Sensor' # this text val much match descr column value for 'none' in sensor files
     WRAPPER_SENSOR_UNK            = 'UNK SENSOR'
-
 
     @classmethod
     def is_valid_wcfg_key(cls, key, val):
@@ -106,8 +106,8 @@ class WrapperCfg(object):
             cls.WRAPPER_KEY_SENS_COMPNAME_B : cls.WRAPPER_KEY_NONE,
             cls.WRAPPER_KEY_SENS_ROOTNAME_A : cls.WRAPPER_KEY_NONE,
             cls.WRAPPER_KEY_SENS_ROOTNAME_B : cls.WRAPPER_KEY_NONE,
-            cls.WRAPPER_KEY_SENS_DESCR_A : '',
-            cls.WRAPPER_KEY_SENS_DESCR_B : '',
+            cls.WRAPPER_KEY_SENS_DESCR_A : cls.WRAPPER_NO_SENSOR,
+            cls.WRAPPER_KEY_SENS_DESCR_B : cls.WRAPPER_NO_SENSOR,
             cls.WRAPPER_KEY_CFG_AUTH : '',
             cls.WRAPPER_KEY_SFN_AUTH : '',
             cls.WRAPPER_KEY_DP1_AUTH : '',

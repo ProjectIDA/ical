@@ -76,18 +76,6 @@ class CfgDataModel(QtCore.QAbstractTableModel):
             raise Exception('Error saving configuration. Config with TAG NUM: ' + tagno + ' already exists')
 
 
-    def delete_cfg(self, cfg):
-
-        tagno = cfg[WrapperCfg.WRAPPER_KEY_TAGNO]
-        if self.cfg.find(tagno):
-            if self.cfg.append(cfg):
-                self.endResetModel()
-            else:
-                raise Exception('Error saving configuartion for Q330 with TAG NUM: ' + tagno)
-        else:
-            raise Exception('Error saving configuration. Config with TAG NUM: ' + tagno + ' already exists')
-
-
     def data(self, index, role):
 
         mrgcfg = self.cfg.merged_cfg[index.row()]
@@ -119,8 +107,8 @@ class CfgDataModel(QtCore.QAbstractTableModel):
         elif col == CfgDataModel.IP_COL:
             if role == QtCore.Qt.DisplayRole:
                 return mrgcfg.data.get(WrapperCfg.WRAPPER_KEY_IP, '')
-            elif role == QtCore.Qt.ForegroundRole:
-                return QtGui.QBrush(QtGui.QColor(196,0,0,255))
+            # elif role == QtCore.Qt.ForegroundRole:
+            #     return QtGui.QBrush(QtGui.QColor(196,0,0,255))
             elif role == QtCore.Qt.TextAlignmentRole:
                 return QtCore.Qt.AlignHCenter + QtCore.Qt.AlignVCenter
             else:

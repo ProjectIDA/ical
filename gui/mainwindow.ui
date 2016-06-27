@@ -906,7 +906,7 @@
           <bool>true</bool>
          </property>
          <property name="placeholderText">
-          <string>NET</string>
+          <string>QT</string>
          </property>
         </widget>
        </item>

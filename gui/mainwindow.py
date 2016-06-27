@@ -676,7 +676,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "Pri Chan Codes:"))
         self.label_26.setText(_translate("MainWindow", "Q330"))
         self.networkLabel.setText(_translate("MainWindow", "Network:"))
-        self.netLE.setPlaceholderText(_translate("MainWindow", "NET"))
+        self.netLE.setPlaceholderText(_translate("MainWindow", "QT"))
         self.label_5.setToolTip(_translate("MainWindow", "<html><head/><body><p>Three to six (alpha-numeric) character Station Code</p></body></html>"))
         self.label_5.setText(_translate("MainWindow", "Station:"))
         self.staLE.setToolTip(_translate("MainWindow", "<html><head/><body><p>Three to six (alpha-numeric) character Station Code</p></body></html>"))

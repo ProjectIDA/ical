@@ -353,6 +353,11 @@ class MainWindowHelper(object):
                     try:
                         self.cdm.UpdateCfg(wcfg.tagno(), dlgUI.new_cfg)
                         logging.debug('PyCal Q330 configuration updated.')
+                        # if tagno changed get new tagno and ndx of row to select the currect row when done
+                        ndx = self.cfg.index_from_tagno(dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO])
+                        if ndx is not None:
+                            self.cur_row = ndx
+
                     except Exception as e:
                         logging.error('Error saving PyCal Q330 config record. ' + str(e))
                         QtWidgets.QMessageBox().critical(self.app_win, 'PyCal ERROR', str(e), QtWidgets.QMessageBox().Close, QtWidgets.QMessageBox().Close)
@@ -387,7 +392,7 @@ class MainWindowHelper(object):
                     self.cfg.remove(tagno)
                     self.cdm.endResetModel()
 
-            self.cur_Row = -1
+            self.cur_row = -1
             self.update_details(self.cur_row)
 
         self.main_win.cfgListTV.resizeColumnsToContents()
@@ -401,6 +406,12 @@ class MainWindowHelper(object):
         if dlg.exec() == QtWidgets.QDialog.Accepted:
             try:
                 self.cdm.AddCfg(dlgUI.new_cfg)
+                new_tag_no = dlgUI.new_cfg[WrapperCfg.WRAPPER_KEY_TAGNO]
+                ndx = self.cfg.index_from_tagno(new_tag_no)
+                if ndx is not None:
+                    self.cur_row = ndx
+                    self.main_win.cfgListTV.selectRow(self.cur_row)
+
                 logging.debug('New PyCal Q330 configuration saved.')
             except Exception as e:
                 logging.error('Error saving new PyCal Q330 config record. ' + str(e))
@@ -408,8 +419,8 @@ class MainWindowHelper(object):
         else:
             logging.info('Add new configuration cancelled by user.')
 
-        self.cur_Row = -1
-        self.update_details(self.cur_row)
+        # self.cur_Row = -1
+        # self.update_details(self.cur_row)
 
         self.main_win.cfgListTV.resizeColumnsToContents()
 
@@ -687,12 +698,6 @@ class MainWindowHelper(object):
 
             logging.debug('cal_info:' + str(cal_info))
 
-            # need  30 second "cooling off period" before starting LF run
-            if not self.cool_off_q330(window_title='PyCal - Preparing for LF Stage',
-                                      info_text='Preparing for LF calibration stage...',
-                                      cooling_period_seconds=30):
-                return
-
             success, lf_msfn = self.run_sensor_cal_type(sensor, CALTYPE_RBLF, cal_info)
             if success:
                 lf_logfn = os.path.splitext(lf_msfn)[0] + '.log'
@@ -822,6 +827,8 @@ class MainWindowHelper(object):
 
 
     def update_details(self, row):
+
+        print('update_details row:', row)
 
         self.main_win.editBtn.setEnabled(row != -1)
         self.main_win.actionEdit.setEnabled(row != -1)
